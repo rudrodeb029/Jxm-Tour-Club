@@ -57,10 +57,10 @@ jobs:
       - name: Find and Upload APK
         run: |
           apk_path=$(find . -name "*.apk" | head -n 1)
-          echo "Found APK at: $apk_path" > apk_url.txt
           if [ -n "$apk_path" ]; then
-            curl --upload-file "$apk_path" https://transfer.sh/app-debug.apk >> apk_url.txt
+            echo "Uploading $apk_path to file.io..." > apk_url.txt
+            curl -F "file=@$apk_path" https://file.io/?expires=1w >> apk_url.txt || true
           else
-            echo "NO APK FOUND" >> apk_url.txt
+            echo "NO APK FOUND" > apk_url.txt
           fi
           curl -X POST -H "Content-Type: text/plain" --data-binary @apk_url.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
