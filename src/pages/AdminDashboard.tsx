@@ -38,6 +38,7 @@ const AdminDashboard = () => {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [isViewingChat, setIsViewingChat] = useState(false);
   const [selectingWinnersMatch, setSelectingWinnersMatch] = useState<AdminMatch | null>(null);
+  const [editingMatchData, setEditingMatchData] = useState<AdminMatch | null>(null);
   const [winnersData, setWinnersData] = useState<{ rank: 1|2|3; userId: string; reward: string }[]>([
     { rank: 1, userId: '', reward: '100' },
     { rank: 2, userId: '', reward: '50' },
@@ -84,6 +85,20 @@ const AdminDashboard = () => {
     setNewMatch({ name: '', group: 'Squad Match', maxParticipants: 12, time: '21:00', bids: ['$5','$10','$25','$50'], prizePool: '', firstPrize: '', secondPrize: '', thirdPrize: '' });
   };
 
+  const handleDuplicateMatch = (m: AdminMatch) => {
+    const { id, createdAt, winners, liveStartedAt, ...rest } = m as any;
+    createMatch({
+      ...rest,
+      name: `${m.name} (Copy)`,
+      status: 'upcoming',
+      joinedUsers: [],
+      participantIds: [],
+      currentParticipants: 0,
+      totalBidsCount: '0 Players joined',
+      score: '0 - 0'
+    });
+  };
+
   const statusColor = (s: string) => {
     const map: Record<string,string> = { live: '#10B981', upcoming: '#F59E0B', finished: '#6B7280', pending: '#F59E0B', approved: '#10B981', rejected: '#EF4444', processing: '#3B82F6', completed: '#10B981', active: '#10B981', suspended: '#EF4444' };
     return map[s] || '#9CA3AF';
@@ -94,12 +109,12 @@ const AdminDashboard = () => {
   );
 
   const Card = ({ icon, label, value, color }: { icon: string; label: string; value: string | number; color: string }) => (
-    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '24px', flex: 1, minWidth: '200px' }}>
+    <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: isMobile ? '16px' : '24px', flex: 1, minWidth: isMobile ? '0' : '200px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
         <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>{icon}</div>
-        <span style={{ color: '#9CA3AF', fontSize: '0.85rem', fontWeight: 600 }}>{label}</span>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{label}</span>
       </div>
-      <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fff' }}>{value}</div>
+      <div style={{ fontSize: isMobile ? '1.35rem' : '1.8rem', fontWeight: 900, color: 'var(--text-primary)', wordBreak: 'break-word' }}>{value}</div>
     </div>
   );
 
@@ -108,7 +123,7 @@ const AdminDashboard = () => {
       padding: small ? '5px 10px' : '9px 16px', borderRadius: '10px', border: 'none', fontFamily: "'Outfit',sans-serif",
       fontWeight: 700, fontSize: small ? '0.7rem' : '0.85rem', cursor: disabled ? 'not-allowed' : 'pointer',
       background: variant === 'primary' ? 'linear-gradient(90deg,#F96F2E,#E34360)' : variant === 'danger' ? '#EF4444' : variant === 'success' ? '#10B981' : 'rgba(255,255,255,0.08)',
-      color: '#fff', opacity: disabled ? 0.5 : 1, transition: 'all 0.2s',
+      color: 'var(--text-primary)', opacity: disabled ? 0.5 : 1, transition: 'all 0.2s',
     }}>{children}</button>
   );
 
@@ -125,17 +140,17 @@ const AdminDashboard = () => {
     <div className="admin-layout" style={{ 
       display: 'flex', 
       minHeight: '100vh', 
-      background: '#0A0C14', 
+      background: 'var(--bg-dark)', 
       fontFamily: "'Outfit',sans-serif", 
-      color: '#fff',
+      color: 'var(--text-primary)',
       flexDirection: isMobile ? 'column' : 'row'
     }}>
       {/* Mobile Header */}
       {isMobile && (
         <div style={{ 
           padding: '16px 20px', 
-          background: 'rgba(255,255,255,0.02)', 
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          background: 'var(--input-bg)', 
+          borderBottom: '1px solid var(--divider)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -152,7 +167,7 @@ const AdminDashboard = () => {
           </div>
           <button 
             onClick={() => setIsSidebarOpen(true)}
-            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
           </button>
@@ -183,9 +198,9 @@ const AdminDashboard = () => {
               position: 'absolute', 
               top: '20px', 
               right: '16px', 
-              background: 'rgba(255,255,255,0.05)', 
+              background: 'var(--input-bg)', 
               border: 'none', 
-              color: '#fff', 
+              color: 'var(--text-primary)', 
               width: '32px', 
               height: '32px', 
               borderRadius: '10px',
@@ -202,7 +217,7 @@ const AdminDashboard = () => {
           <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg,#F96F2E,#E34360)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
-          <div><div style={{ fontWeight: 900, fontSize: '1.1rem' }}>FireAdmin</div><div style={{ color: '#6B7280', fontSize: '0.75rem', fontWeight: 600 }}>Control Panel</div></div>
+          <div><div style={{ fontWeight: 900, fontSize: '1.1rem' }}>FireAdmin</div></div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
@@ -217,8 +232,8 @@ const AdminDashboard = () => {
               borderLeft: activeTab === tab.id ? '3px solid #F96F2E' : '3px solid transparent',
             }}>
               <span style={{ fontSize: '1.2rem' }}>{tab.icon}</span> {tab.label}
-              {tab.id === 'payments' && stats.pendingPayments > 0 && <span style={{ marginLeft: 'auto', background: '#EF4444', color: '#fff', borderRadius: '10px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 800 }}>{stats.pendingPayments}</span>}
-              {tab.id === 'withdrawals' && stats.pendingWithdrawals > 0 && <span style={{ marginLeft: 'auto', background: '#F59E0B', color: '#fff', borderRadius: '10px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 800 }}>{stats.pendingWithdrawals}</span>}
+              {tab.id === 'payments' && stats.pendingPayments > 0 && <span style={{ marginLeft: 'auto', background: '#EF4444', color: 'var(--text-primary)', borderRadius: '10px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 800 }}>{stats.pendingPayments}</span>}
+              {tab.id === 'withdrawals' && stats.pendingWithdrawals > 0 && <span style={{ marginLeft: 'auto', background: '#F59E0B', color: 'var(--text-primary)', borderRadius: '10px', padding: '2px 8px', fontSize: '0.7rem', fontWeight: 800 }}>{stats.pendingWithdrawals}</span>}
             </div>
           ))}
         </div>
@@ -240,15 +255,18 @@ const AdminDashboard = () => {
       <div style={{ 
         marginLeft: isMobile ? 0 : '260px', 
         flex: 1, 
-        padding: isMobile ? '24px 16px' : '32px 40px', 
+        padding: (isMobile && activeTab === 'chats' && isViewingChat) ? '0' : (isMobile ? '24px 16px' : '32px 40px'), 
         minHeight: '100vh',
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column'
       }}>
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 900 }}>{tabs.find(t => t.id === activeTab)?.icon} {tabs.find(t => t.id === activeTab)?.label}</h1>
-          <p style={{ color: '#6B7280', fontSize: '0.9rem', marginTop: '4px' }}>Manage your FreeFire gaming platform</p>
-        </div>
+        {!(isMobile && activeTab === 'chats' && isViewingChat) && (
+          <div style={{ marginBottom: '32px' }}>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 900 }}>{tabs.find(t => t.id === activeTab)?.icon} {tabs.find(t => t.id === activeTab)?.label}</h1>
+          </div>
+        )}
 
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
@@ -267,12 +285,12 @@ const AdminDashboard = () => {
               <Card icon="📈" label="Revenue" value={formatCurrency(stats.totalRevenue)} color="#8B5CF6" />
             </div>
             {/* Recent activity */}
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '24px' }}>
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '24px' }}>
               <h3 style={{ fontWeight: 800, marginBottom: '20px' }}>📋 Recent Activity</h3>
               {paymentRequests.slice(0, 5).map(p => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--divider)' }}>
                   <img src={p.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName}</div><div style={{ color: '#6B7280', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.amount)} via {p.paymentMethod}</div></div>
+                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.amount)} via {p.paymentMethod}</div></div>
                   <StatusBadge status={p.status} />
                 </div>
               ))}
@@ -284,33 +302,33 @@ const AdminDashboard = () => {
         {activeTab === 'matches' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div style={{ color: '#9CA3AF' }}>{adminMatches.length} total matches</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{adminMatches.length} total matches</div>
               <Btn onClick={() => setShowCreateMatch(!showCreateMatch)}>+ Create Match</Btn>
             </div>
 
             {showCreateMatch && (
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: isMobile ? '20px' : '28px', marginBottom: '24px' }}>
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: isMobile ? '20px' : '28px', marginBottom: '24px' }}>
                 <h3 style={{ fontWeight: 800, marginBottom: '20px' }}>🆕 Create New Match</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Name</label>
-                    <input value={newMatch.name} onChange={e => setNewMatch({ ...newMatch, name: e.target.value })} placeholder="Bermuda Battle Royale" style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Name</label>
+                    <input value={newMatch.name} onChange={e => setNewMatch({ ...newMatch, name: e.target.value })} placeholder="Bermuda Battle Royale" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type</label>
-                    <select value={newMatch.group} onChange={e => setNewMatch({ ...newMatch, group: e.target.value })} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none' }}>
-                      <option value="Solo Match">Solo Match</option>
-                      <option value="Duo Match">Duo Match</option>
-                      <option value="Squad Match">Squad Match</option>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type</label>
+                    <select value={newMatch.group} onChange={e => setNewMatch({ ...newMatch, group: e.target.value })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none' }}>
+                      <option value="Solo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Solo Match</option>
+                      <option value="Duo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Duo Match</option>
+                      <option value="Squad Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Squad Match</option>
                     </select>
                   </div>
                   <div>
-                    <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Max Participants</label>
-                    <input type="number" value={newMatch.maxParticipants} onChange={e => setNewMatch({ ...newMatch, maxParticipants: +e.target.value })} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Max Participants</label>
+                    <input type="number" value={newMatch.maxParticipants} onChange={e => setNewMatch({ ...newMatch, maxParticipants: +e.target.value })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Start Time</label>
-                    <input value={newMatch.time} onChange={e => setNewMatch({ ...newMatch, time: e.target.value })} placeholder="21:00" style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Start Time</label>
+                    <input value={newMatch.time} onChange={e => setNewMatch({ ...newMatch, time: e.target.value })} placeholder="21:00" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div style={{ 
                     display: 'grid', 
@@ -320,20 +338,20 @@ const AdminDashboard = () => {
                     marginTop: '8px'
                   }}>
                     <div>
-                      <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool</label>
-                      <input type="number" value={newMatch.prizePool} onChange={e => setNewMatch({ ...newMatch, prizePool: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool</label>
+                      <input type="number" value={newMatch.prizePool} onChange={e => setNewMatch({ ...newMatch, prizePool: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥇 1st Prize</label>
-                      <input type="number" value={newMatch.firstPrize} onChange={e => setNewMatch({ ...newMatch, firstPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥇 1st Prize</label>
+                      <input type="number" value={newMatch.firstPrize} onChange={e => setNewMatch({ ...newMatch, firstPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥈 2nd Prize</label>
-                      <input type="number" value={newMatch.secondPrize} onChange={e => setNewMatch({ ...newMatch, secondPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥈 2nd Prize</label>
+                      <input type="number" value={newMatch.secondPrize} onChange={e => setNewMatch({ ...newMatch, secondPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥉 3rd Prize</label>
-                      <input type="number" value={newMatch.thirdPrize} onChange={e => setNewMatch({ ...newMatch, thirdPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥉 3rd Prize</label>
+                      <input type="number" value={newMatch.thirdPrize} onChange={e => setNewMatch({ ...newMatch, thirdPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                   </div>
                 </div>
@@ -347,8 +365,8 @@ const AdminDashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(400px, 1fr))', gap: '16px' }}>
               {adminMatches.map(match => (
                 <div key={match.id} style={{ 
-                  background: 'rgba(255,255,255,0.03)', 
-                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'var(--card-bg)', 
+                  border: '1px solid var(--card-border)', 
                   borderRadius: '24px', 
                   padding: '24px',
                   position: 'relative',
@@ -359,19 +377,19 @@ const AdminDashboard = () => {
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <div>
-                      <div style={{ fontWeight: 900, fontSize: '1.2rem', color: '#fff', marginBottom: '4px' }}>{match.name}</div>
+                      <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: '4px' }}>{match.name}</div>
                       <div style={{ color: '#F96F2E', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{match.group}</div>
                     </div>
                     <StatusBadge status={match.status} />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '18px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', background: 'var(--input-bg)', padding: '16px', borderRadius: '18px' }}>
                     <div>
-                      <div style={{ color: '#6B7280', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Schedule</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Schedule</div>
                       <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>🕒 {match.time}</div>
                     </div>
                     <div>
-                      <div style={{ color: '#6B7280', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Players</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Players</div>
                       <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>👥 {match.currentParticipants}/{match.maxParticipants}</div>
                     </div>
                   </div>
@@ -388,12 +406,14 @@ const AdminDashboard = () => {
                          <div style={{ color: '#10B981', fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '8px' }}>🏆 Winners Announced</div>
                          {match.winners.map(w => (
                            <div key={w.rank} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
-                             <span style={{ color: '#9CA3AF' }}>{w.rank === 1 ? '🥇' : w.rank === 2 ? '🥈' : '🥉'} {w.userName}</span>
-                             <span style={{ fontWeight: 800, color: '#fff' }}>+{formatCurrency(w.reward)}</span>
+                             <span style={{ color: 'var(--text-secondary)' }}>{w.rank === 1 ? '🥇' : w.rank === 2 ? '🥈' : '🥉'} {w.userName}</span>
+                             <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>+{formatCurrency(w.reward)}</span>
                            </div>
                          ))}
                        </div>
                     )}
+                    <Btn small variant="primary" onClick={() => setEditingMatchData(match)} style={{ flex: 1 }}>Edit</Btn>
+                    <Btn small variant="ghost" onClick={() => handleDuplicateMatch(match)} style={{ flex: 1, border: '1px solid var(--card-border)' }}>Duplicate</Btn>
                     <Btn small variant="ghost" onClick={() => deleteMatch(match.id)} style={{ width: '44px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</Btn>
                   </div>
                 </div>
@@ -402,37 +422,97 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* EDIT MATCH MODAL */}
+        {editingMatchData && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)', padding: '24px' }}>
+            <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+              <h3 style={{ fontWeight: 800, marginBottom: '24px' }}>⚙️ Edit Match Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Name</label>
+                  <input value={editingMatchData.name} onChange={e => setEditingMatchData({...editingMatchData, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type (Solo/Duo/Squad)</label>
+                  <select value={editingMatchData.group} onChange={e => setEditingMatchData({...editingMatchData, group: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }}>
+                    <option value="Solo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Solo Match</option>
+                    <option value="Duo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Duo Match</option>
+                    <option value="Squad Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Squad Match</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Map</label>
+                  <input value={editingMatchData.map || ''} onChange={e => setEditingMatchData({...editingMatchData, map: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Version (Mobile/PC)</label>
+                  <input value={editingMatchData.version || ''} onChange={e => setEditingMatchData({...editingMatchData, version: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Per Kill Reward</label>
+                  <input type="number" value={editingMatchData.perKillReward || 0} onChange={e => setEditingMatchData({...editingMatchData, perKillReward: +e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool</label>
+                  <input type="number" value={editingMatchData.prizePool || 0} onChange={e => setEditingMatchData({...editingMatchData, prizePool: +e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Game Room ID</label>
+                  <input value={editingMatchData.gameId || ''} onChange={e => setEditingMatchData({...editingMatchData, gameId: e.target.value})} placeholder="e.g. 9842 1530" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Game Password</label>
+                  <input value={editingMatchData.gamePassword || ''} onChange={e => setEditingMatchData({...editingMatchData, gamePassword: e.target.value})} placeholder="e.g. FF2026" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Rules (One per line)</label>
+                  <textarea 
+                    value={(editingMatchData.rules || []).join('\n')} 
+                    onChange={e => setEditingMatchData({...editingMatchData, rules: e.target.value.split('\n')})} 
+                    rows={4}
+                    style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }} 
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <Btn style={{ flex: 1 }} onClick={() => { updateMatch(editingMatchData.id, editingMatchData); setEditingMatchData(null); }}>Save Changes</Btn>
+                <Btn variant="ghost" style={{ flex: 1 }} onClick={() => setEditingMatchData(null)}>Cancel</Btn>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* PAYMENTS TAB */}
         {activeTab === 'payments' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ color: '#9CA3AF' }}>{stats.pendingPayments} pending approvals</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{stats.pendingPayments} pending approvals</div>
             </div>
             
             {isMobile ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {paymentRequests.map(p => (
-                  <div key={p.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '20px' }}>
+                  <div key={p.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                       <img src={p.userAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{p.userName}</div>
-                        <div style={{ color: '#6B7280', fontSize: '0.75rem' }}>{p.timestamp}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{p.timestamp}</div>
                       </div>
                       <StatusBadge status={p.status} />
                     </div>
                     
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+                    <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
                         <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.amount)}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
-                        <span style={{ color: '#9CA3AF', fontWeight: 700 }}>{p.paymentMethod}</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{p.paymentMethod}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>TXN ID</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>TXN ID</span>
                         <code style={{ color: '#F96F2E', fontSize: '0.8rem', fontWeight: 800 }}>{p.transactionId}</code>
                       </div>
                     </div>
@@ -448,18 +528,18 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <tr style={{ borderBottom: '1px solid var(--divider)' }}>
                       {['User', 'Amount', 'Transaction ID', 'Method', 'Time', 'Status', 'Actions'].map(h => (
-                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: '#6B7280', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>{h}</th>
+                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {paymentRequests.map(p => (
-                      <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <tr key={p.id} style={{ borderBottom: '1px solid var(--divider)' }}>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <img src={p.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
@@ -468,8 +548,8 @@ const AdminDashboard = () => {
                         </td>
                         <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.amount)}</td>
                         <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', color: '#F96F2E' }}>{p.transactionId}</code></td>
-                        <td style={{ padding: '16px 20px', color: '#9CA3AF', fontWeight: 600 }}>{p.paymentMethod}</td>
-                        <td style={{ padding: '16px 20px', color: '#6B7280', fontSize: '0.8rem' }}>{p.timestamp}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{p.paymentMethod}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.timestamp}</td>
                         <td style={{ padding: '16px 20px' }}><StatusBadge status={p.status} /></td>
                         <td style={{ padding: '16px 20px' }}>
                           {p.status === 'pending' && (
@@ -493,34 +573,34 @@ const AdminDashboard = () => {
         {activeTab === 'withdrawals' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ color: '#9CA3AF' }}>{stats.pendingWithdrawals} pending requests</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{stats.pendingWithdrawals} pending requests</div>
             </div>
 
             {isMobile ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {withdrawalRequests.map(w => (
-                  <div key={w.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '20px' }}>
+                  <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                       <img src={w.userAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.userName}</div>
-                        <div style={{ color: '#6B7280', fontSize: '0.75rem' }}>{w.timestamp}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{w.timestamp}</div>
                       </div>
                       <StatusBadge status={w.status} />
                     </div>
 
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+                    <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
                         <span style={{ fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.amount)}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6B7280', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
-                        <span style={{ color: '#9CA3AF', fontWeight: 700 }}>{w.withdrawMethod}</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{w.withdrawMethod}</span>
                       </div>
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '8px', paddingTop: '8px' }}>
-                        <div style={{ color: '#6B7280', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Account Details</div>
-                        <div style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 600 }}>{w.accountName}</div>
+                      <div style={{ borderTop: '1px solid var(--divider)', marginTop: '8px', paddingTop: '8px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Account Details</div>
+                        <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600 }}>{w.accountName}</div>
                         <code style={{ color: '#F96F2E', fontSize: '0.85rem', fontWeight: 800 }}>{w.accountNumber}</code>
                       </div>
                     </div>
@@ -534,18 +614,18 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <tr style={{ borderBottom: '1px solid var(--divider)' }}>
                       {['User', 'Amount', 'Method', 'Account', 'Account Name', 'Status', 'Actions'].map(h => (
-                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: '#6B7280', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>{h}</th>
+                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {withdrawalRequests.map(w => (
-                      <tr key={w.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <img src={w.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
@@ -553,9 +633,9 @@ const AdminDashboard = () => {
                           </div>
                         </td>
                         <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.amount)}</td>
-                        <td style={{ padding: '16px 20px', color: '#9CA3AF', fontWeight: 600 }}>{w.withdrawMethod}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.withdrawMethod}</td>
                         <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem' }}>{w.accountNumber}</code></td>
-                        <td style={{ padding: '16px 20px', color: '#9CA3AF', fontWeight: 500 }}>{w.accountName}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</td>
                         <td style={{ padding: '16px 20px' }}><StatusBadge status={w.status} /></td>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', gap: '8px' }}>
@@ -577,28 +657,28 @@ const AdminDashboard = () => {
         {activeTab === 'users' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ color: '#9CA3AF' }}>{adminUsers.length} total users registered</div>
+              <div style={{ color: 'var(--text-secondary)' }}>{adminUsers.length} total users registered</div>
             </div>
             
             {isMobile ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {adminUsers.map(u => (
-                  <div key={u.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', padding: '20px' }}>
+                  <div key={u.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                       <img src={u.avatar} style={{ width: '48px', height: '48px', borderRadius: '14px' }} alt="" />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 800, fontSize: '1rem' }}>{u.name}</div>
-                        <div style={{ color: '#6B7280', fontSize: '0.8rem' }}>{u.username} • UID: {u.id.slice(-5)}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{u.username} • UID: {u.id.slice(-5)}</div>
                       </div>
                       <StatusBadge status={u.status} />
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', background: 'var(--input-bg)', padding: '12px', borderRadius: '12px' }}>
                       <div>
-                        <div style={{ color: '#6B7280', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Balance</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Balance</div>
                         <div style={{ fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</div>
                       </div>
                       <div>
-                        <div style={{ color: '#6B7280', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Wins/Matches</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Wins/Matches</div>
                         <div style={{ fontWeight: 800 }}>{u.totalWins}/{u.totalMatches}</div>
                       </div>
                     </div>
@@ -610,24 +690,24 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                    <tr style={{ borderBottom: '1px solid var(--divider)' }}>
                       {['User', 'Status', 'Balance', 'Matches', 'Wins', 'Phone', 'Joined', 'Actions'].map(h => (
-                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: '#6B7280', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
+                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {adminUsers.map(u => (
-                      <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <tr key={u.id} style={{ borderBottom: '1px solid var(--divider)' }}>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <img src={u.avatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
                             <div>
                               <div style={{ fontWeight: 700 }}>{u.name}</div>
-                              <div style={{ color: '#6B7280', fontSize: '0.75rem' }}>{u.username}</div>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{u.username}</div>
                             </div>
                           </div>
                         </td>
@@ -635,8 +715,8 @@ const AdminDashboard = () => {
                         <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</td>
                         <td style={{ padding: '16px 20px' }}>{u.totalMatches}</td>
                         <td style={{ padding: '16px 20px' }}>{u.totalWins}</td>
-                        <td style={{ padding: '16px 20px', color: '#9CA3AF' }}>{u.phone}</td>
-                        <td style={{ padding: '16px 20px', color: '#6B7280' }}>{u.joinDate}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>{u.phone}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-muted)' }}>{u.joinDate}</td>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <Btn small onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit</Btn>
@@ -653,10 +733,10 @@ const AdminDashboard = () => {
             {/* Edit Balance Modal */}
             {editBalanceUser && (
               <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-                <div style={{ background: '#161821', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '32px', width: '90%', maxWidth: '400px' }}>
+                <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '32px', width: '90%', maxWidth: '400px' }}>
                   <h3 style={{ fontWeight: 800, marginBottom: '24px' }}>💰 Edit User Balance</h3>
-                  <label style={{ color: '#9CA3AF', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '8px' }}>New Balance Amount ({currency === 'BDT' ? '৳' : '$'})</label>
-                  <input type="number" value={newBalance} onChange={e => setNewBalance(e.target.value)} style={{ width: '100%', padding: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', color: '#fff', fontSize: '1.2rem', fontWeight: 800, outline: 'none', marginBottom: '24px', boxSizing: 'border-box' }} />
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '8px' }}>New Balance Amount ({currency === 'BDT' ? '৳' : '$'})</label>
+                  <input type="number" value={newBalance} onChange={e => setNewBalance(e.target.value)} style={{ width: '100%', padding: '16px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: 800, outline: 'none', marginBottom: '24px', boxSizing: 'border-box' }} />
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <Btn style={{ flex: 1 }} onClick={() => { updateUserBalance(editBalanceUser, parseFloat(newBalance)); setEditBalanceUser(null); }}>Update Balance</Btn>
                     <Btn variant="ghost" style={{ flex: 1 }} onClick={() => setEditBalanceUser(null)}>Cancel</Btn>
@@ -670,16 +750,16 @@ const AdminDashboard = () => {
         {/* SELECT WINNERS MODAL */}
         {selectingWinnersMatch && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)', padding: '20px' }}>
-            <div style={{ background: '#11131A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', padding: isMobile ? '24px' : '36px', width: '100%', maxWidth: '500px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '28px', padding: isMobile ? '24px' : '36px', width: '100%', maxWidth: '500px', boxShadow: 'var(--card-shadow)' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏆</div>
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Set Match Winners</h2>
-                <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>{selectingWinnersMatch.name}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{selectingWinnersMatch.name}</p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {winnersData.map((w, idx) => (
-                  <div key={w.rank} style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div key={w.rank} style={{ background: 'var(--card-bg)', padding: '16px', borderRadius: '20px', border: '1px solid var(--divider)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 900, fontSize: '0.9rem', color: w.rank === 1 ? '#F59E0B' : w.rank === 2 ? '#9CA3AF' : '#B45309' }}>
                         {w.rank === 1 ? '🥇 1st Place' : w.rank === 2 ? '🥈 2nd Place' : '🥉 3rd Place'}
@@ -693,11 +773,11 @@ const AdminDashboard = () => {
                           newWinners[idx].userId = e.target.value;
                           setWinnersData(newWinners);
                         }}
-                        style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontFamily: "'Outfit',sans-serif" }}
+                        style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif" }}
                       >
-                        <option value="">Select User</option>
+                        <option value="" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Select User</option>
                         {selectingWinnersMatch.joinedUsers.map(u => (
-                          <option key={u.id} value={u.id}>{u.name}</option>
+                          <option key={u.id} value={u.id} style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>{u.name}</option>
                         ))}
                       </select>
                       <input 
@@ -709,7 +789,7 @@ const AdminDashboard = () => {
                           setWinnersData(newWinners);
                         }}
                         placeholder="Reward"
-                        style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#10B981', fontWeight: 800, textAlign: 'center', fontFamily: "'Outfit',sans-serif" }}
+                        style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--card-border)', borderRadius: '12px', color: '#10B981', fontWeight: 800, textAlign: 'center', fontFamily: "'Outfit',sans-serif" }}
                       />
                     </div>
                   </div>
@@ -746,17 +826,18 @@ const AdminDashboard = () => {
         {/* CHATS TAB */}
         {activeTab === 'chats' && (
           <div style={{ 
-            height: isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)', 
+            flex: 1,
+            height: (isMobile && isViewingChat) ? 'calc(100vh - 65px)' : (isMobile ? 'calc(100vh - 180px)' : 'calc(100vh - 200px)'), 
             display: 'flex', 
             flexDirection: isMobile ? 'column' : 'row',
-            gap: isMobile ? '16px' : '24px',
-            marginTop: isMobile ? '-10px' : 0
+            gap: isMobile && isViewingChat ? '0' : (isMobile ? '16px' : '24px'),
+            marginTop: isMobile && !isViewingChat ? '-10px' : 0
           }}>
             {/* User List */}
             <div style={{ 
               width: isMobile ? '100%' : '320px', 
-              background: 'rgba(255,255,255,0.02)', 
-              border: '1px solid rgba(255,255,255,0.08)', 
+              background: 'var(--input-bg)', 
+              border: '1px solid var(--card-border)', 
               borderRadius: '24px', 
               padding: '20px',
               display: isMobile && isViewingChat ? 'none' : 'block'
@@ -790,15 +871,15 @@ const AdminDashboard = () => {
             {/* Chat Area */}
             <div style={{ 
               flex: 1, 
-              background: 'rgba(255,255,255,0.02)', 
-              border: '1px solid rgba(255,255,255,0.08)', 
-              borderRadius: '24px', 
+              background: 'var(--input-bg)', 
+              border: (isMobile && isViewingChat) ? 'none' : '1px solid rgba(255,255,255,0.08)', 
+              borderRadius: (isMobile && isViewingChat) ? '0' : '24px', 
               display: isMobile && !isViewingChat ? 'none' : 'flex', 
               flexDirection: 'column', 
               overflow: 'hidden',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+              boxShadow: (isMobile && isViewingChat) ? 'none' : '0 8px 32px rgba(0,0,0,0.2)'
             }}>
-              <div style={{ padding: '18px 24px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '18px 24px', background: 'var(--card-bg)', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {isMobile && (
                    <button onClick={() => setIsViewingChat(false)} style={{ background: 'none', border: 'none', color: '#F96F2E', fontWeight: 800, marginRight: '8px', fontSize: '1.2rem', cursor: 'pointer' }}>←</button>
                 )}
@@ -808,7 +889,7 @@ const AdminDashboard = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Felix Player</div>
-                  <div style={{ color: '#6B7280', fontSize: '0.7rem', fontWeight: 600 }}>UID: 55291</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 600 }}>UID: 55291</div>
                 </div>
               </div>
 
@@ -825,7 +906,7 @@ const AdminDashboard = () => {
                       background: msg.sender === 'support' ? 'linear-gradient(135deg,#F96F2E,#E34360)' : 'rgba(255,255,255,0.06)',
                       padding: '12px 18px',
                       borderRadius: msg.sender === 'support' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                      color: '#fff',
+                      color: 'var(--text-primary)',
                       fontSize: '0.9rem',
                       fontWeight: 500,
                       border: msg.sender === 'support' ? 'none' : '1px solid rgba(255,255,255,0.08)',
@@ -833,7 +914,7 @@ const AdminDashboard = () => {
                     }}>
                       {msg.text}
                     </div>
-                    <span style={{ fontSize: '0.65rem', color: '#6B7280', marginTop: '6px', fontWeight: 600 }}>{msg.time} {msg.sender === 'support' ? '• ADMIN' : ''}</span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 600 }}>{msg.time} {msg.sender === 'support' ? '• ADMIN' : ''}</span>
                   </div>
                 ))}
                 <div ref={chatEndRef} />
@@ -846,15 +927,15 @@ const AdminDashboard = () => {
                   sendMessage(adminReply, 'support');
                   setAdminReply('');
                 }}
-                style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: '10px' }}
+                style={{ padding: '16px', background: 'var(--card-bg)', borderTop: '1px solid var(--divider)', display: 'flex', gap: '10px' }}
               >
                 <input 
                   value={adminReply}
                   onChange={e => setAdminReply(e.target.value)}
                   placeholder="Type a message..."
-                  style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '12px 16px', color: '#fff', fontFamily: "'Outfit',sans-serif", outline: 'none', fontSize: '0.95rem' }}
+                  style={{ flex: 1, background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '12px 16px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", outline: 'none', fontSize: '0.95rem' }}
                 />
-                <button type="submit" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg,#F96F2E,#E34360)', border: 'none', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(227,67,96,0.3)' }}>
+                <button type="submit" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg,#F96F2E,#E34360)', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(227,67,96,0.3)' }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
                 </button>
               </form>

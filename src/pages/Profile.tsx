@@ -8,6 +8,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useChat } from '../context/ChatContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
+import { useAuth } from '../context/AuthContext';
+import { db, storage } from '../firebase';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
 import { 
   CreditCard, 
   Trash2, 
@@ -59,17 +64,18 @@ const Profile = () => {
   const [showLanguage, setShowLanguage] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const { adminUsers } = useAdminDashboard();
-  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || currentUser.id);
-
+  const { currentUser } = useAuth();
+  const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
+  
   // Sync with Admin Dashboard user data
   const adminUser = adminUsers.find(u => u.id === displayUserId);
 
   const [user, setUser] = useState(() => ({
     ...currentUser,
     id: displayUserId,
-    name: adminUser?.name || currentUser.name,
-    username: adminUser?.username || currentUser.username,
-    avatar: adminUser?.avatar || currentUser.avatar,
+    name: localStorage.getItem('userName') || adminUser?.name || currentUser.name,
+    username: localStorage.getItem('userUsername') || adminUser?.username || currentUser.username,
+    avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser.avatar,
     totalWins: adminUser?.totalWins || 0,
     totalMatches: adminUser?.totalMatches || 0
   }));
@@ -99,6 +105,15 @@ const Profile = () => {
   const [showAddMethod, setShowAddMethod] = useState(false);
   const [newMethodData, setNewMethodData] = useState({ name: '', number: '' });
   const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
+
+  const [notificationPrefs, setNotificationPrefs] = useState(() => {
+    const saved = localStorage.getItem('notificationPrefs');
+    return saved ? JSON.parse(saved) : { push: true, email: false, updates: true };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('notificationPrefs', JSON.stringify(notificationPrefs));
+  }, [notificationPrefs]);
 
   useEffect(() => {
     localStorage.setItem('savedMethods', JSON.stringify(savedMethods));
@@ -167,24 +182,66 @@ const Profile = () => {
     setNewMethodData({ name: '', number: '' });
   };
 
-  const handleSaveProfile = () => {
-    setUser({ ...user, ...editData });
-    localStorage.setItem('userAvatar', editData.avatar);
-    setShowEditProfile(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleSaveProfile = async () => {
+    if (!currentUser) return;
+    setIsUploading(true);
+    try {
+      // 1. Update Firebase Auth Profile
+      await updateProfile(currentUser, {
+        displayName: editData.name,
+        photoURL: editData.avatar,
+      });
+
+      // 2. Update Firestore Document
+      const userRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userRef, {
+        name: editData.name,
+        username: editData.username,
+        avatar: editData.avatar,
+      });
+
+      setUser({ ...user, ...editData });
+      setShowEditProfile(false);
+    } catch (error) {
+      console.error("Error updating profile", error);
+      alert("Failed to update profile. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !currentUser) return;
+    const file = e.target.files[0];
+    
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `avatars/${currentUser.uid}/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setEditData({ ...editData, avatar: url });
+    } catch (error) {
+      console.error("Error uploading file", error);
+      alert("Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
     <div style={{ 
       minHeight: '100vh', 
       padding: '12px',
-      paddingBottom: '65px', 
+      paddingBottom: '55px', 
       position: 'relative', 
       color: 'var(--text-primary)',
       overflowY: 'auto',
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', padding: '8px', transform: 'translateX(-8px)' }}>
           <ArrowLeft size={24} />
         </button>
@@ -216,7 +273,7 @@ const Profile = () => {
               borderRadius: '50%', 
               background: 'var(--accent-gradient)', 
               border: '2px solid var(--modal-bg)', 
-              color: '#FFFFFF', 
+              color: 'var(--text-primary)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
@@ -240,7 +297,7 @@ const Profile = () => {
           alignItems: 'center',
           gap: '6px'
         }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>@{user.username}</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{user.username.startsWith('@') ? user.username : `@${user.username}`}</span>
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
         </div>
       </div>
@@ -249,30 +306,46 @@ const Profile = () => {
       {/* Stats Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
         {[
-          { label: t('matchesWon'), value: user.totalWins.toString(), color: '#10B981', trend: '+12%' },
-          { label: t('matchesLost'), value: (user.totalMatches - user.totalWins).toString(), color: '#EF4444', trend: '-5%' }
+          { 
+            label: t('matchesWon'), 
+            value: user.totalWins.toString(), 
+            bg: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
+            border: '#fef08a', 
+            text: '#fef08a',
+            trend: '+12%' 
+          },
+          { 
+            label: t('matchesLost'), 
+            value: (user.totalMatches - user.totalWins).toString(), 
+            bg: 'linear-gradient(135deg, #94a3b8, #475569)', 
+            border: '#f1f5f9', 
+            text: '#f1f5f9',
+            trend: '-5%' 
+          }
         ].map((stat, i) => (
           <div 
             key={i}
-            className="glass-panel" 
+            className="hover-scale" 
             style={{ 
-              padding: '24px 20px', 
-              borderRadius: '28px', 
+              background: stat.bg,
+              border: `1px solid ${stat.border}`,
+              borderRadius: '12px',
+              boxShadow: 'var(--card-shadow)',
+              transform: 'skewX(-8deg)',
+              cursor: 'default'
+            }}
+          >
+            <div style={{
+              padding: '16px 12px', 
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
-              background: 'var(--glass-bg)', 
-              border: '1px solid var(--glass-border)',
-              boxShadow: 'var(--card-shadow)',
-              transition: 'transform 0.3s ease',
-              cursor: 'default'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-          >
-            <span style={{ fontSize: '2.2rem', fontWeight: 900, color: stat.color, marginBottom: '6px', textShadow: `0 0 20px ${stat.color}33` }}>{stat.value}</span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
-            <div style={{ marginTop: '8px', fontSize: '0.7rem', color: stat.color, fontWeight: 800, background: `${stat.color}15`, padding: '2px 8px', borderRadius: '6px' }}>{stat.trend}</div>
+              transform: 'skewX(8deg)'
+            }}>
+              <span style={{ fontSize: '1.8rem', fontWeight: 900, color: stat.text, marginBottom: '4px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}>{stat.value}</span>
+              <span style={{ fontSize: '0.75rem', color: stat.text, opacity: 0.9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
+              <div style={{ marginTop: '6px', fontSize: '0.65rem', color: stat.text, fontWeight: 800, background: 'rgba(0,0,0,0.3)', border: `1px solid ${stat.border}40`, padding: '2px 6px', borderRadius: '6px' }}>{stat.trend}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -282,7 +355,7 @@ const Profile = () => {
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '0 4px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>{t('battleBuddy')} <span style={{ color: 'var(--accent-orange)' }}>{t('connections')}</span></h3>
-          <button style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', padding: '6px 12px', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>{t('viewAll')}</button>
+          <button onClick={() => alert('View all functionality coming soon!')} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', padding: '6px 12px', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}>{t('viewAll')}</button>
         </div>
         <div style={{ 
           overflow: 'hidden', 
@@ -330,122 +403,141 @@ const Profile = () => {
           { label: 'Currency Preference', icon: <DollarSign size={20} />, onClick: () => setCurrency(currency === 'USD' ? 'BDT' : 'USD'), customToggle: true, toggleState: currency },
           { label: t('helpCenter'), icon: <HelpCircle size={20} />, onClick: () => setShowHelp(true) },
           { label: t('logout'), icon: <LogOut size={20} />, onClick: () => navigate('/login'), isLogout: true }
-        ].map((item, i) => (
+        ].map((item, i) => {
+          const styles = [
+            { bg: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', text: '#fde047' }, // Teal / Gold
+            { bg: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', text: '#fef08a' }, // Gold
+            { bg: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', text: '#f1f5f9' }, // Silver
+            { bg: 'linear-gradient(135deg, #92400e, #5c2705)', border: '#fbbf24', text: '#fcd34d' }, // Bronze
+            { bg: 'linear-gradient(135deg, #1e3a8a, #172554)', border: '#93c5fd', text: '#93c5fd' }, // Blue
+            { bg: 'linear-gradient(135deg, #831843, #4c0519)', border: '#f9a8d4', text: '#f9a8d4' }, // Pink
+            { bg: 'linear-gradient(135deg, #047857, #064e3b)', border: '#a7f3d0', text: '#a7f3d0' }, // Emerald
+            { bg: 'linear-gradient(135deg, #7e22ce, #4c1d95)', border: '#d8b4fe', text: '#d8b4fe' }, // Purple
+            { bg: 'linear-gradient(135deg, #991b1b, #7f1d1d)', border: '#fca5a5', text: '#fca5a5' } // Red
+          ];
+          const currentStyle = item.isLogout ? styles[8] : styles[i % (styles.length - 1)];
+
+          return (
           <button 
             key={i}
             onClick={item.onClick}
-            className="glass-panel" 
+            className="hover-scale" 
             style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              padding: '18px 20px', 
-              borderRadius: '20px', 
-              border: '1px solid var(--glass-border)', 
-              background: 'var(--glass-bg)', 
-              color: item.isLogout ? '#EF4444' : 'var(--text-primary)', 
+              display: 'block', 
+              width: 'calc(100% - 8px)',
+              margin: '0 4px',
+              padding: 0,
+              borderRadius: '8px', 
+              border: `1px solid ${currentStyle.border}`, 
+              background: currentStyle.bg, 
+              color: currentStyle.text, 
               fontSize: '1rem', 
-              fontWeight: 700, 
+              fontWeight: 900,
               cursor: 'pointer', 
               textAlign: 'left',
               transition: 'all 0.2s ease',
-              boxShadow: 'var(--card-shadow)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateX(8px)';
-              e.currentTarget.style.background = 'var(--glass-border)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateX(0)';
-              e.currentTarget.style.background = 'var(--glass-bg)';
+              boxShadow: 'var(--card-shadow)',
+              transform: 'skewX(-8deg)'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{ 
-                color: item.isLogout ? '#EF4444' : 'var(--accent-orange)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                {item.icon}
-              </div>
-              {item.label}
-            </div>
-            {item.customToggle ? (
-              <div style={{
-                display: 'flex',
-                background: 'var(--glass-border)',
-                borderRadius: '100px',
-                padding: '2px',
-                position: 'relative',
-                width: '74px',
-                height: '30px',
-                boxSizing: 'border-box'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: '2px',
-                  left: item.toggleState === 'USD' ? '2px' : '38px',
-                  width: '34px',
-                  height: '26px',
-                  background: 'var(--accent-gradient)',
-                  borderRadius: '100px',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                  boxShadow: '0 2px 8px rgba(249, 111, 46, 0.3)'
-                }} />
-                
-                <div style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1,
-                  color: item.toggleState === 'USD' ? '#fff' : 'var(--text-secondary)',
-                  fontSize: '0.85rem',
-                  fontWeight: 900,
-                  transition: 'color 0.3s'
-                }}>
-                  $
-                </div>
-                <div style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1,
-                  color: item.toggleState === 'BDT' ? '#fff' : 'var(--text-secondary)',
-                  fontSize: '0.9rem',
-                  fontWeight: 900,
-                  transition: 'color 0.3s'
-                }}>
-                  ৳
-                </div>
-              </div>
-            ) : item.isToggle ? (
-              <div style={{ 
-                width: '44px', 
-                height: '24px', 
-                borderRadius: '20px', 
-                background: item.toggleState ? 'var(--accent-gradient)' : 'var(--glass-border)',
-                position: 'relative',
-                transition: 'all 0.3s'
-              }}>
+            <div style={{
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              padding: '16px 20px',
+              transform: 'skewX(8deg)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <div style={{ 
-                  width: '18px', 
-                  height: '18px', 
-                  borderRadius: '50%', 
-                  background: '#FFFFFF', 
-                  position: 'absolute',
-                  top: '3px',
-                  left: item.toggleState ? '23px' : '3px',
-                  transition: 'all 0.3s'
-                }} />
+                  color: currentStyle.text,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  filter: 'drop-shadow(0 0 5px rgba(255,255,255,0.3))'
+                }}>
+                  {item.icon}
+                </div>
+                {item.label}
               </div>
-            ) : (
-              <ChevronRight size={18} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
-            )}
+              {item.customToggle ? (
+                <div style={{
+                  display: 'flex',
+                  background: 'rgba(0,0,0,0.4)',
+                  borderRadius: '100px',
+                  padding: '2px',
+                  position: 'relative',
+                  width: '74px',
+                  height: '30px',
+                  boxSizing: 'border-box',
+                  border: `1px solid ${currentStyle.border}40`
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '1px',
+                    left: item.toggleState === 'USD' ? '1px' : '37px',
+                    width: '32px',
+                    height: '26px',
+                    background: currentStyle.border,
+                    borderRadius: '100px',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                    boxShadow: `0 2px 8px ${currentStyle.border}80`
+                  }} />
+                  
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                    color: item.toggleState === 'USD' ? '#000' : currentStyle.text,
+                    fontSize: '0.85rem',
+                    fontWeight: 900,
+                    transition: 'color 0.3s'
+                  }}>
+                    $
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                    color: item.toggleState === 'BDT' ? '#000' : currentStyle.text,
+                    fontSize: '0.9rem',
+                    fontWeight: 900,
+                    transition: 'color 0.3s'
+                  }}>
+                    ৳
+                  </div>
+                </div>
+              ) : item.isToggle ? (
+                <div style={{ 
+                  width: '44px', 
+                  height: '24px', 
+                  borderRadius: '20px', 
+                  background: item.toggleState ? currentStyle.border : 'rgba(0,0,0,0.4)',
+                  border: `1px solid ${currentStyle.border}40`,
+                  position: 'relative',
+                  transition: 'all 0.3s'
+                }}>
+                  <div style={{ 
+                    width: '18px', 
+                    height: '18px', 
+                    borderRadius: '50%', 
+                    background: item.toggleState ? '#000' : currentStyle.text, 
+                    position: 'absolute',
+                    top: '2px',
+                    left: item.toggleState ? '22px' : '2px',
+                    transition: 'all 0.3s'
+                  }} />
+                </div>
+              ) : (
+                <ChevronRight size={18} color={currentStyle.text} style={{ opacity: 0.8 }} />
+              )}
+            </div>
           </button>
-        ))}
+          );
+        })}
       </div>
 
 
@@ -503,7 +595,7 @@ const Profile = () => {
                     style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--modal-bg)' }} 
                   />
                 </div>
-                <div style={{ 
+                <label style={{ 
                   position: 'absolute', 
                   bottom: '0', 
                   right: '0', 
@@ -514,10 +606,12 @@ const Profile = () => {
                   border: '3px solid var(--modal-bg)', 
                   display: 'flex', 
                   alignItems: 'center', 
-                  justifyContent: 'center' 
+                  justifyContent: 'center',
+                  cursor: 'pointer'
                 }}>
                   <Camera size={14} color="#fff" />
-                </div>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileUpload} />
+                </label>
               </div>
             </div>
 
@@ -618,25 +712,27 @@ const Profile = () => {
 
               <button 
                 onClick={handleSaveProfile}
+                disabled={isUploading}
                 style={{ 
                   width: '100%', 
                   padding: '15px 20px', 
                   borderRadius: '14px', 
                   background: 'var(--accent-gradient)', 
                   border: 'none', 
-                  color: '#FFFFFF', 
+                  color: 'var(--text-primary)', 
                   fontWeight: 800, 
                   fontSize: '1rem', 
                   marginTop: '8px', 
-                  cursor: 'pointer', 
+                  cursor: isUploading ? 'not-allowed' : 'pointer', 
                   boxShadow: '0 8px 24px rgba(249, 111, 46, 0.4)', 
                   transition: 'transform 0.2s',
-                  letterSpacing: '1px'
+                  letterSpacing: '1px',
+                  opacity: isUploading ? 0.7 : 1
                 }}
-                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseDown={(e) => !isUploading && (e.currentTarget.style.transform = 'scale(0.98)')}
+                onMouseUp={(e) => !isUploading && (e.currentTarget.style.transform = 'scale(1)')}
               >
-                {t('updateProfile')}
+                {isUploading ? 'Updating...' : t('updateProfile')}
               </button>
             </div>
           </div>
@@ -772,7 +868,7 @@ const Profile = () => {
                   </div>
 
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    <button onClick={handleAddMethod} style={{ flex: 2, padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: '#FFFFFF', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}>Link Account</button>
+                    <button onClick={handleAddMethod} style={{ flex: 2, padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: 'var(--text-primary)', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}>Link Account</button>
                     <button onClick={() => setShowAddMethod(false)} style={{ flex: 1, padding: '12px 18px', borderRadius: '12px', background: 'none', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
                   </div>
 
@@ -782,7 +878,7 @@ const Profile = () => {
 
             <button 
               onClick={() => setShowPayments(false)}
-              style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: '#FFFFFF', fontWeight: 800, fontSize: '1rem', marginTop: '40px', cursor: 'pointer', boxShadow: '0 8px 24px rgba(249, 111, 46, 0.4)' }}
+              style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: 'var(--text-primary)', fontWeight: 800, fontSize: '1rem', marginTop: '40px', cursor: 'pointer', boxShadow: '0 8px 24px rgba(249, 111, 46, 0.4)' }}
             >
               {t('confirmSelection')}
             </button>
@@ -809,10 +905,12 @@ const Profile = () => {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
-                { label: 'Push Notifications', desc: 'Alerts for matches and tournaments', enabled: true, icon: <Bell size={20} /> },
-                { label: 'Email Alerts', desc: 'Updates about your account and wallet', enabled: false, icon: <Globe size={20} /> },
-                { label: 'Tournament Updates', desc: 'New features and event announcements', enabled: true, icon: <Shield size={20} /> }
-              ].map((notif, i) => (
+                { id: 'push', label: 'Push Notifications', desc: 'Alerts for matches and tournaments', icon: <Bell size={20} /> },
+                { id: 'email', label: 'Email Alerts', desc: 'Updates about your account and wallet', icon: <Globe size={20} /> },
+                { id: 'updates', label: 'Tournament Updates', desc: 'New features and event announcements', icon: <Shield size={20} /> }
+              ].map((notif, i) => {
+                const enabled = notificationPrefs[notif.id as keyof typeof notificationPrefs];
+                return (
                 <div key={i} style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
@@ -841,11 +939,13 @@ const Profile = () => {
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{notif.desc}</div>
                     </div>
                   </div>
-                  <div style={{ 
+                  <div 
+                    onClick={() => setNotificationPrefs({ ...notificationPrefs, [notif.id]: !enabled })}
+                    style={{ 
                     width: '50px', 
                     height: '28px', 
                     borderRadius: '20px', 
-                    background: notif.enabled ? 'var(--accent-gradient)' : 'var(--glass-border)', 
+                    background: enabled ? 'var(--accent-gradient)' : 'var(--glass-border)', 
                     position: 'relative', 
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
@@ -857,13 +957,13 @@ const Profile = () => {
                       background: '#FFFFFF', 
                       position: 'absolute', 
                       top: '3px', 
-                      left: notif.enabled ? '25px' : '3px',
+                      left: enabled ? '25px' : '3px',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
                     }} />
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
             <button 
               onClick={() => setShowNotifications(false)} 
@@ -873,7 +973,7 @@ const Profile = () => {
                 borderRadius: '14px', 
                 background: 'var(--accent-gradient)', 
                 border: 'none', 
-                color: '#FFFFFF', 
+                color: 'var(--text-primary)', 
                 fontWeight: 800, 
                 fontSize: '1rem', 
                 marginTop: '32px', 
@@ -976,7 +1076,7 @@ const Profile = () => {
                 borderRadius: '14px', 
                 background: 'var(--accent-gradient)', 
                 border: 'none', 
-                color: '#FFFFFF', 
+                color: 'var(--text-primary)', 
                 fontWeight: 800, 
                 fontSize: '1rem', 
                 marginTop: '32px', 
@@ -1015,7 +1115,7 @@ const Profile = () => {
                 padding: '28px', 
                 background: 'var(--accent-gradient)', 
                 borderRadius: '32px', 
-                color: '#FFFFFF',
+                color: 'var(--text-primary)',
                 position: 'relative',
                 overflow: 'hidden',
                 boxShadow: '0 15px 35px rgba(249, 111, 46, 0.3)'
@@ -1161,7 +1261,7 @@ const Profile = () => {
                   borderRadius: '14px', 
                   background: '#EF4444', 
                   border: 'none', 
-                  color: '#FFFFFF', 
+                  color: 'var(--text-primary)', 
                   fontWeight: 800, 
                   fontSize: '1rem', 
                   cursor: 'pointer',

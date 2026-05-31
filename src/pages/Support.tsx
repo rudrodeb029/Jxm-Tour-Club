@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../context/ChatContext';
 import { ArrowLeft, Send, MessageSquare } from 'lucide-react';
+import BottomNav from '../components/BottomNav';
 
 const Support = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const Support = () => {
     }}>
       {/* Header */}
       <div style={{ 
-        padding: '20px 16px', 
+        padding: '16px 16px', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between',
@@ -239,6 +240,7 @@ const Support = () => {
       {/* Input Form Bar */}
       <div style={{ 
         padding: '16px', 
+        paddingBottom: '96px',
         background: 'var(--modal-bg)', 
         borderTop: '1px solid var(--glass-border)',
         backdropFilter: 'blur(20px)',
@@ -262,7 +264,7 @@ const Support = () => {
             placeholder="Type your message here..."
             style={{
               flex: 1,
-              background: 'rgba(255, 255, 255, 0.04)',
+              background: 'var(--input-bg)',
               border: '1px solid var(--glass-border)',
               borderRadius: '20px',
               padding: '14px 20px',
@@ -294,6 +296,8 @@ const Support = () => {
           </button>
         </form>
       </div>
+      
+      <BottomNav />
     </div>
   );
 };

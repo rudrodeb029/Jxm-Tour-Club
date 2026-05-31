@@ -20,11 +20,14 @@ import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { AdminDashboardProvider } from './context/AdminDashboardContext';
 import { CurrencyProvider } from './context/CurrencyContext';
+import { AuthProvider } from './context/AuthContext';
+
 function App() {
   return (
-    <LanguageProvider>
-      <ThemeProvider>
-        <CurrencyProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <ThemeProvider>
+          <CurrencyProvider>
           <AdminDashboardProvider>
             <BalanceProvider>
               <AdminProvider>
@@ -41,18 +44,19 @@ function App() {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/admin" element={<AdminLogin />} />
                       <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                      <Route path="/support" element={<Support />} />
-                    </Routes>
-                    <LiveChat />
-                    <WinnerCelebration />
-                  </Router>
-                </ChatProvider>
-              </AdminProvider>
-            </BalanceProvider>
-          </AdminDashboardProvider>
-        </CurrencyProvider>
-      </ThemeProvider>
-    </LanguageProvider>
+                        <Route path="/support" element={<Support />} />
+                      </Routes>
+                      <LiveChat />
+                      <WinnerCelebration />
+                    </Router>
+                  </ChatProvider>
+                </AdminProvider>
+              </BalanceProvider>
+            </AdminDashboardProvider>
+          </CurrencyProvider>
+        </ThemeProvider>
+      </LanguageProvider>
+    </AuthProvider>
   );
 }
 

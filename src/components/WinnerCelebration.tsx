@@ -78,7 +78,7 @@ const WinnerCelebration: React.FC = () => {
         style={{
           width: '100%',
           maxWidth: '440px',
-          background: 'rgba(255, 255, 255, 0.03)',
+          background: 'var(--card-bg)',
           backdropFilter: 'blur(30px) saturate(150%)',
           borderRadius: '48px',
           border: '1px solid rgba(255,255,255,0.12)',
@@ -164,12 +164,12 @@ const WinnerCelebration: React.FC = () => {
               alignItems: 'center',
               gap: '6px',
               padding: '6px 16px',
-              background: 'rgba(255,255,255,0.05)',
+              background: 'var(--input-bg)',
               borderRadius: '100px',
               fontSize: '0.9rem',
               color: 'rgba(255,255,255,0.7)',
               fontWeight: 600,
-              border: '1px solid rgba(255,255,255,0.1)'
+              border: '1px solid var(--card-border)'
             }}>
               <Target size={14} />
               {activeWinnerCeremony?.matchName}
@@ -181,10 +181,10 @@ const WinnerCelebration: React.FC = () => {
               <div 
                 key={winner.userId}
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
+                  background: 'var(--input-bg)',
                   padding: '20px',
                   borderRadius: '28px',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  border: '1px solid var(--card-border)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '20px',
@@ -246,7 +246,7 @@ const WinnerCelebration: React.FC = () => {
             onClick={() => setIsVisible(false)}
             style={{ 
               background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              border: '1px solid var(--card-border)',
               padding: '12px 24px',
               borderRadius: '100px',
               color: 'rgba(255,255,255,0.6)',

@@ -13,10 +13,13 @@
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
+    "jimp": "^1.6.1",
     "lucide-react": "^1.14.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.2"
+    "react-router-dom": "^7.14.2",
+    "firebase": "^10.8.0",
+    "@capacitor/push-notifications": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

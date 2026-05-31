@@ -27,8 +27,12 @@ import {
   Trash2,
   Edit2,
   PlusCircle,
-  X
+  X,
+  Target,
+  Shield,
+  Globe
 } from 'lucide-react';
+
 
 const Home = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -36,6 +40,7 @@ const Home = () => {
   const { t } = useLanguage();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [transactionId, setTransactionId] = useState('');
 
   
   const { 
@@ -66,6 +71,8 @@ const Home = () => {
   const [selectedBetAmount, setSelectedBetAmount] = useState<number>(10);
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [insufficientRequiredAmount, setInsufficientRequiredAmount] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState<'full_map' | 'lone_wolf' | 'cs_rank' | null>(null);
+
 
   const [isAddBalanceOpen, setIsAddBalanceOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState<string>('');
@@ -97,6 +104,28 @@ const Home = () => {
     setSuccessConfig({ isOpen: true, title, message });
   };
 
+  const getModeColor = (group: string) => {
+    const g = group.toLowerCase();
+    if (g.includes('solo')) return '#FBBF24';
+    if (g.includes('duo') || g.includes('dot') || g.includes('lone-wolf') || g.includes('lone_wolf')) return '#38BDF8';
+    return '#E879F9';
+  };
+
+  const handleCardMouseEnter = (e: React.MouseEvent<HTMLDivElement>, isFull: boolean, isLive: boolean, color: string) => {
+    if (!isFull) {
+      e.currentTarget.style.transform = 'translateY(-6px) scale(1.01)';
+      e.currentTarget.style.borderColor = isLive ? '#10B981' : color;
+      e.currentTarget.style.boxShadow = `0 20px 40px ${color}22`;
+    }
+  };
+
+  const handleCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>, isFull: boolean, isLive: boolean, color: string) => {
+    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+    e.currentTarget.style.borderColor = isFull ? 'rgba(239, 68, 68, 0.2)' : isLive ? 'rgba(16, 185, 129, 0.3)' : 'var(--glass-border)';
+    e.currentTarget.style.boxShadow = isLive ? `0 0 30px ${color}15` : 'var(--card-shadow)';
+  };
+
+
   // Persistence effects
   useEffect(() => { localStorage.setItem('localParticipants', JSON.stringify(localParticipants)); }, [localParticipants]);
 
@@ -110,8 +139,8 @@ const Home = () => {
     const match = localMatches.find(m => m.id === matchId);
     if (match) {
       updateMatch(matchId, { 
-        currentParticipants: Math.min(match.maxParticipants, match.currentParticipants + 1),
-        totalBidsCount: `${Math.min(match.maxParticipants, match.currentParticipants + 1)} Players joined`
+        currentParticipants: match.currentParticipants + 1,
+        totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
       addParticipantToMatch(matchId, displayUserId);
     }
@@ -134,14 +163,19 @@ const Home = () => {
   const handleDeposit = () => {
     const amount = parseFloat(depositAmount);
     if (!isNaN(amount) && amount > 0) {
+      if (!transactionId.trim()) {
+        alert("Please enter a valid Transaction ID.");
+        return;
+      }
       addPaymentRequest({
         userId: displayUserId,
         amount: amount,
-        transactionId: `TXN${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        transactionId: transactionId,
         paymentMethod: 'Quick Add',
         accountNumber: 'User Account',
       });
       setDepositAmount('');
+      setTransactionId('');
       setShowAddConfirm(false);
       setIsAddBalanceOpen(false);
       triggerSuccess("Deposit Request Sent!", `$${amount} deposit request has been sent for admin approval.`);
@@ -149,104 +183,148 @@ const Home = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '65px', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)', transition: 'all 0.3s ease', overflowY: 'auto' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: '55px', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)', transition: 'all 0.3s ease', overflowY: 'auto' }}>
 
       <SideMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       
-      {/* Premium Header */}
+      {/* Premium Neumorphic Header */}
       <div style={{ 
-        padding: '26px 20px', 
+        margin: '16px 20px',
+        padding: '12px 16px', 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
         position: 'sticky',
-        top: 0,
+        top: '16px',
         zIndex: 50,
-        background: 'var(--bg-dark)',
-        opacity: 0.95,
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid var(--glass-border)'
+        background: 'var(--nav-bg)',
+        borderRadius: '24px',
+        boxShadow: '10px 15px 25px rgba(0,0,0,0.8), 0 0 15px rgba(179, 144, 70, 0.1)',
+        border: '1px solid var(--nav-border)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button 
             onClick={() => setIsMenuOpen(true)}
             style={{ 
-              background: 'var(--glass-bg)', 
-              border: '1px solid var(--glass-border)', 
-              padding: '10px',
-              borderRadius: '14px',
+              background: 'var(--modal-bg)', 
+              border: '1px solid #000', 
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
               cursor: 'pointer', 
-              color: 'var(--text-primary)',
+              color: 'var(--text-secondary)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: 'inset 0 4px 6px rgba(0,0,0,0.8), inset 0 -2px 4px rgba(255,255,255,0.05), 0 2px 0 rgba(255,255,255,0.1)'
             }}
           >
-            <Menu size={20} strokeWidth={2.5} />
+            <Menu size={22} strokeWidth={2} />
           </button>
 
           {/* Modern Theme Toggle */}
           <button 
             onClick={toggleTheme}
             style={{ 
-              background: 'var(--glass-bg)', 
-              border: '1px solid var(--glass-border)', 
-              width: '44px',
-              height: '44px',
-              borderRadius: '14px',
+              background: 'var(--modal-bg)', 
+              border: '1px solid #000', 
+              width: '46px',
+              height: '46px',
+              borderRadius: '12px',
               cursor: 'pointer', 
-              color: 'var(--text-primary)',
+              color: 'var(--text-secondary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              boxShadow: 'inset 0 4px 6px rgba(0,0,0,0.8), inset 0 -2px 4px rgba(255,255,255,0.05), 0 2px 0 rgba(255,255,255,0.1)',
               transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }}
           >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {isDarkMode ? <Sun size={20} strokeWidth={2} /> : <Moon size={20} strokeWidth={2} />}
           </button>
-
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button 
             onClick={() => setIsAddBalanceOpen(true)}
             style={{ 
-              background: 'var(--glass-bg)', 
-              padding: '8px 14px', 
-              borderRadius: '16px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
+              background: 'linear-gradient(180deg, #f97316 0%, #c2410c 100%)', 
+              padding: '4px 12px 4px 4px', 
+              borderRadius: '10px',
+              fontSize: '0.75rem',
+              fontWeight: 900,
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--text-primary)',
+              border: '1px solid #9a3412',
+              borderTop: '1px solid #fdba74',
+              color: 'white',
               cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              boxShadow: '0 3px 0 #7c2d12, 0 6px 8px rgba(0,0,0,0.6)',
+              textShadow: 'var(--text-shadow-sm)',
+              transform: 'translateY(0)',
+              transition: 'transform 0.1s ease, box-shadow 0.1s ease'
+            }}
+            onMouseDown={(e) => {
+              e.currentTarget.style.transform = 'translateY(3px)';
+              e.currentTarget.style.boxShadow = '0 0 0 #7c2d12, 0 3px 4px rgba(0,0,0,0.6)';
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 3px 0 #7c2d12, 0 6px 8px rgba(0,0,0,0.6)';
             }}
           >
-            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}>
               <Plus size={14} color="white" strokeWidth={3} />
             </div>
             ${balance.toFixed(2)}
           </button>
+          
           <button 
             onClick={() => navigate('/profile')}
-            style={{ width: '44px', height: '44px', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--glass-border)', cursor: 'pointer', padding: 0 }}
+            style={{ 
+              width: '46px', height: '46px', 
+              borderRadius: '50%', 
+              overflow: 'hidden', 
+              border: '3px solid var(--nav-border)', 
+              background: 'var(--modal-bg)',
+              cursor: 'pointer', 
+              padding: 0,
+              boxShadow: '0 8px 12px rgba(0,0,0,0.8), 0 0 10px rgba(179, 144, 70, 0.3)'
+            }}
           >
-            <img src={currentUser.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={localStorage.getItem('userAvatar') || currentUser.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </button>
         </div>
       </div>
 
       {/* Main Title Section */}
-      <div style={{ padding: '32px 12px 16px', position: 'relative' }}>
-        <h1 style={{ fontSize: '2.4rem', fontWeight: 900, margin: 0, marginBottom: '6px', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-          {t('gamingArena').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('gamingArena').split(' ')[1]}</span>
+      <div style={{ padding: '24px 20px 16px', position: 'relative' }}>
+        <h1 style={{ 
+          fontSize: '2.8rem', 
+          fontWeight: 900, 
+          margin: 0, 
+          marginBottom: '12px', 
+          letterSpacing: '-0.02em', 
+          lineHeight: 1.1,
+          fontFamily: '"Arial Rounded MT Bold", "Nunito", sans-serif'
+        }}>
+          <span style={{ 
+            color: 'var(--text-secondary)', 
+            textShadow: 'var(--text-shadow-3d)' 
+          }}>
+            {t('gamingArena').split(' ')[0]}
+          </span>{' '}
+          <span style={{ 
+            color: '#f97316', 
+            textShadow: 'var(--text-shadow-3d-accent)' 
+          }}>
+            {t('gamingArena').split(' ')[1]}
+          </span>
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>{t('arenaSub')}</p>
-        
-
+        <p style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 500, margin: 0 }}>
+          {t('arenaSub')}
+        </p>
       </div>
 
       <HomeStats 
@@ -279,13 +357,15 @@ const Home = () => {
               status={match.status}
               name={match.name}
               liveStartedAt={match.liveStartedAt}
-              onClick={() => setSelectedMatch(match)}
+              onClick={() => navigate(`/match/${match.id}`)}
+              onJoin={() => navigate(`/match/${match.id}`)}
               isAdminMode={isAdminMode}
               onEdit={() => setEditingMatch(match)}
             />
           </div>
         ))}
       </div>
+
 
       <BottomNav />
       
@@ -384,7 +464,7 @@ const Home = () => {
                 
                 <button 
                   onClick={() => setSelectedMatch(null)}
-                  style={{ width: '100%', background: 'none', border: 'none', color: '#6B7280', marginTop: '20px', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', marginTop: '20px', fontWeight: 600, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
@@ -667,9 +747,33 @@ const Home = () => {
                   </svg>
                 </div>
                 <h4 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>Confirm Deposit</h4>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', fontSize: '1rem', lineHeight: 1.6 }}>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1rem', lineHeight: 1.6 }}>
                   You are adding <span style={{ color: '#10B981', fontWeight: 900, fontSize: '1.2rem' }}>${parseFloat(depositAmount).toLocaleString()}</span> to your secure wallet.
                 </p>
+
+                <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>Transaction ID (Required)</label>
+                  <input 
+                    type="text"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="Enter TXN ID from your payment"
+                    style={{
+                      width: '100%',
+                      background: 'var(--glass-bg)',
+                      border: '2px solid var(--glass-border)',
+                      borderRadius: '16px',
+                      padding: '16px',
+                      color: 'var(--text-primary)',
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      outline: 'none',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--accent-orange)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
+                  />
+                </div>
 
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -730,7 +834,7 @@ const Home = () => {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 className="btn btn-primary" 
-                style={{ flex: 1, padding: '13px 20px', borderRadius: '12px', color: '#FFFFFF', fontSize: '0.95rem' }}
+                style={{ flex: 1, padding: '13px 20px', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem' }}
                 onClick={() => {
                   const val = (document.getElementById('edit-stat-value') as HTMLInputElement).value;
                   setCustomStats((prev: any) => prev.map((s: any) => s.id === editingStat.id ? { ...s, value: val } : s));
@@ -828,7 +932,7 @@ const Home = () => {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 className="btn btn-primary" 
-                style={{ flex: 1, padding: '15px 20px', borderRadius: '14px', color: '#FFFFFF', fontSize: '1rem' }}
+                style={{ flex: 1, padding: '15px 20px', borderRadius: '14px', color: 'var(--text-primary)', fontSize: '1rem' }}
                 onClick={() => {
                   const name = (document.getElementById('edit-match-name') as HTMLInputElement).value;
                   const score = (document.getElementById('edit-match-score') as HTMLInputElement).value;
@@ -889,7 +993,7 @@ const Home = () => {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 className="btn btn-primary" 
-                style={{ flex: 1, padding: '15px 20px', borderRadius: '14px', color: '#FFFFFF', fontSize: '1rem' }}
+                style={{ flex: 1, padding: '15px 20px', borderRadius: '14px', color: 'var(--text-primary)', fontSize: '1rem' }}
                 onClick={() => {
                   const name = (document.getElementById('edit-winner-name') as HTMLInputElement).value;
                   const amount = (document.getElementById('edit-winner-amount') as HTMLInputElement).value;
@@ -924,7 +1028,7 @@ const Home = () => {
             <div style={{ display: 'flex', gap: '12px' }}>
               <button 
                 className="btn btn-primary" 
-                style={{ flex: 1, padding: '15px 20px', borderRadius: '14px', color: '#FFFFFF', fontSize: '1rem' }}
+                style={{ flex: 1, padding: '15px 20px', borderRadius: '14px', color: 'var(--text-primary)', fontSize: '1rem' }}
                 onClick={() => {
                   const name = (document.getElementById('edit-part-name') as HTMLInputElement).value;
                   const matchesVal = parseInt((document.getElementById('edit-part-matches') as HTMLInputElement).value);

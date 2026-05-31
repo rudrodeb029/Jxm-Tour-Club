@@ -192,7 +192,41 @@ const convertToAdminMatches = (m: Match[]): AdminMatch[] => m.map(match => ({
 export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [adminMatches, setAdminMatches] = useState<AdminMatch[]>(() => {
     const saved = localStorage.getItem('adminMatches');
-    return saved ? JSON.parse(saved) : convertToAdminMatches(defaultMatches);
+    if (saved) {
+      const parsed = JSON.parse(saved) as AdminMatch[];
+      
+      // If the number of matches changed in mockData, override localStorage
+      if (parsed.length !== defaultMatches.length) {
+        return convertToAdminMatches(defaultMatches);
+      }
+
+      return parsed.map(match => {
+        const defaultMatch = defaultMatches.find(dm => dm.id === match.id);
+        if (defaultMatch) {
+          return {
+            ...match,
+            name: defaultMatch.name,
+            group: defaultMatch.group,
+            team1: { ...match.team1, logo: defaultMatch.team1.logo },
+            team2: { ...match.team2, logo: defaultMatch.team2.logo },
+            team3: defaultMatch.team3 ? { ...(match.team3 || {}), ...defaultMatch.team3 } : match.team3,
+            category: defaultMatch.category,
+            map: defaultMatch.map,
+            version: defaultMatch.version,
+            perKillReward: defaultMatch.perKillReward,
+            prizePool: defaultMatch.prizePool,
+            bids: defaultMatch.bids,
+            rules: defaultMatch.rules || match.rules,
+            gameId: defaultMatch.gameId || match.gameId,
+            gamePassword: defaultMatch.gamePassword || match.gamePassword,
+            entryType: defaultMatch.entryType || match.entryType,
+            entryFee: defaultMatch.entryFee || match.entryFee
+          };
+        }
+        return match;
+      });
+    }
+    return convertToAdminMatches(defaultMatches);
   });
 
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>(() => {

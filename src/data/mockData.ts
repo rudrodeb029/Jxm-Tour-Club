@@ -26,6 +26,7 @@ export interface Match {
   totalPlayersCount: string;
   team1: Team;
   team2: Team;
+  team3?: Team;
   score: string;
   time: string;
   status: 'live' | 'upcoming' | 'finished';
@@ -40,7 +41,17 @@ export interface Match {
   firstPrize?: number;
   secondPrize?: number;
   thirdPrize?: number;
+  perKillReward?: number;
+  map?: string;
+  version?: string;
+  category?: 'full_map' | 'lone_wolf' | 'cs_rank';
+  rules?: string[];
+  gameId?: string;
+  gamePassword?: string;
+  entryType?: string;
+  entryFee?: number;
 }
+
 
 export const mockUsers: User[] = [
   { id: '1', name: 'Elite Moco', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Moco', username: '@mocotech', joinDate: '2025-01-15' },
@@ -56,102 +67,111 @@ export const mockUsers: User[] = [
 export const matches: Match[] = [
   {
     id: 'm1',
-    name: 'Bermuda Battle Royale',
+    name: 'Full Map Match',
     group: 'Solo Match',
     totalPlayersCount: '48 Players',
     status: 'live',
     score: '12 - 8',
     time: '14:20',
-    bids: ['$5', '$10', '$25', '$50'],
+    bids: ['$10', '$50', '$100'],
     totalBidsCount: '1.2K Players joined',
     currentParticipants: 32,
     maxParticipants: 48,
     team1: {
-      id: 't1', name: 'Red Dragons', shortName: 'RDG', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=red', color: '#DC2626', percentage: '65%',
+      id: 't1', name: 'Red Dragons', shortName: 'RDG', logo: '/images/teams/red_dragons.png', color: '#DC2626', percentage: '65%',
       kills: 12, damage: 4500, headshots: 5, rank: 2
     },
     team2: {
-      id: 't2', name: 'Shadow Ninjas', shortName: 'SHN', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=shadow', color: '#F59E0B', percentage: '35%',
+      id: 't2', name: 'Shadow Ninjas', shortName: 'SHN', logo: '/images/teams/shadow_ninjas.png', color: '#F59E0B', percentage: '35%',
       kills: 8, damage: 3200, headshots: 2, rank: 5
+    },
+    team3: {
+      id: 't3', name: 'Thunder Bolts', shortName: 'THB', logo: '/images/teams/inferno_squad.png', color: '#3B82F6', percentage: '20%',
+      kills: 5, damage: 2100, headshots: 1, rank: 3
     },
     joinedUsers: [mockUsers[0], mockUsers[1], mockUsers[2]],
     timeline: [
       { time: '02:15', event: 'First Blood', team: 't1', player: 'Drago' },
       { time: '05:40', event: 'Double Kill', team: 't2', player: 'Zinx' },
+    ],
+    category: 'full_map',
+    map: 'Bermuda',
+    version: 'Solo',
+    perKillReward: 5,
+    prizePool: 500,
+    rules: [
+      'Players must use mobile devices only. Emulators are strictly prohibited.',
+      'Teaming up with opponents is not allowed and will result in a ban.',
+      'Any form of hacking or cheating will lead to permanent account suspension.',
+      'Room ID and Password will be shared 15 minutes before the match starts.'
     ]
   },
   {
     id: 'm2',
-    name: 'Purgatory Survival',
+    name: 'Lone-Wolf Match',
     group: 'Duo Match',
     totalPlayersCount: '24 Teams',
-    status: 'live',
-    score: '5 - 3',
-    time: '08:45',
-    bids: ['$10', '$50', '$100', '$200'],
-    totalBidsCount: '800 Players joined',
-    currentParticipants: 20,
+    status: 'upcoming',
+    score: '0 - 0',
+    time: '23:30',
+    bids: ['$15', '$40', '$80'],
+    totalBidsCount: '450 Players joined',
+    currentParticipants: 8,
     maxParticipants: 24,
     team1: {
-      id: 't3', name: 'Frost Walkers', shortName: 'FRW', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=frost', color: '#3B82F6', percentage: '50%',
-      kills: 5, damage: 2100, headshots: 3, rank: 8
+      id: 't7', name: 'Silent Killers', shortName: 'SLK', logo: '/images/teams/silent_killers.png', color: '#10B981', percentage: '70%',
+      kills: 0, damage: 0, headshots: 0, rank: 0
     },
     team2: {
-      id: 't4', name: 'Storm Breakers', shortName: 'STB', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=storm', color: '#A855F7', percentage: '50%',
-      kills: 3, damage: 1800, headshots: 1, rank: 12
+      id: 't8', name: 'Swift Snipers', shortName: 'SWS', logo: '/images/teams/swift_snipers.png', color: '#F59E0B', percentage: '30%',
+      kills: 0, damage: 0, headshots: 0, rank: 0
     },
-    joinedUsers: [mockUsers[3], mockUsers[4]],
-    timeline: [
-      { time: '01:20', event: 'Grenade Kill', team: 't3', player: 'Iceman' },
-    ]
+    team3: {
+      id: 't9', name: 'Phantom Assassins', shortName: 'PHA', logo: '/images/teams/cyber_elites.png', color: '#8B5CF6', percentage: '25%',
+      kills: 0, damage: 0, headshots: 0, rank: 0
+    },
+    joinedUsers: [mockUsers[1], mockUsers[2]],
+    timeline: [],
+    category: 'lone_wolf',
+    map: 'Purgatory',
+    version: 'Duo',
+    perKillReward: 8,
+    prizePool: 1500
   },
   {
     id: 'm3',
-    name: 'Kalahari Clash Squad',
+    name: 'CS Rank Match',
     group: 'Squad Match',
     totalPlayersCount: '12 Teams',
     status: 'upcoming',
     score: '0 - 0',
     time: '21:00',
-    bids: ['$20', '$100', '$250', '$500'],
-    totalBidsCount: '0 Players joined',
+    bids: ['$25', '$100', '$250'],
+    totalBidsCount: '800 Players joined',
     currentParticipants: 0,
     maxParticipants: 12,
     team1: {
-      id: 't5', name: 'Inferno Squad', shortName: 'INF', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=inferno', color: '#1F2937', percentage: '55%',
+      id: 't5', name: 'Inferno Squad', shortName: 'INF', logo: '/images/teams/inferno_squad.png', color: '#1F2937', percentage: '55%',
       kills: 0, damage: 0, headshots: 0, rank: 0
     },
     team2: {
-      id: 't6', name: 'Cyber Elites', shortName: 'CYB', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=cyber', color: '#EF4444', percentage: '45%',
+      id: 't6', name: 'Cyber Elites', shortName: 'CYB', logo: '/images/teams/cyber_elites.png', color: '#EF4444', percentage: '45%',
+      kills: 0, damage: 0, headshots: 0, rank: 0
+    },
+    team3: {
+      id: 't10', name: 'Venom Strikers', shortName: 'VNM', logo: '/images/teams/silent_killers.png', color: '#14B8A6', percentage: '35%',
       kills: 0, damage: 0, headshots: 0, rank: 0
     },
     joinedUsers: [mockUsers[0], mockUsers[4]],
-    timeline: []
-  },
-  {
-    id: 'm4',
-    name: 'Alpine Duel',
-    group: 'Dot Match',
-    totalPlayersCount: '24 Teams',
-    status: 'upcoming',
-    score: '0 - 0',
-    time: '23:30',
-    bids: ['$5', '$15', '$30', '$60'],
-    totalBidsCount: '120 Players joined',
-    currentParticipants: 8,
-    maxParticipants: 24,
-    team1: {
-      id: 't7', name: 'Silent Killers', shortName: 'SLK', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=silent', color: '#10B981', percentage: '70%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
-    },
-    team2: {
-      id: 't8', name: 'Swift Snipers', shortName: 'SWS', logo: 'https://api.dicebear.com/7.x/shapes/svg?seed=snipers', color: '#F59E0B', percentage: '30%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
-    },
-    joinedUsers: [mockUsers[1], mockUsers[2]],
-    timeline: []
+    timeline: [],
+    category: 'cs_rank',
+    map: 'Kalahari',
+    version: 'Squad',
+    perKillReward: 15,
+    prizePool: 3000
   }
 ];
+
 
 export const currentUser: User = {
   id: 'me',

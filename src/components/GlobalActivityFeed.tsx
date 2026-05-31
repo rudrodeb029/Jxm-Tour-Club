@@ -97,13 +97,10 @@ const GlobalActivityFeed: React.FC = () => {
             return (
               <div 
                 key={activity.id}
-                className="group relative flex items-center overflow-hidden"
+                className="group relative flex items-center overflow-hidden card-skewed"
                 style={{ 
                   gap: '16px', 
-                  padding: '20px', 
-                  borderRadius: '24px', 
-                  background: 'var(--glass-bg)', 
-                  border: '1px solid var(--glass-border)'
+                  padding: '20px'
                 }}
               >
 

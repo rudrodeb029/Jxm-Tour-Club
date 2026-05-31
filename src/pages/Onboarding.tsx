@@ -6,17 +6,17 @@ const slides = [
   {
     icon: 'crosshair',
     title: 'Ready to\nPlace Bids?',
-    description: 'Lock your target, place your bid, and dominate the battlefield. Swipe to learn more.',
+    description: 'Lock your target, place your bid, and dominate the Free Fire battlefield. Swipe to learn more.',
   },
   {
     icon: 'shield',
-    title: 'Choose Your\nSquad',
-    description: 'Choose your favourite team, back them with confidence, and watch them conquer.',
+    title: 'Choose Your\nFF Squad',
+    description: 'Choose your favourite Free Fire team, back them with confidence, and watch them conquer Bermuda.',
   },
   {
     icon: 'trophy',
     title: 'Claim Your\nVictory',
-    description: 'Win big rewards when your squad takes the Booyah! Your glory awaits.',
+    description: 'Win big rewards when your Free Fire squad takes the Booyah! Your glory awaits.',
   },
 ];
 

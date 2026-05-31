@@ -8,6 +8,7 @@ import { useChat } from '../context/ChatContext';
 import { useBalance } from '../context/BalanceContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
+import BottomNav from '../components/BottomNav';
 
 
 const MatchDetails = () => {
@@ -19,7 +20,7 @@ const MatchDetails = () => {
   const { messages, sendMessage } = useChat();
 
 
-  const [activeTab, setActiveTab] = useState<'statistics' | 'lineup' | 'h2h' | 'chat'>('statistics');
+  const [activeTab, setActiveTab] = useState<'details' | 'rule' | 'gameId' | 'support'>('details');
   const [inputMessage, setInputMessage] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +32,7 @@ const MatchDetails = () => {
   };
 
   useEffect(() => {
-    if (activeTab === 'chat') {
+    if (activeTab === 'support') {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, activeTab]);
@@ -57,6 +58,42 @@ const MatchDetails = () => {
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<'team1' | 'team2' | 'team3' | null>('team1');
+  
+  const hasJoined = (match.participantIds || []).includes(displayUserId);
+
+  // Logic to determine if room ID should be visible
+  const isRoomIdVisible = () => {
+    if (!hasJoined) return false;
+    if (match.status === 'live' || match.status === 'finished') return true;
+    
+    // For upcoming matches, check if we're within 15 mins of match time
+    if (match.time) {
+      const now = new Date();
+      const currentHours = now.getHours();
+      const currentMinutes = now.getMinutes();
+      
+      const [matchHours, matchMinutes] = match.time.split(':').map(Number);
+      
+      // Calculate minutes from midnight
+      const nowTotalMinutes = currentHours * 60 + currentMinutes;
+      const matchTotalMinutes = matchHours * 60 + matchMinutes;
+      
+      // If the match is within the next 15 minutes (or has already passed today)
+      if (matchTotalMinutes - nowTotalMinutes <= 15 && matchTotalMinutes - nowTotalMinutes >= -120) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const dynamicMultiplier = selectedTeam === 'team3' ? 4 : selectedTeam === 'team2' ? 2 : 1;
+  const dynamicEntryType = selectedTeam === 'team3' ? 'Squad' : selectedTeam === 'team2' ? 'Duo' : 'Solo';
+  const dynamicEntryFee = entryFee * dynamicMultiplier;
+  const dynamicPrizePool = totalPrizePool * dynamicMultiplier;
+  const dynamicFirstPrize = firstPrizeValue * dynamicMultiplier;
+  const dynamicSecondPrize = secondPrizeValue * dynamicMultiplier;
+  const dynamicThirdPrize = thirdPrizeValue * dynamicMultiplier;
 
   useEffect(() => {
     if (entryFee) {
@@ -65,14 +102,19 @@ const MatchDetails = () => {
   }, [entryFee]);
 
   const handleJoinMatch = () => {
-    if (deductBalance(selectedBetAmount)) {
+    if (!selectedTeam) {
+      alert("Please select a team to bet on!");
+      return;
+    }
+    if (deductBalance(dynamicEntryFee)) {
       updateMatch(match.id, { 
-        currentParticipants: Math.min(match.maxParticipants, match.currentParticipants + 1),
-        totalBidsCount: `${Math.min(match.maxParticipants, match.currentParticipants + 1)} Players joined`
+        currentParticipants: match.currentParticipants + 1,
+        totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
       addParticipantToMatch(match.id, displayUserId);
       setShowJoinSuccess(true);
     } else {
+      setSelectedBetAmount(dynamicEntryFee);
       setIsInsufficientBalanceOpen(true);
     }
   };
@@ -81,7 +123,7 @@ const MatchDetails = () => {
 
     <div style={{ minHeight: '100vh', paddingBottom: '100px', position: 'relative', color: 'var(--text-primary)' }}>
       {/* Header */}
-      <div style={{ padding: '24px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '16px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -89,349 +131,440 @@ const MatchDetails = () => {
         <div style={{ width: '24px' }}></div>
       </div>
 
-      {/* Match Overview */}
+
+
+      {/* Match Overview: Two Team Cards */}
       <div style={{ padding: '0 12px', marginBottom: '32px' }}>
-        <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--card-shadow)' }}>
-          <div style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            {match.group}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--glass-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--glass-border)' }}>
-                <Sword className="w-8 h-8 text-orange-500 opacity-80" />
-              </div>
-              <span style={{ fontWeight: 700, textAlign: 'center' }}>{match.team1.name}</span>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: match.team3 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr', 
+          gap: '12px' 
+        }}>
+          {/* Team 1 Card */}
+          <div 
+            onClick={() => {
+              if (match.status !== 'finished') {
+                setSelectedTeam('team1');
+              }
+            }}
+            className="hover-scale"
+            style={{
+              background: 'var(--glass-bg)',
+              border: `1px solid ${selectedTeam === 'team1' ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+              borderRadius: '28px',
+              padding: '24px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              cursor: match.status === 'finished' ? 'default' : 'pointer',
+              boxShadow: selectedTeam === 'team1' 
+                ? `0 15px 35px ${match.team1.color}33, 0 0 15px ${match.team1.color}22` 
+                : 'var(--card-shadow)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* 3D Glow Backlight */}
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              width: '120px',
+              height: '120px',
+              background: `radial-gradient(circle, ${match.team1.color}22 0%, transparent 70%)`,
+              filter: 'blur(20px)',
+              pointerEvents: 'none',
+              zIndex: 0
+            }} />
+
+            {/* Glowing Logo Container */}
+            <div style={{ 
+              width: '88px', 
+              height: '88px', 
+              borderRadius: '50%', 
+              background: 'rgba(0,0,0,0.4)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              border: `2px solid ${selectedTeam === 'team1' ? 'var(--accent-orange)' : match.team1.color}cc`,
+              boxShadow: `0 0 20px ${match.team1.color}55`,
+              position: 'relative',
+              zIndex: 1,
+              overflow: 'hidden',
+              transition: 'all 0.3s ease'
+            }}>
+              <img 
+                src={match.team1.logo} 
+                alt={match.team1.name} 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  transition: 'transform 0.5s ease'
+                }} 
+              />
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <span style={{ fontSize: '2.5rem', fontWeight: 800, background: 'linear-gradient(135deg, #F96F2E 0%, #F53844 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                {match.score}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span className={`w-2 h-2 rounded-full ${match.status === 'live' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                <span style={{ fontSize: '0.9rem', color: match.status === 'live' ? '#10B981' : 'var(--text-muted)', fontWeight: 700 }}>
-                  {match.status === 'live' ? 'Live' : 'Finished'}
-                </span>
+            <div style={{ zIndex: 1 }}>
+
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{match.team1.name}</h3>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span>Entry Type</span>
+                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>Solo</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span>Entry Fee</span>
+                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(entryFee)}</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--glass-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--glass-border)' }}>
-                <Sword className="w-8 h-8 text-orange-500 opacity-80" />
-              </div>
-              <span style={{ fontWeight: 700, textAlign: 'center' }}>{match.team2.name}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: 'flex', padding: '0 12px', gap: '20px', borderBottom: '1px solid var(--glass-border)', marginBottom: '24px', overflowX: 'auto' }}>
-        <button 
-          onClick={() => setActiveTab('statistics')}
-          style={{ 
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            paddingBottom: '12px', 
-            borderBottom: activeTab === 'statistics' ? '2px solid #F96F2E' : '2px solid transparent', 
-            color: activeTab === 'statistics' ? 'var(--text-primary)' : 'var(--text-muted)', 
-            fontWeight: 700,
-            fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          Statistics
-        </button>
-        <button 
-          onClick={() => setActiveTab('lineup')}
-          style={{ 
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            paddingBottom: '12px', 
-            borderBottom: activeTab === 'lineup' ? '2px solid #F96F2E' : '2px solid transparent', 
-            color: activeTab === 'lineup' ? 'var(--text-primary)' : 'var(--text-muted)', 
-            fontWeight: activeTab === 'lineup' ? 700 : 600,
-            fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          Line-Up
-        </button>
-        <button 
-          onClick={() => setActiveTab('h2h')}
-          style={{ 
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            paddingBottom: '12px', 
-            borderBottom: activeTab === 'h2h' ? '2px solid #F96F2E' : '2px solid transparent', 
-            color: activeTab === 'h2h' ? 'var(--text-primary)' : 'var(--text-muted)', 
-            fontWeight: activeTab === 'h2h' ? 700 : 600,
-            fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          H2H
-        </button>
-        <button 
-          onClick={() => setActiveTab('chat')}
-          style={{ 
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            cursor: 'pointer',
-            paddingBottom: '12px', 
-            borderBottom: activeTab === 'chat' ? '2px solid #F96F2E' : '2px solid transparent', 
-            color: activeTab === 'chat' ? 'var(--text-primary)' : 'var(--text-muted)', 
-            fontWeight: activeTab === 'chat' ? 700 : 600,
-            fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <MessageSquare size={16} />
-          Chat
-        </button>
-      </div>
-
-      {/* Tab contents */}
-      {activeTab === 'statistics' && (
-        <>
-          {/* Prize Pool Distribution */}
-          <div style={{ padding: '0 12px', marginBottom: '32px' }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Prize Distribution</h3>
-            </div>
-            
-            <div className="glass-panel" style={{ padding: '20px', borderRadius: '24px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
-              {/* Header Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '16px' }}>
-                <div className="float-stagger-0">
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Est. Prize Pool</div>
-                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent-orange)' }}>
-                    <AnimatedCounter value={totalPrizePool} />
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }} className="float-stagger-1">
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Per Kill Reward</div>
-                  <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#4ADE80' }}>
-                    <AnimatedCounter value={entryFee * 0.2} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Placements */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div className="float-stagger-2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.15)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🥇</span>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>1st Place (Booyah!)</span>
-                  </div>
-                  <span style={{ fontWeight: 800, color: '#FBBF24', fontSize: '1rem' }}>
-                    <AnimatedCounter value={firstPrizeValue} />
-                  </span>
-                </div>
-
-                <div className="float-stagger-3" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(148, 163, 184, 0.08)', borderRadius: '12px', border: '1px solid rgba(148, 163, 184, 0.15)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🥈</span>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>2nd Place</span>
-                  </div>
-                  <span style={{ fontWeight: 800, color: '#94A3B8', fontSize: '1rem' }}>
-                    <AnimatedCounter value={secondPrizeValue} />
-                  </span>
-                </div>
-
-                <div className="float-stagger-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(217, 119, 6, 0.08)', borderRadius: '12px', border: '1px solid rgba(217, 119, 6, 0.15)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🥉</span>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>3rd Place</span>
-                  </div>
-                  <span style={{ fontWeight: 800, color: '#D97706', fontSize: '1rem' }}>
-                    <AnimatedCounter value={thirdPrizeValue} />
-                  </span>
-                </div>
-              </div>
-            </div>
+            {match.status !== 'finished' && (
+              <button
+                type="button"
+                className={selectedTeam === 'team1' ? 'btn btn-primary' : 'btn btn-outline'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedTeam('team1');
+                  setShowJoinSuccess(false);
+                  setIsBetModalOpen(true);
+                }}
+                style={{
+                  marginTop: '12px'
+                }}
+              >
+                JOIN
+              </button>
+            )}
           </div>
 
-          {/* Match Statistics */}
-          <div style={{ padding: '0 12px' }}>
-            <div className="flex items-center gap-2 mb-6">
-              <Target className="w-5 h-5 text-orange-500" />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Combat Statistics</h3>
+          {/* Team 2 Card */}
+          <div 
+            onClick={() => {
+              if (match.status !== 'finished') {
+                setSelectedTeam('team2');
+              }
+            }}
+            className="hover-scale"
+            style={{
+              background: 'var(--glass-bg)',
+              border: `1px solid ${selectedTeam === 'team2' ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+              borderRadius: '28px',
+              padding: '24px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              cursor: match.status === 'finished' ? 'default' : 'pointer',
+              boxShadow: selectedTeam === 'team2' 
+                ? `0 15px 35px ${match.team2.color}33, 0 0 15px ${match.team2.color}22` 
+                : 'var(--card-shadow)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* 3D Glow Backlight */}
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              width: '120px',
+              height: '120px',
+              background: `radial-gradient(circle, ${match.team2.color}22 0%, transparent 70%)`,
+              filter: 'blur(20px)',
+              pointerEvents: 'none',
+              zIndex: 0
+            }} />
+
+            {/* Glowing Logo Container */}
+            <div style={{ 
+              width: '88px', 
+              height: '88px', 
+              borderRadius: '50%', 
+              background: 'rgba(0,0,0,0.4)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              border: `2px solid ${selectedTeam === 'team2' ? 'var(--accent-orange)' : match.team2.color}cc`,
+              boxShadow: `0 0 20px ${match.team2.color}55`,
+              position: 'relative',
+              zIndex: 1,
+              overflow: 'hidden',
+              transition: 'all 0.3s ease'
+            }}>
+              <img 
+                src={match.team2.logo} 
+                alt={match.team2.name} 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  transition: 'transform 0.5s ease'
+                }} 
+              />
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {/* Total Kills */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
-                  <span>{match.team1.kills}</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Total Kills</span>
-                  <span>{match.team2.kills}</span>
-                </div>
-                <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', background: 'var(--glass-bg)' }}>
-                  <div style={{ width: `${(match.team1.kills / (match.team1.kills + match.team2.kills || 1)) * 100}%`, background: 'linear-gradient(90deg, #F96F2E, #F53844)' }} />
-                  <div style={{ width: `${(match.team2.kills / (match.team1.kills + match.team2.kills || 1)) * 100}%`, background: 'rgba(255,255,255,0.1)' }} />
-                </div>
-              </div>
+            <div style={{ zIndex: 1 }}>
 
-              {/* Total Damage */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
-                  <span>{match.team1.damage}</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Total Damage</span>
-                  <span>{match.team2.damage}</span>
-                </div>
-                <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', background: 'var(--glass-bg)' }}>
-                  <div style={{ width: `${(match.team1.damage / (match.team1.damage + match.team2.damage || 1)) * 100}%`, background: 'linear-gradient(90deg, #F96F2E, #F53844)' }} />
-                  <div style={{ width: `${(match.team2.damage / (match.team1.damage + match.team2.damage || 1)) * 100}%`, background: 'rgba(255,255,255,0.1)' }} />
-                </div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{match.team2.name}</h3>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span>Entry Type</span>
+                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>Duo</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span>Entry Fee</span>
+                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(entryFee)}</span>
+              </div>
+            </div>
+
+            {match.status !== 'finished' && (
+              <button
+                type="button"
+                className={selectedTeam === 'team2' ? 'btn btn-primary' : 'btn btn-outline'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedTeam('team2');
+                  setShowJoinSuccess(false);
+                  setIsBetModalOpen(true);
+                }}
+                style={{
+                  marginTop: '12px'
+                }}
+              >
+                JOIN
+              </button>
+            )}
+          </div>
+
+          {/* Team 3 Card */}
+          {match.team3 && (
+            <div 
+              onClick={() => {
+                if (match.status !== 'finished') {
+                  setSelectedTeam('team3');
+                }
+              }}
+              className="hover-scale"
+              style={{
+                background: 'var(--glass-bg)',
+                border: `1px solid ${selectedTeam === 'team3' ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+                borderRadius: '28px',
+                padding: '24px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px',
+                cursor: match.status === 'finished' ? 'default' : 'pointer',
+                boxShadow: selectedTeam === 'team3' 
+                  ? `0 15px 35px ${match.team3.color}33, 0 0 15px ${match.team3.color}22` 
+                  : 'var(--card-shadow)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              {/* 3D Glow Backlight */}
+              <div style={{
+                position: 'absolute',
+                top: '-20px',
+                width: '120px',
+                height: '120px',
+                background: `radial-gradient(circle, ${match.team3.color}22 0%, transparent 70%)`,
+                filter: 'blur(20px)',
+                pointerEvents: 'none',
+                zIndex: 0
+              }} />
+
+              {/* Glowing Logo Container */}
+              <div style={{ 
+                width: '88px', 
+                height: '88px', 
+                borderRadius: '50%', 
+                background: 'rgba(0,0,0,0.4)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                border: `2px solid ${selectedTeam === 'team3' ? 'var(--accent-orange)' : match.team3.color}cc`,
+                boxShadow: `0 0 20px ${match.team3.color}55`,
+                position: 'relative',
+                zIndex: 1,
+                overflow: 'hidden',
+                transition: 'all 0.3s ease'
+              }}>
+                <img 
+                  src={match.team3.logo} 
+                  alt={match.team3.name} 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    transition: 'transform 0.5s ease'
+                  }} 
+                />
               </div>
               
-              {/* Survival Rank */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
-                  <span>#{match.team1.rank}</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Survival Rank</span>
-                  <span>#{match.team2.rank}</span>
-                </div>
-                <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', background: 'var(--glass-bg)' }}>
-                  <div style={{ width: `${(1 / (match.team1.rank || 1) / (1 / (match.team1.rank || 1) + 1 / (match.team2.rank || 1) || 1)) * 100}%`, background: 'linear-gradient(90deg, #F96F2E, #F53844)' }} />
-                  <div style={{ width: `${(1 / (match.team2.rank || 1) / (1 / (match.team1.rank || 1) + 1 / (match.team2.rank || 1) || 1)) * 100}%`, background: 'rgba(255,255,255,0.1)' }} />
-                </div>
+              <div style={{ zIndex: 1 }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{match.team3.name}</h3>
               </div>
-            </div>
-          </div>
-        </>
-      )}
 
-      {activeTab === 'lineup' && (
-        /* Joined Users */
-        <div style={{ padding: '0 12px' }}>
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: 'var(--card-shadow)' }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-400" />
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Joined Participants ({participants.length})</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                  <span>Entry Type</span>
+                  <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>Squad</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                  <span>Entry Fee</span>
+                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(entryFee)}</span>
+                </div>
               </div>
-              <span className="text-xs text-white/40">Real-time update</span>
-            </div>
-            
-            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px' }} className="custom-scrollbar">
-              {participants.length === 0 ? (
-                <div className="text-white/40 text-sm italic">Waiting for players to join...</div>
-              ) : (
-                participants.map(user => user && (
-                  <div key={user.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: '70px' }}>
-                    <div className="relative">
-                      <img src={user.avatar} alt={user.name} style={{ width: '56px', height: '56px', borderRadius: '50%', border: '2px solid #F96F2E', padding: '2px' }} />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-black" />
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.name.split(' ')[0]}</span>
-                  </div>
-                ))
+
+              {match.status !== 'finished' && (
+                <button
+                  type="button"
+                  className={selectedTeam === 'team3' ? 'btn btn-primary' : 'btn btn-outline'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedTeam('team3');
+                    setShowJoinSuccess(false);
+                    setIsBetModalOpen(true);
+                  }}
+                  style={{
+                    marginTop: '12px'
+                  }}
+                >
+                  JOIN
+                </button>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: '70px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--glass-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(255,255,255,0.2)', cursor: 'pointer' }} className="hover:border-orange-500 transition-colors group">
-                  <Users className="w-6 h-6 text-white/30 group-hover:text-orange-500" />
-                </div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Invite</span>
-              </div>
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* 4 Button Row (Tabs) */}
+      <div style={{ padding: '0 12px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+          {[
+            { id: 'details', label: 'Details' },
+            { id: 'rule', label: 'Rule' },
+            { id: 'gameId', label: 'Game Id' },
+            { id: 'support', label: 'Support' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              className={activeTab === tab.id ? 'btn btn-primary' : 'btn btn-outline'}
+              onClick={() => setActiveTab(tab.id as any)}
+              style={{
+                padding: '10px 0',
+                color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)',
+                fontSize: '0.7rem'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab Contents */}
+      {activeTab === 'details' && (
+        <div style={{ padding: '0 12px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {[
+            { label: 'WIN PRIZE', value: formatCurrency(dynamicPrizePool), color: 'var(--accent-orange)' },
+            { label: 'ENTRY TYPE', value: dynamicEntryType, color: 'var(--text-primary)' },
+            { label: 'ENTRY FEE', value: formatCurrency(dynamicEntryFee), color: 'var(--text-primary)' },
+            { label: 'PER KILL', value: formatCurrency(match.perKillReward || 0), color: '#4ADE80' },
+            { label: 'MAP', value: match.map || 'Bermuda', color: 'var(--text-primary)' },
+            { label: 'VERSION', value: 'MOBILE', color: 'var(--text-primary)' }
+          ].map((item, idx, arr) => {
+            const styles = [
+              { bg: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', text: '#fde047' }, // Teal / Gold
+              { bg: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', text: '#fef08a' }, // Gold
+              { bg: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', text: '#f1f5f9' }, // Silver
+              { bg: 'linear-gradient(135deg, #92400e, #5c2705)', border: '#fbbf24', text: '#fcd34d' }, // Bronze
+              { bg: 'linear-gradient(135deg, #1e3a8a, #172554)', border: '#93c5fd', text: '#93c5fd' }, // Blue
+              { bg: 'linear-gradient(135deg, #831843, #4c0519)', border: '#f9a8d4', text: '#f9a8d4' }, // Pink
+            ];
+            const currentStyle = styles[idx % styles.length];
+
+            return (
+              <div key={item.label} className="hover-scale" style={{ 
+                background: currentStyle.bg, 
+                border: `1px solid ${currentStyle.border}`, 
+                borderRadius: '8px',
+                transform: 'skewX(-8deg)',
+                boxShadow: 'var(--card-shadow)',
+                margin: '0 4px'
+              }}>
+                <div style={{ 
+                  transform: 'skewX(8deg)', 
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                  padding: '14px 20px'
+                }}>
+                  <span style={{ fontSize: '0.85rem', color: currentStyle.text, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textShadow: 'var(--text-shadow-sm)' }}>{item.label}</span>
+                  <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{item.value}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      )}
+
+      {activeTab === 'rule' && (
+        <div style={{ padding: '0 12px', marginBottom: '24px' }}>
+          <div className="glass-panel" style={{ padding: '20px', borderRadius: '20px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
+            <h4 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '12px', color: 'var(--text-primary)' }}>Match Rules</h4>
+            <ul style={{ paddingLeft: '16px', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(match.rules && match.rules.length > 0) ? match.rules.map((rule, idx) => (
+                <li key={idx}>{rule}</li>
+              )) : (
+                <>
+                  <li>Players must use mobile devices only. Emulators are strictly prohibited.</li>
+                  <li>Teaming up with opponents is not allowed and will result in a ban.</li>
+                  <li>Any form of hacking or cheating will lead to permanent account suspension.</li>
+                  <li>Room ID and Password will be shared 15 minutes before the match starts.</li>
+                </>
+              )}
+            </ul>
           </div>
         </div>
       )}
 
-      {activeTab === 'h2h' && (
-        /* Head-to-Head Statistics */
-        <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="glass-panel" style={{ padding: '20px', borderRadius: '24px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--card-shadow)' }}>
-            <h4 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '16px', color: 'var(--text-primary)' }}>Head-to-Head Stats</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Win Rate */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <span>60% Wins</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Win Rate</span>
-                  <span>40% Wins</span>
-                </div>
-                <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
-                  <div style={{ width: '60%', background: '#F96F2E' }} />
-                  <div style={{ width: '40%', background: '#3B82F6' }} />
-                </div>
+      {activeTab === 'gameId' && (
+        <div style={{ padding: '0 12px', marginBottom: '24px' }}>
+          <div className="glass-panel" style={{ padding: '20px', borderRadius: '20px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+            <h4 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '12px', color: 'var(--text-primary)' }}>Game Room ID</h4>
+            {!hasJoined ? (
+              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                You must join this match to get access to the Room ID and Password.
               </div>
-
-              {/* Avg Kills */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <span>14.5 Kills</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Avg Kills / Match</span>
-                  <span>12.2 Kills</span>
-                </div>
-                <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
-                  <div style={{ width: '55%', background: '#F96F2E' }} />
-                  <div style={{ width: '45%', background: '#3B82F6' }} />
-                </div>
+            ) : !isRoomIdVisible() ? (
+              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                Room ID and Password will be revealed 15 minutes before the match begins.
               </div>
-
-              {/* Headshot % */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <span>34% Headshots</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>Headshot Accuracy</span>
-                  <span>29% Headshots</span>
-                </div>
-                <div style={{ display: 'flex', height: '6px', borderRadius: '3px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
-                  <div style={{ width: '54%', background: '#F96F2E' }} />
-                  <div style={{ width: '46%', background: '#3B82F6' }} />
-                </div>
+            ) : (
+              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Room ID</div>
+                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{match.gameId || 'Pending...'}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '12px', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Password</div>
+                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{match.gamePassword || 'Pending...'}</div>
               </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h4 style={{ fontWeight: 800, fontSize: '1rem', paddingLeft: '8px' }}>Recent Encounters</h4>
-            
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '18px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>FreeFire Pro League</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{match.team1.name} vs {match.team2.name}</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <span style={{ fontWeight: 800, color: '#4ADE80', fontSize: '1rem' }}>21 - 18</span>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>May 12, 2026</span>
-              </div>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '16px', borderRadius: '18px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Squad Showdown</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>{match.team1.name} vs {match.team2.name}</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <span style={{ fontWeight: 800, color: '#3B82F6', fontSize: '1rem' }}>14 - 15</span>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Apr 28, 2026</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {activeTab === 'chat' && (
-        /* Chat System */
+      {activeTab === 'support' && (
         <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="glass-panel" style={{ 
             padding: '20px', 
@@ -444,7 +577,7 @@ const MatchDetails = () => {
             height: '420px',
             overflow: 'hidden'
           }}>
-            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px', marginBottom: '16px' }}>
+            <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '12px', marginBottom: '16px' }}>
               <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Match Discussion</h4>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Discuss strategies and gameplay live</p>
             </div>
@@ -573,19 +706,7 @@ const MatchDetails = () => {
         </div>
       )}
 
-      {match.status !== 'finished' && activeTab !== 'chat' && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '24px', background: 'var(--modal-bg)', borderTop: '1px solid var(--glass-border)', zIndex: 10 }}>
-          <button 
-            onClick={() => {
-              setShowJoinSuccess(false);
-              setIsBetModalOpen(true);
-            }}
-            className="btn btn-primary w-full py-4 rounded-2xl font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(249,111,46,0.3)]"
-          >
-            PLACE A BET
-          </button>
-        </div>
-      )}
+
 
 
       {match.status === 'finished' && match.winners && (
@@ -660,51 +781,89 @@ const MatchDetails = () => {
 
             {!showJoinSuccess ? (
               <div className="animate-fade-in">
-                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                   <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>Confirm Entry</h3>
                   <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>{match.group} Arena</p>
                 </div>
 
-                <div style={{ marginBottom: '24px' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '16px' }}>Entry Fee</p>
+                {/* Team Selection Options */}
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '10px' }}>Betting Team</p>
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    {[100, 10, 5].map((amount) => (
-                      <button 
-                        key={amount}
-                        type="button"
-                        onClick={() => setSelectedBetAmount(amount)}
-                        style={{ 
-                          flex: 1, 
-                          padding: '20px', 
-                          borderRadius: '20px', 
-                          border: '2px solid',
-                          borderColor: selectedBetAmount === amount ? 'var(--accent-orange)' : 'var(--glass-border)', 
-                          background: selectedBetAmount === amount ? 'rgba(249, 111, 46, 0.1)' : 'var(--glass-bg)', 
-                          color: 'var(--text-primary)', 
-                          fontWeight: 800, 
-                          fontSize: '1.2rem', 
-                          cursor: 'pointer', 
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
-                        }}
-                      >
-                        ${amount}
-                      </button>
-                    ))}
+                    <button 
+                      type="button"
+                      onClick={() => setSelectedTeam('team1')}
+                      style={{ 
+                        flex: 1, 
+                        padding: '12px 10px', 
+                        borderRadius: '16px', 
+                        border: '2px solid',
+                        borderColor: selectedTeam === 'team1' ? 'var(--accent-orange)' : 'var(--glass-border)', 
+                        background: selectedTeam === 'team1' ? 'rgba(249, 111, 46, 0.1)' : 'var(--glass-bg)', 
+                        color: 'var(--text-primary)', 
+                        fontWeight: 700, 
+                        fontSize: '0.85rem', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.3s ease' 
+                      }}
+                    >
+                      {match.team1.name}
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setSelectedTeam('team2')}
+                      style={{ 
+                        flex: 1, 
+                        padding: '12px 10px', 
+                        borderRadius: '16px', 
+                        border: '2px solid',
+                        borderColor: selectedTeam === 'team2' ? 'var(--accent-orange)' : 'var(--glass-border)', 
+                        background: selectedTeam === 'team2' ? 'rgba(249, 111, 46, 0.1)' : 'var(--glass-bg)', 
+                        color: 'var(--text-primary)', 
+                        fontWeight: 700, 
+                        fontSize: '0.85rem', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.3s ease' 
+                      }}
+                    >
+                      {match.team2.name}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '10px' }}>Entry Fee</p>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div
+                      style={{ 
+                        flex: 1, 
+                        padding: '14px', 
+                        borderRadius: '16px', 
+                        border: '2px solid var(--accent-orange)',
+                        background: 'rgba(249, 111, 46, 0.1)', 
+                        color: 'var(--text-primary)', 
+                        fontWeight: 800, 
+                        fontSize: '1.1rem',
+                        textAlign: 'center'
+                      }}
+                    >
+                      {formatCurrency(dynamicEntryFee)}
+                    </div>
                   </div>
                 </div>
 
                 <button 
                   className="btn btn-primary" 
-                  style={{ padding: '20px', borderRadius: '20px', fontSize: '1.1rem', letterSpacing: '0.05em' }}
+                  style={{ padding: '16px', borderRadius: '16px', fontSize: '1rem', letterSpacing: '0.05em' }}
                   onClick={handleJoinMatch}
                 >
-                  Join Now
+                  Join Now {selectedTeam ? `(Bet ${selectedTeam === 'team1' ? match.team1.name : match.team2.name})` : ''}
                 </button>
                 
                 <button 
                   type="button"
                   onClick={() => setIsBetModalOpen(false)}
-                  style={{ width: '100%', background: 'none', border: 'none', color: '#6B7280', marginTop: '20px', fontWeight: 600, cursor: 'pointer' }}
+                  style={{ width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', marginTop: '16px', fontWeight: 600, cursor: 'pointer' }}
                 >
                   Cancel
                 </button>
@@ -744,6 +903,7 @@ const MatchDetails = () => {
         </div>
       )}
 
+      <BottomNav />
     </div>
   );
 };

@@ -24,8 +24,8 @@ const Splash = () => {
       color: 'var(--text-primary)'
     }}>
       <div className="animate-slide-up" style={{ textAlign: 'center' }}>
-        <h1 style={{ fontSize: '4rem', fontWeight: 900, margin: 0, lineHeight: 0.9 }}>BIDI</h1>
-        <h1 style={{ fontSize: '6rem', fontWeight: 900, margin: 0, lineHeight: 0.9 }}>BET</h1>
+        <h1 style={{ fontSize: '6rem', fontWeight: 900, margin: 0, lineHeight: 0.9, letterSpacing: '-2px' }}>JXM</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, letterSpacing: '2px', marginTop: '10px' }}>TOUR CLUB</h1>
       </div>
     </div>
   );

@@ -225,7 +225,7 @@ const LiveChat = () => {
               placeholder="Type your message..."
               style={{
                 flex: 1,
-                background: 'rgba(255,255,255,0.05)',
+                background: 'var(--input-bg)',
                 border: '1px solid var(--glass-border)',
                 borderRadius: '16px',
                 padding: '12px 16px',

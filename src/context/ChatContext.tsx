@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { currentUser } from '../data/mockData';
+import { useAuth } from './AuthContext';
+import { db } from '../firebase';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -23,110 +25,124 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentUser } = useAuth();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem('chat_messages');
-    return saved ? JSON.parse(saved) : [
-      { 
-        id: '1', 
-        text: 'Welcome to BIDI BET Support! How can we help you today?', 
-        sender: 'support', 
-        time: '12:00 PM',
-        userName: 'Support Bot',
-        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
-        status: 'sent'
-      }
-    ];
-  });
+  const [messages, setMessages] = useState<Message[]>([]);
 
+  // Listen to Firestore messages
   useEffect(() => {
-    localStorage.setItem('chat_messages', JSON.stringify(messages));
-  }, [messages]);
+    if (!currentUser) {
+      setMessages([]);
+      return;
+    }
+
+    const messagesRef = collection(db, 'chats', currentUser.uid, 'messages');
+    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs: Message[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        let timeString = 'Just now';
+        if (data.timestamp) {
+           const date = data.timestamp.toDate ? data.timestamp.toDate() : new Date();
+           timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        msgs.push({
+          id: doc.id,
+          text: data.text,
+          sender: data.sender,
+          time: timeString,
+          avatar: data.avatar,
+          userName: data.userName,
+          status: 'sent'
+        });
+      });
+
+      // Add default welcome message if chat is empty
+      if (msgs.length === 0) {
+        msgs.push({
+          id: 'welcome-msg',
+          text: 'Welcome to Esports Support! Could you please provide your in-game name or Match ID so we can assist you faster?',
+          sender: 'support',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          userName: 'Support Bot',
+          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
+          status: 'sent'
+        });
+      }
+
+      setMessages(msgs);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   const botReplies = [
-    "Thank you for your message! Our live gaming support supervisor has been alerted and will join this thread shortly.",
-    "I understand. Let me check your account details. Could you please share your registered email or username?",
-    "We are currently upgrading our payment gateways to support faster transaction clearing. Are you waiting for a deposit or withdrawal?",
-    "Your ticket is active! If this is regarding a prize pool distribution, please send a screenshot of the match result page.",
-    "For security reasons, please do not share your password. Our official support team will never ask for your account password."
+    "Thanks for reaching out! A live admin is grabbing their gear and will join your lobby shortly.",
+    "Got it. Let me pull up your player profile. Could you drop your in-game name or registered email?",
+    "Our servers are currently optimizing for faster payouts. Are you checking on a deposit or tournament winnings?",
+    "Your support ticket is live! If you're asking about prize pool drops, please upload a screenshot of the post-match results screen.",
+    "To keep your account safe from hackers, never share your password in chat. Official admins will never ask for your login credentials!"
   ];
 
   const getSmartReply = (userText: string): string => {
     const text = userText.toLowerCase();
-    if (text.includes('wallet') || text.includes('deposit') || text.includes('withdraw') || text.includes('money') || text.includes('balance')) {
-      return "Deposits and withdrawals are processed within 5-15 minutes automatically. If you've been waiting longer, please reply with your Transaction ID.";
+    const links = "\n\nJoin our community:\n🎮 Discord: discord.gg/jxmtourclub\n📱 Telegram: t.me/jxmtourclub";
+    
+    if (text.includes('wallet') || text.includes('deposit') || text.includes('withdraw') || text.includes('money') || text.includes('balance') || text.includes('add fund')) {
+      return "Wallet transactions and payouts usually hit your account within 5-15 minutes. If it's been longer, please drop your Transaction ID so we can trace it!" + links;
     }
-    if (text.includes('prize') || text.includes('win') || text.includes('winner') || text.includes('pool') || text.includes('1st')) {
-      return "Match prize distributions are processed within 10 minutes of the match completion. If you won, the balance is added directly to your Wallet.";
+    if (text.includes('prize') || text.includes('win') || text.includes('winner') || text.includes('pool') || text.includes('1st') || text.includes('reward')) {
+      return "GG! Tournament prize pools are distributed within 10 minutes after the match officially ends. Your winnings will automatically be added to your Wallet balance." + links;
     }
-    if (text.includes('admin') || text.includes('owner') || text.includes('live') || text.includes('human')) {
-      return "Sure! I'm transferring your request to a human support representative. Please hold on for a moment...";
+    if (text.includes('admin') || text.includes('owner') || text.includes('live') || text.includes('human') || text.includes('help')) {
+      return "Copy that! I'm calling in a live admin to assist you. Hold tight in the lobby..." + links;
     }
-    return botReplies[Math.floor(Math.random() * botReplies.length)];
+    return botReplies[Math.floor(Math.random() * botReplies.length)] + links;
   };
 
-  const sendMessage = (text: string, sender: 'user' | 'support') => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text,
-      sender,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      avatar: sender === 'user' ? currentUser.avatar : 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
-      userName: sender === 'user' ? currentUser.name : 'Support Bot',
-      status: sender === 'user' ? 'sending' : 'sent'
-    };
+  const sendMessage = async (text: string, sender: 'user' | 'support') => {
+    if (!currentUser) return;
+    
+    // Optimistic UI update could be added here if desired, 
+    // but onSnapshot will handle it fast enough in most cases.
+    
+    try {
+      const messagesRef = collection(db, 'chats', currentUser.uid, 'messages');
+      await addDoc(messagesRef, {
+        text,
+        sender,
+        timestamp: serverTimestamp(),
+        avatar: sender === 'user' ? (currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user') : 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
+        userName: sender === 'user' ? (currentUser.displayName || currentUser.email) : 'Support Bot',
+      });
 
-    setMessages(prev => [...prev, newMessage]);
-
-    // Simulate network delivery delay for user message
-    if (sender === 'user') {
-      setTimeout(() => {
-        setMessages(prev => prev.map(m => m.id === newMessage.id ? { ...m, status: 'sent' } : m));
-      }, 500);
-
-      // Trigger automatic typing bot reply
-      const replyText = getSmartReply(text);
-      
-      // Start typing simulation after 700ms (after user message is marked as sent)
-      setTimeout(() => {
+      if (sender === 'user') {
         setIsTyping(true);
-      }, 700);
-
-      // Add actual reply and end typing after 2400ms (1.7s of typing indicator showing)
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages(prev => {
-          // Check if the last message is still a user message (to avoid interrupting if admin has since replied)
-          const lastMsg = prev[prev.length - 1];
-          if (lastMsg.sender === 'user') {
-            return [...prev, {
-              id: (Date.now() + 1).toString(),
-              text: replyText,
-              sender: 'support',
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              userName: 'Support Bot',
-              avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
-              status: 'sent'
-            }];
-          }
-          return prev;
-        });
-      }, 2400);
+        setTimeout(async () => {
+          setIsTyping(false);
+          const replyText = getSmartReply(text);
+          await addDoc(messagesRef, {
+            text: replyText,
+            sender: 'support',
+            timestamp: serverTimestamp(),
+            avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
+            userName: 'Support Bot',
+          });
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error sending message: ', error);
     }
   };
 
   const clearMessages = () => {
-    setMessages([
-      { 
-        id: '1', 
-        text: 'Welcome to BIDI BET Support! How can we help you today?', 
-        sender: 'support', 
-        time: '12:00 PM',
-        userName: 'Support Bot',
-        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support'
-      }
-    ]);
+    // We typically wouldn't allow standard users to delete their chat history in support chats,
+    // but if needed, we would delete the documents from the collection.
+    // For now, this is a no-op or you can implement a batch delete here.
   };
 
   return (

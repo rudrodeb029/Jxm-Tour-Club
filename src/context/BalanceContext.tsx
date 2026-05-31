@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useAdminDashboard } from './AdminDashboardContext';
+import { useAuth } from './AuthContext';
+import { db } from '../firebase';
+import { doc, onSnapshot, updateDoc, collection, query, where, orderBy, addDoc } from 'firebase/firestore';
 
 export interface Transaction {
   id: string;
@@ -20,51 +22,83 @@ interface BalanceContextType {
 const BalanceContext = createContext<BalanceContextType | undefined>(undefined);
 
 export const BalanceProvider = ({ children }: { children: ReactNode }) => {
-  const { adminUsers, updateUserBalance, paymentRequests, withdrawalRequests } = useAdminDashboard();
-  const [generatedUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
-  
-  // Find current user in admin dashboard state
-  const currentUserData = adminUsers.find(u => u.id === generatedUserId);
-  
-  // Derive balance directly from source of truth
-  const balance = currentUserData?.balance || 0;
+  const { currentUser } = useAuth();
+  const [balance, setBalance] = useState<number>(0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  // Derive transactions from requests for better sync
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    { id: '1', type: 'Deposit', amount: 500, date: 'Today, 10:30 AM', status: 'Completed' },
-    { id: '2', type: 'Match Join', amount: -50, date: 'Yesterday, 08:15 PM', status: 'Completed' },
-    { id: '3', type: 'Winning', amount: 200, date: '2 days ago', status: 'Completed' },
-  ]);
+  useEffect(() => {
+    if (!currentUser) {
+      setBalance(0);
+      setTransactions([]);
+      return;
+    }
 
-  const addTransaction = (type: Transaction['type'], amount: number, status: Transaction['status'] = 'Completed') => {
-    const newTx: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      type,
-      amount,
-      date: 'Just now',
-      status
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setBalance(data.balance || 0);
+      }
+    });
+
+    const txRef = collection(db, 'transactions');
+    const q = query(txRef, where('userId', '==', currentUser.uid), orderBy('date', 'desc'));
+    
+    const unsubscribeTx = onSnapshot(q, (snapshot) => {
+      const txs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Transaction[];
+      setTransactions(txs);
+    });
+
+    return () => {
+      unsubscribeUser();
+      unsubscribeTx();
     };
-    setTransactions(prev => [newTx, ...prev]);
+  }, [currentUser]);
+
+  const addTransaction = async (type: Transaction['type'], amount: number, status: Transaction['status'] = 'Completed') => {
+    if (!currentUser) return;
+    try {
+      await addDoc(collection(db, 'transactions'), {
+        userId: currentUser.uid,
+        type,
+        amount,
+        date: new Date().toISOString(),
+        status
+      });
+    } catch (error) {
+      console.error("Error adding transaction", error);
+    }
   };
 
   const deductBalance = (amount: number, type: Transaction['type'] = 'Match Join') => {
-    if (balance >= amount) {
+    if (!currentUser || balance < amount) return false;
+    try {
       const newBalance = balance - amount;
-      updateUserBalance(generatedUserId, newBalance);
+      updateDoc(doc(db, 'users', currentUser.uid), { balance: newBalance });
       addTransaction(type, -amount);
       return true;
+    } catch (error) {
+      console.error("Error deducting balance", error);
+      return false;
     }
-    return false;
   };
 
   const addBalance = (amount: number, type: Transaction['type'] = 'Deposit') => {
-    const newBalance = balance + amount;
-    updateUserBalance(generatedUserId, newBalance);
-    addTransaction(type, amount);
+    if (!currentUser) return;
+    try {
+      const newBalance = balance + amount;
+      updateDoc(doc(db, 'users', currentUser.uid), { balance: newBalance });
+      addTransaction(type, amount);
+    } catch (error) {
+      console.error("Error adding balance", error);
+    }
   };
 
   return (
-    <BalanceContext.Provider value={{ balance, transactions, setBalance: () => {}, deductBalance, addBalance }}>
+    <BalanceContext.Provider value={{ balance, transactions, setBalance, deductBalance, addBalance }}>
       {children}
     </BalanceContext.Provider>
   );

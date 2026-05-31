@@ -24,6 +24,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   const [showQuickDeposit, setShowQuickDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState<string>(Math.max(10, requiredAmount - currentBalance).toString());
   const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState('');
   const [depositSuccess, setDepositSuccess] = useState(false);
 
   // Load gateways from local storage or defaults
@@ -46,11 +47,16 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
     const amount = parseFloat(depositAmount);
     const gateway = gateways.find((g: any) => g.id === selectedGateway);
 
+    if (!transactionId.trim()) {
+      alert("Please enter a valid Transaction ID.");
+      return;
+    }
+
     if (!isNaN(amount) && amount > 0 && gateway) {
       addPaymentRequest({
         userId: displayUserId,
         amount: amount,
-        transactionId: `TXN${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        transactionId: transactionId,
         paymentMethod: gateway.name,
         accountNumber: 'Quick Deposit',
       });
@@ -58,6 +64,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
       setTimeout(() => {
         setDepositSuccess(false);
         setShowQuickDeposit(false);
+        setTransactionId('');
         onClose();
       }, 2000);
     }
@@ -122,7 +129,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
             position: 'absolute',
             top: '20px',
             right: '20px',
-            background: 'rgba(255,255,255,0.03)',
+            background: 'var(--card-bg)',
             border: '1px solid var(--glass-border)',
             borderRadius: '12px',
             width: '36px',
@@ -213,7 +220,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
 
                 {/* Amount Breakdown Box */}
                 <div style={{
-                  background: 'rgba(255,255,255,0.02)',
+                  background: 'var(--input-bg)',
                   border: '1px solid var(--glass-border)',
                   borderRadius: '20px',
                   padding: '16px',
@@ -270,7 +277,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                       width: '100%',
                       padding: '14px 20px',
                       borderRadius: '14px',
-                      background: 'rgba(255,255,255,0.03)',
+                      background: 'var(--card-bg)',
                       border: '1px solid var(--glass-border)',
                       color: 'var(--text-secondary)',
                       fontWeight: 700,
@@ -373,7 +380,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                         placeholder="0.00" 
                         style={{
                           width: '100%',
-                          background: 'rgba(255,255,255,0.02)',
+                          background: 'var(--input-bg)',
                           border: '1px solid var(--glass-border)',
                           borderRadius: '16px',
                           padding: '14px 14px 14px 32px',
@@ -385,6 +392,29 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                         required
                       />
                     </div>
+                  </div>
+
+                  {/* Transaction ID Input */}
+                  <div style={{ marginBottom: '24px' }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Transaction ID (Required)</label>
+                    <input 
+                      type="text" 
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder="Enter TXN ID from your payment" 
+                      style={{
+                        width: '100%',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '16px',
+                        padding: '14px',
+                        color: 'var(--text-primary)',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        outline: 'none'
+                      }}
+                      required
+                    />
                   </div>
 
                   {/* Submit button */}
