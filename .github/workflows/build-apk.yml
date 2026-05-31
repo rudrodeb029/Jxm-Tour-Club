@@ -54,17 +54,13 @@ jobs:
           curl -X POST -H "Content-Type: text/plain" --data-binary @gradle_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
           if grep -qi "build failed" gradle_logs.txt; then exit 1; fi
 
-      - name: Upload APK to transfer.sh
+      - name: Find and Upload APK
         run: |
-          apk_path="android/app/build/outputs/apk/debug/app-debug.apk"
-          if [ -f "$apk_path" ]; then
-            curl --upload-file $apk_path https://transfer.sh/app-debug.apk > apk_url.txt
-            curl -X POST -H "Content-Type: text/plain" --data-binary @apk_url.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
+          apk_path=$(find . -name "*.apk" | head -n 1)
+          echo "Found APK at: $apk_path" > apk_url.txt
+          if [ -n "$apk_path" ]; then
+            curl --upload-file "$apk_path" https://transfer.sh/app-debug.apk >> apk_url.txt
+          else
+            echo "NO APK FOUND" >> apk_url.txt
           fi
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug.apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 7
+          curl -X POST -H "Content-Type: text/plain" --data-binary @apk_url.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
