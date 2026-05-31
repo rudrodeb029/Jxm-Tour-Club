@@ -23,7 +23,16 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Build Web App
-        run: npm run build
+        run: npm run build > build_logs.txt 2>&1 || true
+
+      - name: Push Build Logs
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add build_logs.txt
+          git commit -m "Add build logs for debugging"
+          git push || true
+          if grep -qi error build_logs.txt; then exit 1; fi
 
       - name: Sync Capacitor Android
         run: npx cap sync android
