@@ -59,8 +59,16 @@ jobs:
           apk_path=$(find . -name "*.apk" | head -n 1)
           if [ -n "$apk_path" ]; then
             echo "Uploading $apk_path to file.io..." > apk_url.txt
-            curl -F "file=@$apk_path" https://file.io/?expires=1w >> apk_url.txt || true
+            curl -L -F "file=@$apk_path" https://file.io/?expires=1w >> apk_url.txt || true
           else
             echo "NO APK FOUND" > apk_url.txt
           fi
           curl -X POST -H "Content-Type: text/plain" --data-binary @apk_url.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
+          # Store the found path for the next step
+          echo "APK_PATH=$apk_path" >> $GITHUB_ENV
+
+      - name: Upload APK to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: ${{ env.APK_PATH }}
