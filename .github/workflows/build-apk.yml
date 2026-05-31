@@ -19,14 +19,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
+      - name: Install Dependencies
+        run: |
+          rm -f package-lock.json
+          npm install --legacy-peer-deps
 
       - name: Build Web App
-        run: |
-          npm run build > build_logs.txt 2>&1 || true
-          curl -X POST -H "Content-Type: text/plain" --data-binary @build_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
-          if grep -qi error build_logs.txt; then exit 1; fi
+        run: npm run build
 
       - name: Sync Capacitor Android
         run: npx cap sync android
@@ -41,9 +40,16 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Build APK
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK to transfer.sh
         run: |
-          cd android
-          ./gradlew assembleDebug
+          apk_path="android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ -f "$apk_path" ]; then
+            curl --upload-file $apk_path https://transfer.sh/app-debug.apk > apk_url.txt
+            curl -X POST -H "Content-Type: text/plain" --data-binary @apk_url.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
+          fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
