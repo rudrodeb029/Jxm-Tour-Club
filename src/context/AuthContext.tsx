@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth } from '../firebase';
-import { PushNotificationService } from '../services/PushNotificationService';
+
 
 interface AuthContextType {
   currentUser: User | null;
@@ -30,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (user) {
         // Initialize push notifications when user is logged in
-        PushNotificationService.initialize(user.uid);
       }
     });
 
