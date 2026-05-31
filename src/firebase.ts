@@ -8,13 +8,13 @@ import { getMessaging } from "firebase/messaging";
 // TODO: Replace with your Firebase project's config object
 // You can find this in Firebase Console -> Project Settings -> General -> Web Apps
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyC4r9_2pCDHHLvozfGpRWPgVv8iwszH1TY",
   authDomain: "jxmtourclub-1747c.firebaseapp.com",
+  databaseURL: "https://jxmtourclub-1747c-default-rtdb.firebaseio.com",
   projectId: "jxmtourclub-1747c",
-  storageBucket: "jxmtourclub-1747c.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  storageBucket: "jxmtourclub-1747c.firebasestorage.app",
+  messagingSenderId: "194765747449",
+  appId: "1:194765747449:web:36de7e15e228703d651e28"
 };
 
 // Initialize Firebase
