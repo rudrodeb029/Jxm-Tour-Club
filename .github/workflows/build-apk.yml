@@ -23,12 +23,7 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Build Web App
-        run: npm run build > build_logs.txt 2>&1 || true
-
-      - name: Push Build Logs
-        run: |
-          curl -X POST -H "Content-Type: text/plain" --data-binary @build_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
-          if grep -qi error build_logs.txt; then exit 1; fi
+        run: npm run build
 
       - name: Sync Capacitor Android
         run: npx cap sync android
