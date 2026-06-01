@@ -1220,10 +1220,12 @@ const Profile = () => {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
