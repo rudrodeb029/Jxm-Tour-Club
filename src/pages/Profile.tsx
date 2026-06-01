@@ -908,6 +908,7 @@ const Profile = () => {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Notifications Modal */}
