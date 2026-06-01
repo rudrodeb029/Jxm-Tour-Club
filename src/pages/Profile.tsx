@@ -8,6 +8,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useChat } from '../context/ChatContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAuth } from '../context/AuthContext';
+import ModalPortal from '../components/ModalPortal';
 import { db, storage } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -566,6 +567,7 @@ const Profile = () => {
       {showSecurity && <SecurityNotifications onClose={() => setShowSecurity(false)} />}
       
       {showEditProfile && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -758,9 +760,11 @@ const Profile = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {showPayments && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -908,6 +912,7 @@ const Profile = () => {
 
       {/* Notifications Modal */}
       {showNotifications && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowNotifications(false)}>
           <div className="animate-fade-in" style={{ 
             background: 'var(--modal-bg)', 
@@ -1005,10 +1010,12 @@ const Profile = () => {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Language Modal */}
       {showLanguage && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowLanguage(false)}>
           <div className="animate-fade-in" style={{ 
             background: 'var(--modal-bg)', 
@@ -1107,10 +1114,12 @@ const Profile = () => {
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
-      {/* Help Center Modal */}
+      {/* Help & Support Modal */}
       {showHelp && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowHelp(false)}>
           <div className="animate-fade-in" style={{ 
             background: 'var(--modal-bg)', 
@@ -1307,6 +1316,7 @@ const Profile = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
     </div>

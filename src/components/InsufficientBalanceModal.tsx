@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, Wallet, X, ChevronRight, Check } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
+import ModalPortal from './ModalPortal';
 
 interface InsufficientBalanceModalProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   };
 
   return (
+    <ModalPortal>
     <div 
       className="animate-fade-in"
       style={{
@@ -446,6 +448,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

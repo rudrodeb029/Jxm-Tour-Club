@@ -1,5 +1,6 @@
 import React from 'react';
 import { securityNotifications } from '../data/mockData';
+import ModalPortal from './ModalPortal';
 
 interface SecurityNotificationsProps {
   onClose: () => void;
@@ -7,6 +8,7 @@ interface SecurityNotificationsProps {
 
 const SecurityNotifications: React.FC<SecurityNotificationsProps> = ({ onClose }) => {
   return (
+    <ModalPortal>
     <div 
       className="animate-fade-in"
       style={{
@@ -99,6 +101,7 @@ const SecurityNotifications: React.FC<SecurityNotificationsProps> = ({ onClose }
         </button>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

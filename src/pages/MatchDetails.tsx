@@ -8,6 +8,7 @@ import { useChat } from '../context/ChatContext';
 import { useBalance } from '../context/BalanceContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
+import ModalPortal from '../components/ModalPortal';
 
 
 
@@ -747,6 +748,7 @@ const MatchDetails = () => {
 
       {/* Bet Modal */}
       {isBetModalOpen && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -899,6 +901,7 @@ const MatchDetails = () => {
             )}
           </div>
         </div>
+        </ModalPortal>
       )}
 
     </div>

@@ -10,6 +10,7 @@ import type { Match, Winner, TopParticipant } from '../data/mockData';
 import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
 import { useTheme } from '../context/ThemeContext';
+import ModalPortal from '../components/ModalPortal';
 import { useLanguage } from '../context/LanguageContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import SuccessModal from '../components/SuccessModal';
@@ -383,6 +384,7 @@ const Home = () => {
 
       {/* Modern Betting Modal */}
       {selectedMatch && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -490,6 +492,7 @@ const Home = () => {
             )}
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Stat Detail Modal */}

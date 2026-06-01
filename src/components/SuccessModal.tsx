@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import ModalPortal from './ModalPortal';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "C
   if (!isOpen) return null;
 
   return (
+    <ModalPortal>
     <div 
       className="animate-fade-in"
       style={{
@@ -121,6 +123,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "C
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

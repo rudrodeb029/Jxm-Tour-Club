@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { Trophy, Medal, Star, X, Crown, Sparkles, Target } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import ModalPortal from './ModalPortal';
 
 const WinnerCelebration: React.FC = () => {
   const { activeWinnerCeremony, clearWinnerCeremony } = useAdminDashboard();
@@ -39,6 +40,7 @@ const WinnerCelebration: React.FC = () => {
   if (!mounted) return null;
 
   return (
+    <ModalPortal>
     <div 
       style={{
         position: 'fixed',
@@ -299,6 +301,7 @@ const WinnerCelebration: React.FC = () => {
         }
       `}</style>
     </div>
+    </ModalPortal>
   );
 };
 
