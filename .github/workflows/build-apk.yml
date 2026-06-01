@@ -25,14 +25,10 @@ jobs:
       - name: Install Dependencies
         run: |
           rm -f package-lock.json
-          npm install
+          npm install --legacy-peer-deps
 
       - name: Build Web App
-        run: |
-          npm run build 2>&1
-          echo "Build exit code: $?"
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
+        run: npm run build
 
       - name: Generate Android Icons
         run: |
