@@ -28,7 +28,11 @@ jobs:
           npm install
 
       - name: Build Web App
-        run: npm run build
+        run: |
+          npm run build 2>&1
+          echo "Build exit code: $?"
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Generate Android Icons
         run: |
