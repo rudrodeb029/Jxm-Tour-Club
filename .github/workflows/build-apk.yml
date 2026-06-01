@@ -38,6 +38,14 @@ jobs:
           curl -X POST -H "Content-Type: text/plain" --data-binary @sync_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
           if grep -qi error sync_logs.txt; then exit 1; fi
 
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          npx firebase deploy --only hosting --token "$FIREBASE_TOKEN" > firebase_logs.txt 2>&1 || true
+          curl -X POST -H "Content-Type: text/plain" --data-binary @firebase_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
+          if grep -qi error firebase_logs.txt; then exit 1; fi
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
