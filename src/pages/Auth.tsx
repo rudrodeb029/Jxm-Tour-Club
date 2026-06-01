@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft } from 'lucide-react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { User as UserIcon } from 'lucide-react';
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isNameFocused, setIsNameFocused] = useState(false);
   const [isEmailFocused, setIsEmailFocused] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -27,26 +30,39 @@ const Auth = () => {
 
     setIsLoading(true);
     try {
-      if (!isLogin) {
-        // Registration flow
-        if (!isAgreed) {
-          setErrorMsg('You must agree to the Terms of Service to register.');
-          setIsLoading(false);
-          return;
-        }
-
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // Generate a unique 8-digit ID (format: XXXX XXXX) for the user
-        const part1 = Math.floor(1000 + Math.random() * 9000);
-        const part2 = Math.floor(1000 + Math.random() * 9000);
-        const generatedId = `${part1} ${part2}`;
-        
-        // Save initial user profile in Firestore
-        await setDoc(doc(db, 'users', user.uid), {
-          email: user.email,
-          userId: generatedId,
+        if (!isLogin) {
+          // Registration flow
+          if (!isAgreed) {
+            setErrorMsg('You must agree to the Terms of Service to register.');
+            setIsLoading(false);
+            return;
+          }
+          if (!name) {
+            setErrorMsg('Please enter your name.');
+            setIsLoading(false);
+            return;
+          }
+  
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          
+          // Generate a unique 8-digit ID (format: XXXX XXXX) for the user
+          const part1 = Math.floor(1000 + Math.random() * 9000);
+          const part2 = Math.floor(1000 + Math.random() * 9000);
+          const generatedId = `${part1} ${part2}`;
+          const generatedAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+          
+          await updateProfile(user, {
+            displayName: name,
+            photoURL: generatedAvatar
+          });
+          
+          // Save initial user profile in Firestore
+          await setDoc(doc(db, 'users', user.uid), {
+            email: user.email,
+            name: name,
+            avatar: generatedAvatar,
+            userId: generatedId,
           createdAt: new Date(),
           balance: 0,
         });
@@ -243,6 +259,61 @@ const Auth = () => {
           )}
 
           <div style={{ marginBottom: '24px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {!isLogin && (
+              <div style={{
+                position: 'relative',
+                background: isNameFocused ? 'rgba(255, 255, 255, 0.08)' : 'var(--glass-bg)',
+                border: `2px solid ${isNameFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+                borderRadius: '12px',
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: isNameFocused ? '0 0 20px rgba(249, 115, 22, 0.15)' : 'none'
+              }}>
+                <UserIcon 
+                  size={20} 
+                  color={isNameFocused ? 'var(--accent-orange)' : 'var(--text-secondary)'} 
+                  style={{ marginRight: '12px', transition: 'color 0.3s ease' }} 
+                />
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <label style={{ 
+                    position: 'absolute', 
+                    top: (isNameFocused || name) ? '-24px' : '0px',
+                    left: (isNameFocused || name) ? '-32px' : '0px',
+                    fontSize: (isNameFocused || name) ? '0.75rem' : '1rem',
+                    color: (isNameFocused || name) ? 'var(--accent-orange)' : 'var(--text-muted)',
+                    fontWeight: (isNameFocused || name) ? 800 : 500,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    pointerEvents: 'none',
+                    background: (isNameFocused || name) ? 'var(--bg-dark)' : 'transparent',
+                    padding: (isNameFocused || name) ? '0 8px' : '0',
+                    borderRadius: '4px'
+                  }}>
+                    Full Name
+                  </label>
+                  <input 
+                    type="text" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onFocus={() => setIsNameFocused(true)}
+                    onBlur={() => setIsNameFocused(false)}
+                    placeholder={isNameFocused ? "John Doe" : ""}
+                    style={{
+                      width: '100%',
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      outline: 'none',
+                      color: 'var(--text-primary)',
+                      letterSpacing: '1px'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+            
             {/* Email Input */}
             <div style={{
               position: 'relative',

@@ -27,16 +27,16 @@ const BottomNav = () => {
       background: 'var(--nav-bg)',
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '8px 4px 12px',
-      borderTopLeftRadius: '28px',
-      borderTopRightRadius: '28px',
-      zIndex: 50,
+      padding: '4px 4px 6px',
+      borderTopLeftRadius: '24px',
+      borderTopRightRadius: '24px',
+      zIndex: 100,
       maxWidth: '480px',
       margin: '0 auto',
-      borderTop: '2px solid var(--nav-border)',
+      borderTop: '1px solid var(--nav-border)',
       borderLeft: '1px solid var(--nav-border)',
       borderRight: '1px solid var(--nav-border)',
-      boxShadow: 'var(--nav-shadow)'
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.2)'
     }}>
       {/* Physical Indented Track Background */}
       <div style={{
@@ -82,8 +82,8 @@ const BottomNav = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               marginBottom: '2px',
               background: isActive ? 'var(--card-bg)' : 'transparent',
               borderRadius: '50%',
