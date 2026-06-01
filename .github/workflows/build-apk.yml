@@ -22,27 +22,18 @@ jobs:
       - name: Install Dependencies
         run: |
           rm -f package-lock.json
-          npm install --legacy-peer-deps > install_logs.txt 2>&1 || true
-          curl -X POST -H "Content-Type: text/plain" --data-binary @install_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
-          if grep -qi error install_logs.txt; then exit 1; fi
+          npm install --legacy-peer-deps
 
       - name: Build Web App
-        run: |
-          npm run build > build_logs.txt 2>&1 || true
-          curl -X POST -H "Content-Type: text/plain" --data-binary @build_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
-          if grep -qi error build_logs.txt; then exit 1; fi
+        run: npm run build
 
       - name: Generate Android Icons
         run: |
           cp assets/icon.png assets/splash.png || true
-          npx @capacitor/assets generate --android > assets_logs.txt 2>&1 || true
-          curl -X POST -H "Content-Type: text/plain" --data-binary @assets_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
+          npx @capacitor/assets generate --android
 
       - name: Sync Capacitor Android
-        run: |
-          npx cap sync android > sync_logs.txt 2>&1 || true
-          curl -X POST -H "Content-Type: text/plain" --data-binary @sync_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
-          if grep -qi error sync_logs.txt; then exit 1; fi
+        run: npx cap sync android
 
       - name: Deploy to Firebase Hosting
         env:
@@ -62,10 +53,7 @@ jobs:
 
       - name: Build APK
         working-directory: ./android
-        run: |
-          ./gradlew assembleDebug > gradle_logs.txt 2>&1 || true
-          curl -X POST -H "Content-Type: text/plain" --data-binary @gradle_logs.txt https://webhook.site/4ee62569-f561-4889-a7a7-895e850398bb || true
-          if grep -qi "build failed" gradle_logs.txt; then exit 1; fi
+        run: ./gradlew assembleDebug
 
       - name: Find and Upload APK
         run: |
