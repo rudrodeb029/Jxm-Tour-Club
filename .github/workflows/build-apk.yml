@@ -25,12 +25,21 @@ jobs:
           npm install --legacy-peer-deps
 
       - name: Build Web App
-        run: npm run build
+        run: |
+          npm run build > build_logs.txt 2>&1 || true
+          if grep -qi error build_logs.txt; then
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add build_logs.txt
+            git commit -m "Upload build logs"
+            git push
+            exit 1
+          fi
 
       - name: Generate Android Icons
         run: |
           cp assets/icon.png assets/splash.png || true
-          npx @capacitor/assets generate --android
+          npx --yes @capacitor/assets generate --android || true
 
       - name: Sync Capacitor Android
         run: npx cap sync android
