@@ -320,8 +320,8 @@ const onboardingCSS = `
 
 .ob-anim-wrap {
   position: relative;
-  width: 260px;
-  height: 260px;
+  width: 200px;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -554,7 +554,7 @@ const onboardingCSS = `
 }
 
 .ob-title {
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   white-space: pre-line;
   line-height: 1.15;
@@ -567,7 +567,7 @@ const onboardingCSS = `
 }
 
 .ob-desc {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: rgba(255,255,255,0.55);
   margin-bottom: 28px;
   line-height: 1.5;
@@ -580,13 +580,13 @@ const onboardingCSS = `
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 15px 20px;
-  border-radius: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #F96F2E 0%, #E34360 100%);
   color: white;
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;

@@ -120,16 +120,16 @@ const Auth = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '12px 24px',
+        padding: '12px 16px',
         textAlign: 'center',
         zIndex: 1
       }}>
         {/* Brand Header */}
-        <div style={{ marginBottom: '32px' }} className="animate-fade-in">
-          <h1 style={{ fontSize: '4.5rem', fontWeight: 900, margin: 0, lineHeight: 0.9, letterSpacing: '-2px', background: 'var(--text-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <div style={{ marginBottom: '24px' }} className="animate-fade-in">
+          <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: 0, lineHeight: 0.9, letterSpacing: '-2px', background: 'var(--text-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             JXM
           </h1>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, letterSpacing: '4px', color: 'var(--accent-orange)', marginTop: '8px', textTransform: 'uppercase' }}>
+          <h1 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, letterSpacing: '4px', color: 'var(--accent-orange)', marginTop: '8px', textTransform: 'uppercase' }}>
             Tour Club
           </h1>
         </div>
@@ -138,11 +138,11 @@ const Auth = () => {
         <div style={{
           display: 'flex',
           background: 'var(--glass-bg)',
-          borderRadius: '16px',
-          padding: '6px',
-          marginBottom: '32px',
+          borderRadius: '12px',
+          padding: '4px',
+          marginBottom: '24px',
           width: '100%',
-          maxWidth: '320px',
+          maxWidth: '280px',
           border: '1px solid var(--glass-border)'
         }}>
           <button
@@ -200,12 +200,12 @@ const Auth = () => {
         </div>
 
         {/* Content Section */}
-        <div style={{ width: '100%', maxWidth: '340px', transition: 'all 0.4s ease' }}>
-          <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px' }}>
+        <div style={{ width: '100%', maxWidth: '300px', transition: 'all 0.4s ease' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px' }}>
               {isLogin ? 'Welcome Back' : 'Join the Elite'}
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
               {isLogin 
                 ? 'Enter your email and password to jump back into the action.' 
                 : 'Experience the thrill of elite competitive gaming with Jxm Tour Club.'}
@@ -248,8 +248,8 @@ const Auth = () => {
               position: 'relative',
               background: isEmailFocused ? 'rgba(255, 255, 255, 0.08)' : 'var(--glass-bg)',
               border: `2px solid ${isEmailFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-              borderRadius: '16px',
-              padding: '16px 20px',
+              borderRadius: '12px',
+              padding: '12px 16px',
               display: 'flex',
               alignItems: 'center',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -302,8 +302,8 @@ const Auth = () => {
               position: 'relative',
               background: isPasswordFocused ? 'rgba(255, 255, 255, 0.08)' : 'var(--glass-bg)',
               border: `2px solid ${isPasswordFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-              borderRadius: '16px',
-              padding: '16px 20px',
+              borderRadius: '12px',
+              padding: '12px 16px',
               display: 'flex',
               alignItems: 'center',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -393,9 +393,9 @@ const Auth = () => {
             onClick={handleAuth}
             disabled={isLoading}
             style={{ 
-              padding: '16px',
-              borderRadius: '16px',
-              fontSize: '1.1rem',
+              padding: '14px',
+              borderRadius: '12px',
+              fontSize: '1rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

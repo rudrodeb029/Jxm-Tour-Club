@@ -22,7 +22,7 @@ import { AdminDashboardProvider } from './context/AdminDashboardContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { AuthProvider } from './context/AuthContext';
 
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 const RootNavigator = () => {
@@ -44,6 +44,27 @@ const RootNavigator = () => {
   return <Navigate to="/onboarding" />;
 };
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="page-wrapper" style={{ minHeight: '100vh', width: '100%' }}>
+      <Routes location={location}>
+        <Route path="/" element={<RootNavigator />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/my-bets" element={<MyBets />} />
+        <Route path="/match/:id" element={<MatchDetails />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/support" element={<Support />} />
+      </Routes>
+    </div>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -55,20 +76,8 @@ function App() {
               <AdminProvider>
                 <ChatProvider>
                   <Router>
-                    <Routes>
-                      <Route path="/" element={<RootNavigator />} />
-                      <Route path="/onboarding" element={<Onboarding />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/home" element={<Home />} />
-                      <Route path="/wallet" element={<Wallet />} />
-                      <Route path="/my-bets" element={<MyBets />} />
-                      <Route path="/match/:id" element={<MatchDetails />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/admin" element={<AdminLogin />} />
-                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                        <Route path="/support" element={<Support />} />
-                      </Routes>
-                      <LiveChat />
+                    <AnimatedRoutes />
+                    <LiveChat />
                       <WinnerCelebration />
                     </Router>
                   </ChatProvider>
