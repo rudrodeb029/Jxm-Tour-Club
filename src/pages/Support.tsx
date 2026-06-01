@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../context/ChatContext';
-import { ArrowLeft, Send, MessageSquare } from 'lucide-react';
-import { MessageSquare, Phone, Mail, FileText, ChevronRight, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquare, Phone, Mail, FileText, ChevronRight } from 'lucide-react';
 
 const Support = () => {
   const navigate = useNavigate();
