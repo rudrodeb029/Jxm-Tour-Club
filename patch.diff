@@ -1,0 +1,282 @@
+﻿diff --git a/src/components/InsufficientBalanceModal.tsx b/src/components/InsufficientBalanceModal.tsx
+index 8519e40..ddc9c36 100644
+--- a/src/components/InsufficientBalanceModal.tsx
++++ b/src/components/InsufficientBalanceModal.tsx
+@@ -2,6 +2,7 @@ import React, { useState } from 'react';
+ import { AlertCircle, Wallet, X, ChevronRight, Check } from 'lucide-react';
+ import { useAdminDashboard } from '../context/AdminDashboardContext';
+ import { useCurrency } from '../context/CurrencyContext';
++import ModalPortal from './ModalPortal';
+ 
+ interface InsufficientBalanceModalProps {
+   isOpen: boolean;
+@@ -75,6 +76,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
+   };
+ 
+   return (
++    <ModalPortal>
+     <div 
+       className="animate-fade-in"
+       style={{
+@@ -446,6 +448,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
+         )}
+       </div>
+     </div>
++    </ModalPortal>
+   );
+ };
+ 
+diff --git a/src/components/ModalPortal.tsx b/src/components/ModalPortal.tsx
+new file mode 100644
+index 0000000..ce1cca1
+--- /dev/null
++++ b/src/components/ModalPortal.tsx
+@@ -0,0 +1,30 @@
++import React, { useEffect, useState } from 'react';
++import { createPortal } from 'react-dom';
++
++interface ModalPortalProps {
++  children: React.ReactNode;
++}
++
++const ModalPortal: React.FC<ModalPortalProps> = ({ children }) => {
++  const [mounted, setMounted] = useState(false);
++
++  useEffect(() => {
++    setMounted(true);
++    // Prevent background scrolling when modal is open
++    const originalOverflow = document.body.style.overflow;
++    document.body.style.overflow = 'hidden';
++    
++    return () => {
++      document.body.style.overflow = originalOverflow;
++    };
++  }, []);
++
++  if (!mounted) return null;
++
++  return createPortal(
++    children,
++    document.body
++  );
++};
++
++export default ModalPortal;
+diff --git a/src/components/SecurityNotifications.tsx b/src/components/SecurityNotifications.tsx
+index 0725e21..e2fcc23 100644
+--- a/src/components/SecurityNotifications.tsx
++++ b/src/components/SecurityNotifications.tsx
+@@ -1,5 +1,6 @@
+ import React from 'react';
+ import { securityNotifications } from '../data/mockData';
++import ModalPortal from './ModalPortal';
+ 
+ interface SecurityNotificationsProps {
+   onClose: () => void;
+@@ -7,6 +8,7 @@ interface SecurityNotificationsProps {
+ 
+ const SecurityNotifications: React.FC<SecurityNotificationsProps> = ({ onClose }) => {
+   return (
++    <ModalPortal>
+     <div 
+       className="animate-fade-in"
+       style={{
+@@ -99,6 +101,7 @@ const SecurityNotifications: React.FC<SecurityNotificationsProps> = ({ onClose }
+         </button>
+       </div>
+     </div>
++    </ModalPortal>
+   );
+ };
+ 
+diff --git a/src/components/SuccessModal.tsx b/src/components/SuccessModal.tsx
+index 40e5c35..0ead3c2 100644
+--- a/src/components/SuccessModal.tsx
++++ b/src/components/SuccessModal.tsx
+@@ -1,5 +1,6 @@
+ import React from 'react';
+ import { CheckCircle2 } from 'lucide-react';
++import ModalPortal from './ModalPortal';
+ 
+ interface SuccessModalProps {
+   isOpen: boolean;
+@@ -12,6 +13,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "C
+   if (!isOpen) return null;
+ 
+   return (
++    <ModalPortal>
+     <div 
+       className="animate-fade-in"
+       style={{
+@@ -121,6 +123,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "C
+         </div>
+       </div>
+     </div>
++    </ModalPortal>
+   );
+ };
+ 
+diff --git a/src/components/WinnerCelebration.tsx b/src/components/WinnerCelebration.tsx
+index 327e2ad..258fe9e 100644
+--- a/src/components/WinnerCelebration.tsx
++++ b/src/components/WinnerCelebration.tsx
+@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
+ import { useAdminDashboard } from '../context/AdminDashboardContext';
+ import { Trophy, Medal, Star, X, Crown, Sparkles, Target } from 'lucide-react';
+ import { useCurrency } from '../context/CurrencyContext';
++import ModalPortal from './ModalPortal';
+ 
+ const WinnerCelebration: React.FC = () => {
+   const { activeWinnerCeremony, clearWinnerCeremony } = useAdminDashboard();
+@@ -39,6 +40,7 @@ const WinnerCelebration: React.FC = () => {
+   if (!mounted) return null;
+ 
+   return (
++    <ModalPortal>
+     <div 
+       style={{
+         position: 'fixed',
+@@ -299,6 +301,7 @@ const WinnerCelebration: React.FC = () => {
+         }
+       `}</style>
+     </div>
++    </ModalPortal>
+   );
+ };
+ 
+diff --git a/src/pages/Home.tsx b/src/pages/Home.tsx
+index c16e5dd..50c6d12 100644
+--- a/src/pages/Home.tsx
++++ b/src/pages/Home.tsx
+@@ -10,6 +10,7 @@ import type { Match, Winner, TopParticipant } from '../data/mockData';
+ import { useBalance } from '../context/BalanceContext';
+ import { useAdmin } from '../context/AdminContext';
+ import { useTheme } from '../context/ThemeContext';
++import ModalPortal from '../components/ModalPortal';
+ import { useLanguage } from '../context/LanguageContext';
+ import { useAdminDashboard } from '../context/AdminDashboardContext';
+ import SuccessModal from '../components/SuccessModal';
+@@ -383,6 +384,7 @@ const Home = () => {
+ 
+       {/* Modern Betting Modal */}
+       {selectedMatch && (
++        <ModalPortal>
+         <div 
+           className="animate-fade-in"
+           style={{
+@@ -490,6 +492,7 @@ const Home = () => {
+             )}
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+       {/* Stat Detail Modal */}
+diff --git a/src/pages/MatchDetails.tsx b/src/pages/MatchDetails.tsx
+index 8fa9b9d..261e050 100644
+--- a/src/pages/MatchDetails.tsx
++++ b/src/pages/MatchDetails.tsx
+@@ -8,6 +8,7 @@ import { useChat } from '../context/ChatContext';
+ import { useBalance } from '../context/BalanceContext';
+ import SuccessModal from '../components/SuccessModal';
+ import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
++import ModalPortal from '../components/ModalPortal';
+ 
+ 
+ 
+@@ -747,6 +748,7 @@ const MatchDetails = () => {
+ 
+       {/* Bet Modal */}
+       {isBetModalOpen && (
++        <ModalPortal>
+         <div 
+           className="animate-fade-in"
+           style={{
+@@ -899,6 +901,7 @@ const MatchDetails = () => {
+             )}
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+     </div>
+diff --git a/src/pages/Profile.tsx b/src/pages/Profile.tsx
+index ff4d4eb..021fa8a 100644
+--- a/src/pages/Profile.tsx
++++ b/src/pages/Profile.tsx
+@@ -8,6 +8,7 @@ import { useCurrency } from '../context/CurrencyContext';
+ import { useChat } from '../context/ChatContext';
+ import { useAdminDashboard } from '../context/AdminDashboardContext';
+ import { useAuth } from '../context/AuthContext';
++import ModalPortal from '../components/ModalPortal';
+ import { db, storage } from '../firebase';
+ import { doc, updateDoc, getDoc } from 'firebase/firestore';
+ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+@@ -566,6 +567,7 @@ const Profile = () => {
+       {showSecurity && <SecurityNotifications onClose={() => setShowSecurity(false)} />}
+       
+       {showEditProfile && (
++        <ModalPortal>
+         <div 
+           className="animate-fade-in"
+           style={{
+@@ -758,9 +760,11 @@ const Profile = () => {
+             </div>
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+       {showPayments && (
++        <ModalPortal>
+         <div 
+           className="animate-fade-in"
+           style={{
+@@ -904,10 +908,12 @@ const Profile = () => {
+             </button>
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+       {/* Notifications Modal */}
+       {showNotifications && (
++        <ModalPortal>
+         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowNotifications(false)}>
+           <div className="animate-fade-in" style={{ 
+             background: 'var(--modal-bg)', 
+@@ -1005,10 +1011,12 @@ const Profile = () => {
+             </button>
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+       {/* Language Modal */}
+       {showLanguage && (
++        <ModalPortal>
+         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowLanguage(false)}>
+           <div className="animate-fade-in" style={{ 
+             background: 'var(--modal-bg)', 
+@@ -1107,10 +1115,12 @@ const Profile = () => {
+             </button>
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+-      {/* Help Center Modal */}
++      {/* Help & Support Modal */}
+       {showHelp && (
++        <ModalPortal>
+         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowHelp(false)}>
+           <div className="animate-fade-in" style={{ 
+             background: 'var(--modal-bg)', 
+@@ -1307,6 +1317,7 @@ const Profile = () => {
+             </div>
+           </div>
+         </div>
++        </ModalPortal>
+       )}
+ 
+     </div>
