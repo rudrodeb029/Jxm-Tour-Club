@@ -1,0 +1,29 @@
+
+> jxm-tour-club@0.0.0 build
+> vite build
+
+[36mvite v5.4.21 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 40 modules transformed.
+[31mx[39m Build failed in 527ms
+[31merror during build:
+[31msrc/pages/Support.tsx (5:9): Identifier "MessageSquare" has already been declared[31m
+file: [36m/home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/src/pages/Support.tsx:5:9[31m
+[33m
+3: import { useChat } from '../context/ChatContext';
+4: import { ArrowLeft, Send, MessageSquare } from 'lucide-react';
+5: import { MessageSquare, Phone, Mail, FileText, ChevronRight, ArrowLeft } from 'lucide-react';
+            ^
+6: 
+7: const Support = () => {
+[31m
+    at getRollupError (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/parseAst.js:317:41)
+    at error (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/parseAst.js:313:42)
+    at Module.error (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:17391:16)
+    at Module.addImport (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:17939:22)
+    at ImportDeclaration.initialise (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:13434:28)
+    at convertNode (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:16785:10)
+    at convertNodeList (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:16795:38)
+    at Array.program (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:16645:21)
+    at convertNode (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:16784:28)
+    at convertProgram (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/node-entry.js:16021:12)[39m
