@@ -8,7 +8,7 @@ import { useChat } from '../context/ChatContext';
 import { useBalance } from '../context/BalanceContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
-import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
+
 
 
 const MatchDetails = () => {
