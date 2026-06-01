@@ -8,16 +8,13 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { 
-  Plus, 
   Trash2, 
   PlusCircle, 
   ArrowDownCircle, 
   ArrowUpCircle, 
-  History, 
   CreditCard,
   ChevronLeft,
   Edit2,
-  Check,
   Minus,
   Globe
 } from 'lucide-react';

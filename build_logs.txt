@@ -4,18 +4,18 @@
 
 [36mvite v5.4.21 [32mbuilding for production...[36m[39m
 transforming...
-[32m✓[39m 40 modules transformed.
-[31mx[39m Build failed in 527ms
+[32m✓[39m 38 modules transformed.
+[31mx[39m Build failed in 551ms
 [31merror during build:
-[31msrc/pages/Support.tsx (5:9): Identifier "MessageSquare" has already been declared[31m
-file: [36m/home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/src/pages/Support.tsx:5:9[31m
+[31msrc/pages/Home.tsx (24:2): Identifier "Trophy" has already been declared[31m
+file: [36m/home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/src/pages/Home.tsx:24:2[31m
 [33m
-3: import { useChat } from '../context/ChatContext';
-4: import { ArrowLeft, Send, MessageSquare } from 'lucide-react';
-5: import { MessageSquare, Phone, Mail, FileText, ChevronRight, ArrowLeft } from 'lucide-react';
-            ^
-6: 
-7: const Support = () => {
+22:   Moon, 
+23:   Plus, 
+24:   Trophy, 
+      ^
+25:   Users, 
+26:   Activity,
 [31m
     at getRollupError (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/parseAst.js:317:41)
     at error (file:///home/runner/work/Jxm-Tour-Club/Jxm-Tour-Club/node_modules/rollup/dist/es/shared/parseAst.js:313:42)

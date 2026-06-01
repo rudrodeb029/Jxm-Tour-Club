@@ -21,7 +21,6 @@ import {
   Sun, 
   Moon, 
   Plus, 
-  Trophy, 
   Users, 
   Activity,
   Trash2,
