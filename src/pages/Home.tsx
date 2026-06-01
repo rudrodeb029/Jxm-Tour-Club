@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BottomNav from '../components/BottomNav';
+import { Trophy, Gift, ArrowRight } from 'lucide-react';
 import SliderCard from '../components/SliderCard';
 import HomeStats from '../components/HomeStats';
 import LiveChat from '../components/LiveChat';
@@ -183,7 +183,7 @@ const Home = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '55px', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)', transition: 'all 0.3s ease', overflowY: 'auto' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)', transition: 'all 0.3s ease', overflowY: 'auto' }}>
 
       <SideMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       
@@ -365,9 +365,6 @@ const Home = () => {
           </div>
         ))}
       </div>
-
-
-      <BottomNav />
       
 
       <SuccessModal 

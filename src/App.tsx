@@ -13,6 +13,7 @@ import Support from './pages/Support';
 import { ChatProvider } from './context/ChatContext';
 import LiveChat from './components/LiveChat';
 import WinnerCelebration from './components/WinnerCelebration';
+import BottomNav from './components/BottomNav';
 
 import { BalanceProvider } from './context/BalanceContext';
 import { AdminProvider } from './context/AdminContext';
@@ -46,22 +47,27 @@ const RootNavigator = () => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
+
   return (
-    <div key={location.pathname} className="page-wrapper" style={{ minHeight: '100vh', width: '100%' }}>
-      <Routes location={location}>
-        <Route path="/" element={<RootNavigator />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/my-bets" element={<MyBets />} />
-        <Route path="/match/:id" element={<MatchDetails />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/support" element={<Support />} />
-      </Routes>
-    </div>
+    <>
+      <div key={location.pathname} className="page-wrapper" style={{ minHeight: '100vh', width: '100%', paddingBottom: showNav ? '80px' : '0' }}>
+        <Routes location={location}>
+          <Route path="/" element={<RootNavigator />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/wallet" element={<Wallet />} />
+          <Route path="/my-bets" element={<MyBets />} />
+          <Route path="/match/:id" element={<MatchDetails />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/support" element={<Support />} />
+        </Routes>
+      </div>
+      {showNav && <BottomNav />}
+    </>
   );
 };
 

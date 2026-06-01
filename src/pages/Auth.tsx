@@ -51,6 +51,7 @@ const Auth = () => {
           const part2 = Math.floor(1000 + Math.random() * 9000);
           const generatedId = `${part1} ${part2}`;
           const generatedAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+          const generatedUsername = `@${name.toLowerCase().replace(/[^a-z0-9]/g, '')}${Math.floor(100 + Math.random() * 900)}`;
           
           await updateProfile(user, {
             displayName: name,
@@ -61,6 +62,7 @@ const Auth = () => {
           await setDoc(doc(db, 'users', user.uid), {
             email: user.email,
             name: name,
+            username: generatedUsername,
             avatar: generatedAvatar,
             userId: generatedId,
           createdAt: new Date(),

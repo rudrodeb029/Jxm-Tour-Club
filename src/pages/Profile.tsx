@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { currentUser, mockUsers } from '../data/mockData';
-import BottomNav from '../components/BottomNav';
 import SecurityNotifications from '../components/SecurityNotifications';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -64,7 +63,7 @@ const Profile = () => {
   const [showLanguage, setShowLanguage] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const { adminUsers } = useAdminDashboard();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
   
   // Sync with Admin Dashboard user data
@@ -261,11 +260,6 @@ const Profile = () => {
     <div style={{ 
       minHeight: '100vh', 
       padding: '12px',
-      paddingBottom: '55px', 
-      position: 'relative', 
-      color: 'var(--text-primary)',
-      overflowY: 'auto',
-      display: 'flex',
       flexDirection: 'column'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
@@ -429,7 +423,7 @@ const Profile = () => {
           { label: t('appearance'), icon: isDarkMode ? <Moon size={20} /> : <Sun size={20} />, onClick: toggleTheme, isToggle: true, toggleState: isDarkMode },
           { label: 'Currency Preference', icon: <DollarSign size={20} />, onClick: () => setCurrency(currency === 'USD' ? 'BDT' : 'USD'), customToggle: true, toggleState: currency },
           { label: t('helpCenter'), icon: <HelpCircle size={20} />, onClick: () => setShowHelp(true) },
-          { label: t('logout'), icon: <LogOut size={20} />, onClick: () => navigate('/login'), isLogout: true }
+          { label: t('logout'), icon: <LogOut size={20} />, onClick: async () => { await logout(); navigate('/auth'); }, isLogout: true }
         ].map((item, i) => {
           const styles = [
             { bg: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', text: '#fde047' }, // Teal / Gold
@@ -1319,11 +1313,8 @@ const Profile = () => {
         </div>
       )}
 
-      <BottomNav />
     </div>
   );
 };
-
-export default Profile;
 
 

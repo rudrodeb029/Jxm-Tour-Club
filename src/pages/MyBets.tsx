@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import BottomNav from '../components/BottomNav';
+import { ArrowLeft, History, Trophy, Calendar } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { currentUser } from '../data/mockData';
@@ -15,7 +15,7 @@ const MyBets = () => {
   const myMatches = adminMatches.filter(match => match.participantIds.includes(displayUserId));
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '55px', background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
       {/* Header */}
       <div style={{ padding: '16px 12px', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10, background: 'var(--modal-bg)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--glass-border)' }}>
         <button 
@@ -140,8 +140,6 @@ const MyBets = () => {
           })
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 };

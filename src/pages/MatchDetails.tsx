@@ -8,7 +8,7 @@ import { useChat } from '../context/ChatContext';
 import { useBalance } from '../context/BalanceContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
-import BottomNav from '../components/BottomNav';
+import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 
 
 const MatchDetails = () => {
@@ -121,7 +121,7 @@ const MatchDetails = () => {
 
   return (
 
-    <div style={{ minHeight: '100vh', paddingBottom: '100px', position: 'relative', color: 'var(--text-primary)' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', color: 'var(--text-primary)' }}>
       {/* Header */}
       <div style={{ padding: '16px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
@@ -500,13 +500,11 @@ const MatchDetails = () => {
               <div key={item.label} className="hover-scale" style={{ 
                 background: currentStyle.bg, 
                 border: `1px solid ${currentStyle.border}`, 
-                borderRadius: '8px',
-                transform: 'skewX(-8deg)',
+                borderRadius: '12px',
                 boxShadow: 'var(--card-shadow)',
                 margin: '0 4px'
               }}>
                 <div style={{ 
-                  transform: 'skewX(8deg)', 
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
                   padding: '14px 20px'
                 }}>
@@ -903,7 +901,6 @@ const MatchDetails = () => {
         </div>
       )}
 
-      <BottomNav />
     </div>
   );
 };

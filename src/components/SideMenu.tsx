@@ -4,6 +4,10 @@ import { currentUser } from '../data/mockData';
 import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useEffect } from 'react';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -15,6 +19,41 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
   const { balance } = useBalance();
   const { isAdminMode, toggleAdminMode } = useAdmin();
   const { formatCurrency } = useCurrency();
+  const { currentUser, logout } = useAuth();
+  
+  const [profileData, setProfileData] = useState({
+    name: 'Player',
+    username: '@player',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=player'
+  });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (currentUser) {
+        setProfileData(prev => ({
+          ...prev,
+          name: currentUser.displayName || prev.name,
+          avatar: currentUser.photoURL || prev.avatar,
+        }));
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setProfileData({
+              name: data.name || currentUser.displayName || 'Player',
+              username: data.username || '@player',
+              avatar: data.avatar || currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=player'
+            });
+          }
+        } catch (e) {
+          console.error('Failed to fetch profile in SideMenu', e);
+        }
+      }
+    };
+    if (isOpen) {
+      fetchProfile();
+    }
+  }, [currentUser, isOpen]);
   
   if (!isOpen) return null;
 
@@ -67,11 +106,11 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
             border: '3px solid #64748b',
             boxShadow: '0 8px 16px rgba(0,0,0,0.6)'
           }}>
-            <img src={localStorage.getItem('userAvatar') || currentUser.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={profileData.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{localStorage.getItem('userName') || currentUser.name}</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{localStorage.getItem('userUsername') || currentUser.username}</div>
+            <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{profileData.name}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{profileData.username}</div>
           </div>
         </div>
 
@@ -167,7 +206,7 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
           flexDirection: 'column',
           paddingBottom: '16px'
         }}>
-          <button onClick={() => { navigate('/auth'); onClose(); }} style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)', padding: '12px 20px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '20px', width: '100%', boxShadow: 'var(--card-shadow)' }}>
+          <button onClick={async () => { await logout(); navigate('/auth'); onClose(); }} style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)', padding: '12px 20px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '20px', width: '100%', boxShadow: 'var(--card-shadow)' }}>
             <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '50%', border: '1px solid rgba(239, 68, 68, 0.3)', filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.8))' }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </div>

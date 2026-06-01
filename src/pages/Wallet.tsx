@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { currentUser } from '../data/mockData';
-import BottomNav from '../components/BottomNav';
+import { ArrowLeft, Plus, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw, Check, DollarSign } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
 import { useTheme } from '../context/ThemeContext';
@@ -300,7 +300,7 @@ const Wallet = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '55px', background: 'var(--bg-gradient)', color: 'var(--text-primary)', position: 'relative', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-gradient)', color: 'var(--text-primary)', position: 'relative', overflowX: 'hidden' }}>
       {/* Premium Header */}
       <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 10, background: 'var(--modal-bg)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--glass-border)' }}>
 
@@ -1299,12 +1299,9 @@ const Wallet = () => {
         title={successConfig.title}
         message={successConfig.message}
       />
-
-      <BottomNav />
     </div>
   );
 };
 
 
-export default Wallet;
 
