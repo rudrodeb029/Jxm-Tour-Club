@@ -73,28 +73,55 @@ const Profile = () => {
   const [user, setUser] = useState(() => ({
     ...currentUser,
     id: displayUserId,
-    name: localStorage.getItem('userName') || adminUser?.name || currentUser.name,
-    username: localStorage.getItem('userUsername') || adminUser?.username || currentUser.username,
-    avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser.avatar,
+    name: localStorage.getItem('userName') || adminUser?.name || currentUser?.displayName || '',
+    username: localStorage.getItem('userUsername') || adminUser?.username || '',
+    avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser?.photoURL || '',
     totalWins: adminUser?.totalWins || 0,
     totalMatches: adminUser?.totalMatches || 0
   }));
+
+  const [editData, setEditData] = useState({ name: user.name, username: user.username, avatar: user.avatar });
 
   // Update local user state when adminUser changes
   useEffect(() => {
     if (adminUser) {
       setUser(prev => ({
         ...prev,
-        name: adminUser.name,
-        username: adminUser.username,
-        avatar: adminUser.avatar,
+        name: adminUser.name || prev.name,
+        username: adminUser.username || prev.username,
+        avatar: adminUser.avatar || prev.avatar,
         totalWins: adminUser.totalWins,
         totalMatches: adminUser.totalMatches
       }));
     }
   }, [adminUser]);
 
-  const [editData, setEditData] = useState({ name: user.name, username: user.username, avatar: user.avatar });
+  // Fetch from Firestore on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setUser(prev => {
+              const newState = {
+                ...prev,
+                name: data.name || currentUser.displayName || prev.name,
+                username: data.username || prev.username,
+                avatar: data.avatar || currentUser.photoURL || prev.avatar,
+              };
+              setEditData({ name: newState.name, username: newState.username, avatar: newState.avatar });
+              return newState;
+            });
+          }
+        } catch (e) {
+          console.error('Failed to fetch profile', e);
+        }
+      }
+    };
+    fetchProfile();
+  }, [currentUser]);
 
   // Dynamic Saved Methods State
   const [savedMethods, setSavedMethods] = useState(() => {

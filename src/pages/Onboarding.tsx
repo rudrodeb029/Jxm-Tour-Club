@@ -215,6 +215,7 @@ const Onboarding = () => {
     if (currentSlide < slides.length - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
+      localStorage.setItem('hasSeenOnboarding', 'true');
       navigate('/auth');
     }
   };
@@ -227,7 +228,10 @@ const Onboarding = () => {
       {/* Styles */}
       <style>{onboardingCSS}</style>
 
-      <button className="ob-skip" onClick={() => navigate('/auth')}>Skip</button>
+      <button className="ob-skip" onClick={() => {
+        localStorage.setItem('hasSeenOnboarding', 'true');
+        navigate('/auth');
+      }}>Skip</button>
 
       <div className="ob-content animate-fade-in" key={animKey}>
         {/* Animation area */}

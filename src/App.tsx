@@ -22,6 +22,27 @@ import { AdminDashboardProvider } from './context/AdminDashboardContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { AuthProvider } from './context/AuthContext';
 
+import { Navigate } from 'react-router-dom';
+
+const RootNavigator = () => {
+  const { currentUser, loading } = useAuth();
+  const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+
+  if (loading) {
+    return <Splash />;
+  }
+
+  if (currentUser) {
+    return <Navigate to="/home" />;
+  }
+
+  if (hasSeenOnboarding) {
+    return <Navigate to="/auth" />;
+  }
+
+  return <Navigate to="/onboarding" />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -34,7 +55,7 @@ function App() {
                 <ChatProvider>
                   <Router>
                     <Routes>
-                      <Route path="/" element={<Splash />} />
+                      <Route path="/" element={<RootNavigator />} />
                       <Route path="/onboarding" element={<Onboarding />} />
                       <Route path="/auth" element={<Auth />} />
                       <Route path="/home" element={<Home />} />
