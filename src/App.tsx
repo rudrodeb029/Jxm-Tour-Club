@@ -23,6 +23,7 @@ import { CurrencyProvider } from './context/CurrencyContext';
 import { AuthProvider } from './context/AuthContext';
 
 import { Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 const RootNavigator = () => {
   const { currentUser, loading } = useAuth();
