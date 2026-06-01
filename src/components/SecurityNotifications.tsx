@@ -16,27 +16,28 @@ const SecurityNotifications: React.FC<SecurityNotificationsProps> = ({ onClose }
         backdropFilter: 'blur(16px)',
         zIndex: 100,
         display: 'flex',
-        alignItems: 'flex-end'
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
       }}
       onClick={onClose}
     >
       <div 
-        className="animate-slide-up"
+        className="animate-fade-in"
         style={{
           background: 'var(--modal-bg)',
           width: '100%',
+          maxWidth: '450px',
           maxHeight: '85vh',
-          borderTopLeftRadius: '40px',
-          borderTopRightRadius: '40px',
-          padding: '32px 20px',
+          borderRadius: '24px',
+          padding: '32px 24px',
           color: 'var(--text-primary)',
-          borderTop: '1px solid var(--glass-border)',
-          boxShadow: '0 -20px 60px rgba(0,0,0,0.5)',
+          border: '1px solid var(--glass-border)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
           overflowY: 'auto'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 28px', opacity: 0.5 }} />
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0 }}>

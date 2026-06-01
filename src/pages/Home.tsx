@@ -392,27 +392,26 @@ const Home = () => {
             backdropFilter: 'blur(12px)',
             zIndex: 100,
             display: 'flex',
-            alignItems: 'flex-end'
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
           }}
           onClick={() => { if(!showJoinSuccess) setSelectedMatch(null); }}
         >
           <div 
-            className="animate-slide-up"
+            className="animate-fade-in"
             style={{
               background: 'var(--modal-bg)',
               width: '100%',
-              borderTopLeftRadius: '40px',
-              borderTopRightRadius: '40px',
-              padding: '24px 16px',
+              maxWidth: '400px',
+              borderRadius: '24px',
+              padding: '32px 24px',
               color: 'var(--text-primary)',
               border: '1px solid var(--glass-border)',
-              boxShadow: '0 -20px 40px rgba(0,0,0,0.5)',
-              minHeight: '400px'
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 32px' }} />
-
             
             {!showJoinSuccess ? (
               <div className="animate-fade-in">
@@ -504,28 +503,28 @@ const Home = () => {
             backdropFilter: 'blur(16px)',
             zIndex: 150,
             display: 'flex',
-            alignItems: 'flex-end'
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
           }}
           onClick={() => setActiveStatType(null)}
         >
           <div 
-            className="animate-slide-up"
+            className="animate-fade-in"
             style={{
               background: 'var(--modal-bg)',
               width: '100%',
+              maxWidth: '400px',
               maxHeight: '85vh',
-              borderTopLeftRadius: '40px',
-              borderTopRightRadius: '40px',
-              padding: '24px 16px',
+              borderRadius: '24px',
+              padding: '32px 24px',
               color: 'var(--text-primary)',
-              borderTop: '1px solid var(--glass-border)',
-              boxShadow: '0 -20px 60px rgba(0,0,0,0.8)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
               overflowY: 'auto'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 24px' }} />
-
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0, textTransform: 'capitalize' }}>

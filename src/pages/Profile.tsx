@@ -575,28 +575,28 @@ const Profile = () => {
             backdropFilter: 'blur(20px)',
             zIndex: 100,
             display: 'flex',
-            alignItems: 'flex-end'
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
           }}
           onClick={() => setShowEditProfile(false)}
         >
           <div 
-            className="animate-slide-up"
+            className="animate-fade-in"
             style={{
               background: 'var(--modal-bg)',
               width: '100%',
+              maxWidth: '450px',
               maxHeight: '90vh',
-              borderTopLeftRadius: '40px',
-              borderTopRightRadius: '40px',
-              padding: '32px 20px',
+              borderRadius: '24px',
+              padding: '32px 24px',
               color: 'var(--text-primary)',
-              borderTop: '1px solid var(--glass-border)',
-              boxShadow: '0 -20px 60px rgba(0,0,0,0.5)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
               overflowY: 'auto'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 28px', opacity: 0.5 }} />
-
             <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '28px' }}>{t('editProfile').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('editProfile').split(' ')[1]}</span></h3>
             
             {/* Profile Icon Preview */}
@@ -770,29 +770,28 @@ const Profile = () => {
             backdropFilter: 'blur(20px)',
             zIndex: 100,
             display: 'flex',
-            alignItems: 'flex-end'
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
           }}
           onClick={() => setShowPayments(false)}
         >
           <div 
-            className="animate-slide-up"
+            className="animate-fade-in"
             style={{
               background: 'var(--modal-bg)',
               width: '100%',
+              maxWidth: '450px',
               maxHeight: '85vh',
-              borderTopLeftRadius: '40px',
-              borderTopRightRadius: '40px',
-              padding: '32px 20px',
+              borderRadius: '24px',
+              padding: '32px 24px',
               color: 'var(--text-primary)',
-              borderTop: '1px solid var(--glass-border)',
-              boxShadow: '0 -20px 60px rgba(0,0,0,0.5)',
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
               overflowY: 'auto'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 28px', opacity: 0.5 }} />
-
-            
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ background: 'var(--accent-orange)15', padding: '10px', borderRadius: '14px' }}>
@@ -909,18 +908,17 @@ const Profile = () => {
 
       {/* Notifications Modal */}
       {showNotifications && (
-        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowNotifications(false)}>
-          <div className="animate-slide-up" style={{ 
+        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowNotifications(false)}>
+          <div className="animate-fade-in" style={{ 
             background: 'var(--modal-bg)', 
             width: '100%', 
-            borderTopLeftRadius: '40px', 
-            borderTopRightRadius: '40px', 
-            padding: '32px 20px', 
+            maxWidth: '450px',
+            borderRadius: '24px', 
+            padding: '32px 24px', 
             color: 'var(--text-primary)', 
-            borderTop: '1px solid var(--glass-border)',
-            boxShadow: '0 -20px 60px rgba(0,0,0,0.5)'
+            border: '1px solid var(--glass-border)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 28px', opacity: 0.5 }} />
             <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Notification <span style={{ color: 'var(--accent-orange)' }}>Settings</span></h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>Control how you receive alerts and updates.</p>
             
@@ -1011,18 +1009,17 @@ const Profile = () => {
 
       {/* Language Modal */}
       {showLanguage && (
-        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowLanguage(false)}>
-          <div className="animate-slide-up" style={{ 
+        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowLanguage(false)}>
+          <div className="animate-fade-in" style={{ 
             background: 'var(--modal-bg)', 
             width: '100%', 
-            borderTopLeftRadius: '40px', 
-            borderTopRightRadius: '40px', 
-            padding: '32px 20px', 
+            maxWidth: '450px',
+            borderRadius: '24px', 
+            padding: '32px 24px', 
             color: 'var(--text-primary)', 
-            borderTop: '1px solid var(--glass-border)',
-            boxShadow: '0 -20px 60px rgba(0,0,0,0.5)'
+            border: '1px solid var(--glass-border)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 28px', opacity: 0.5 }} />
             <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Language & <span style={{ color: 'var(--accent-orange)' }}>Region</span></h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>Select your preferred language for the interface.</p>
             
@@ -1114,20 +1111,19 @@ const Profile = () => {
 
       {/* Help Center Modal */}
       {showHelp && (
-        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowHelp(false)}>
-          <div className="animate-slide-up" style={{ 
+        <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowHelp(false)}>
+          <div className="animate-fade-in" style={{ 
             background: 'var(--modal-bg)', 
             width: '100%', 
+            maxWidth: '450px',
             maxHeight: '85vh', 
-            borderTopLeftRadius: '40px', 
-            borderTopRightRadius: '40px', 
-            padding: '32px 20px', 
+            borderRadius: '24px', 
+            padding: '32px 24px', 
             color: 'var(--text-primary)', 
-            borderTop: '1px solid var(--glass-border)', 
+            border: '1px solid var(--glass-border)', 
             overflowY: 'auto',
-            boxShadow: '0 -20px 60px rgba(0,0,0,0.5)'
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ width: '40px', height: '5px', background: 'var(--glass-border)', borderRadius: '10px', margin: '0 auto 28px', opacity: 0.5 }} />
             <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Help <span style={{ color: 'var(--accent-orange)' }}>Center</span></h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>Find answers or contact our support team.</p>
             
