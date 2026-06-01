@@ -1,0 +1,153 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 78806640039,
+      "run_id": 26741253648,
+      "workflow_name": "Build Android APK",
+      "head_branch": "main",
+      "run_url": "https://api.github.com/repos/rudrodeb029/Jxm-Tour-Club/actions/runs/26741253648",
+      "run_attempt": 2,
+      "node_id": "CR_kwDOSkV6B88AAAASWT3lpw",
+      "head_sha": "b4e8a6706a2d4d0c3423a0d96daf61001b24b85e",
+      "url": "https://api.github.com/repos/rudrodeb029/Jxm-Tour-Club/actions/jobs/78806640039",
+      "html_url": "https://github.com/rudrodeb029/Jxm-Tour-Club/actions/runs/26741253648/job/78806640039",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-06-01T07:36:10Z",
+      "started_at": "2026-06-01T07:36:12Z",
+      "completed_at": "2026-06-01T07:37:52Z",
+      "name": "build-android",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-06-01T07:36:13Z",
+          "completed_at": "2026-06-01T07:36:14Z"
+        },
+        {
+          "name": "Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-06-01T07:36:14Z",
+          "completed_at": "2026-06-01T07:36:16Z"
+        },
+        {
+          "name": "Setup Node.js",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-06-01T07:36:16Z",
+          "completed_at": "2026-06-01T07:36:16Z"
+        },
+        {
+          "name": "Install Dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-06-01T07:36:16Z",
+          "completed_at": "2026-06-01T07:37:45Z"
+        },
+        {
+          "name": "Build Web App",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-06-01T07:37:45Z",
+          "completed_at": "2026-06-01T07:37:49Z"
+        },
+        {
+          "name": "Sync Capacitor Android",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-06-01T07:37:49Z",
+          "completed_at": "2026-06-01T07:37:50Z"
+        },
+        {
+          "name": "Deploy to Firebase Hosting",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 7,
+          "started_at": "2026-06-01T07:37:50Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Set up JDK",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Make gradlew executable",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Build APK",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Find and Upload APK",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Upload APK to GitHub Artifacts",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 12,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Post Setup Node.js",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 23,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Post Checkout repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-06-01T07:37:51Z",
+          "completed_at": "2026-06-01T07:37:51Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/rudrodeb029/Jxm-Tour-Club/check-runs/78806640039",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000029,
+      "runner_name": "GitHub Actions 1000000029",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}
