@@ -350,7 +350,6 @@ const Home = () => {
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px', marginBottom: '4px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981', animation: 'pulse 1.5s infinite' }} />
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0, letterSpacing: '0.05em' }}>LIVE MATCHES</h2>
             </div>
             {localMatches.filter(m => m.status === 'live').map((match, index) => (
               <div 
