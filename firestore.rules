@@ -12,24 +12,41 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
+    // Allow read/write for users, needed for Admin Panel
     match /users/{userId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
+      allow read, write: if true;
     }
     
     match /transactions/{txId} {
-      // Allow read/create if it belongs to the user
-      // Assume the document has a 'userId' field matching auth.uid
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || resource == null);
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if false; 
+      allow read, write: if true; 
     }
 
     match /chats/{userId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
+      allow read, write: if true;
       
       match /messages/{messageId} {
-        allow read, write: if isAuthenticated() && isOwner(userId);
+        allow read, write: if true;
       }
+    }
+
+    match /matches/{matchId} {
+      allow read, write: if true;
+    }
+
+    match /payments/{paymentId} {
+      allow read, write: if true;
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow read, write: if true;
+    }
+
+    match /activities/{activityId} {
+      allow read, write: if true;
+    }
+
+    match /winners/{winnerId} {
+      allow read, write: if true;
     }
     
     match /{document=**} {
