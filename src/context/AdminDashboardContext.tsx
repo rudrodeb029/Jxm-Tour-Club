@@ -499,8 +499,6 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       console.error('Error logging activity', e);
     }
   };
- // Keep last 50
-  };
 
   
   // Match operations
