@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { matches as defaultMatches, winners as defaultWinners } from '../data/mockData';
-import type { Match, Winner, Team } from '../data/mockData';
+import type { Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -137,145 +136,19 @@ interface AdminDashboardContextType {
   logActivity: (activity: Omit<Activity, 'id' | 'timestamp'>) => void;
 }
 
-// ============ DEMO DATA ============
-
-const demoUsers: AdminUser[] = [
-  { id: 'u1', name: 'Elite Moco', username: '@mocotech', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Moco', balance: 2450.00, joinDate: '2025-01-15', phone: '+880 1712 345678', totalMatches: 45, totalWins: 12, status: 'active' },
-  { id: 'u2', name: 'Kelly Swift', username: '@kellyrunner', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kelly', balance: 1890.50, joinDate: '2024-11-20', phone: '+880 1812 987654', totalMatches: 38, totalWins: 8, status: 'active' },
-  { id: 'u3', name: 'Alok Rhythms', username: '@alokdj', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alok', balance: 5200.00, joinDate: '2025-02-01', phone: '+880 1912 456789', totalMatches: 67, totalWins: 21, status: 'active' },
-  { id: 'u4', name: 'Hayato Bushido', username: '@hayatosword', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hayato', balance: 320.75, joinDate: '2025-03-10', phone: '+880 1612 112233', totalMatches: 15, totalWins: 3, status: 'active' },
-  { id: 'u5', name: 'Chrono Shield', username: '@chronos', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chrono', balance: 8900.00, joinDate: '2024-12-05', phone: '+880 1512 778899', totalMatches: 92, totalWins: 35, status: 'active' },
-  { id: 'u6', name: 'Wukong Simian', username: '@monkeyking', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Wukong', balance: 0, joinDate: '2025-01-20', phone: '+880 1412 334455', totalMatches: 5, totalWins: 0, status: 'suspended' },
-  { 
-    id: localStorage.getItem('generatedUserId') || 'USER123', 
-    name: 'Current User', 
-    username: '@user', 
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=User', 
-    balance: 5678.98, 
-    joinDate: new Date().toISOString().split('T')[0], 
-    phone: '+880 1234 567890', 
-    totalMatches: 24, 
-    totalWins: 5, 
-    status: 'active' 
-  },
-];
-
-const demoPayments: PaymentRequest[] = [
-  { id: 'pay1', userId: 'u1', userName: 'Elite Moco', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Moco', amount: 500, transactionId: 'TXN8A7B2C9D', paymentMethod: 'Bkash', accountNumber: '01712345678', timestamp: '2026-05-04 10:30 AM', status: 'pending' },
-  { id: 'pay2', userId: 'u2', userName: 'Kelly Swift', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kelly', amount: 1000, transactionId: 'TXN3E4F5G6H', paymentMethod: 'Nagad', accountNumber: '01812987654', timestamp: '2026-05-04 09:15 AM', status: 'pending' },
-  { id: 'pay3', userId: 'u3', userName: 'Alok Rhythms', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alok', amount: 2500, transactionId: 'TXN1I2J3K4L', paymentMethod: 'Bkash', accountNumber: '01912456789', timestamp: '2026-05-04 08:00 AM', status: 'pending' },
-  { id: 'pay4', userId: 'u5', userName: 'Chrono Shield', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chrono', amount: 200, transactionId: 'TXN5M6N7O8P', paymentMethod: 'Binance', accountNumber: '01512778899', timestamp: '2026-05-03 11:45 PM', status: 'approved' },
-  { id: 'pay5', userId: 'u4', userName: 'Hayato Bushido', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hayato', amount: 100, transactionId: 'TXN9Q0R1S2T', paymentMethod: 'Bkash', accountNumber: '01612112233', timestamp: '2026-05-03 06:30 PM', status: 'rejected', note: 'Invalid transaction ID' },
-];
-
-const demoWithdrawals: WithdrawalRequest[] = [
-  { id: 'wd1', userId: 'u3', userName: 'Alok Rhythms', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alok', amount: 1500, withdrawMethod: 'Bkash', accountNumber: '01912456789', accountName: 'Alok Rahman', timestamp: '2026-05-04 11:00 AM', status: 'pending' },
-  { id: 'wd2', userId: 'u5', userName: 'Chrono Shield', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chrono', amount: 3000, withdrawMethod: 'Nagad', accountNumber: '01512778899', accountName: 'Chrono Ahmed', timestamp: '2026-05-04 09:30 AM', status: 'pending' },
-  { id: 'wd3', userId: 'u1', userName: 'Elite Moco', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Moco', amount: 800, withdrawMethod: 'Bkash', accountNumber: '01712345678', accountName: 'Moco Khan', timestamp: '2026-05-03 05:00 PM', status: 'processing' },
-  { id: 'wd4', userId: 'u2', userName: 'Kelly Swift', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kelly', amount: 500, withdrawMethod: 'Binance', accountNumber: '01812987654', accountName: 'Kelly Akter', timestamp: '2026-05-02 02:00 PM', status: 'completed' },
-];
-
-const demoActivities: Activity[] = [
-  { id: 'act1', type: 'join', userId: 'u1', userName: 'Elite Moco', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Moco', matchName: 'Pro Tournament #102', timestamp: '2 mins ago' },
-  { id: 'act2', type: 'deposit', userId: 'u2', userName: 'Kelly Swift', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kelly', amount: 500, timestamp: '5 mins ago', status: 'approved' },
-  { id: 'act3', type: 'join', userId: 'u3', userName: 'Alok Rhythms', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alok', matchName: 'Elite Scrims', timestamp: '12 mins ago' },
-  { id: 'act4', type: 'withdrawal', userId: 'u5', userName: 'Chrono Shield', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Chrono', amount: 1200, timestamp: '25 mins ago', status: 'completed' },
-  { id: 'act5', type: 'win', userId: 'u1', userName: 'Elite Moco', userAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Moco', amount: 2500, matchName: 'Weekend Clash', timestamp: '1 hour ago' },
-];
+// ============ DATA (Firebase only, no demo data) ============
 
 // ============ CONTEXT ============
 
 const AdminDashboardContext = createContext<AdminDashboardContextType | undefined>(undefined);
 
-const convertToAdminMatches = (m: Match[]): AdminMatch[] => m.map(match => {
-  const innerSections: Team[] = [];
-  if (match.team1) innerSections.push({ ...match.team1, id: match.team1.id || 't1' });
-  if (match.team2) innerSections.push({ ...match.team2, id: match.team2.id || 't2' });
-  if (match.team3) innerSections.push({ ...match.team3, id: match.team3.id || 't3' });
-
-  return {
-    ...match,
-    innerSections,
-    createdAt: '2026-05-01',
-    scheduledStart: match.time,
-    countdownMinutes: match.status === 'live' ? 600 : 0,
-    participantIds: match.joinedUsers.map(u => u.id),
-    liveStartedAt: match.status === 'live' ? Date.now() : undefined,
-  };
-});
-
 export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [adminMatches, setAdminMatches] = useState<AdminMatch[]>(() => {
-    const saved = localStorage.getItem('adminMatches');
-    if (saved) {
-      const parsed = JSON.parse(saved) as AdminMatch[];
-      
-      // If the number of matches changed in mockData, override localStorage
-      if (parsed.length !== defaultMatches.length) {
-        return convertToAdminMatches(defaultMatches);
-      }
-
-      return parsed.map(match => {
-        const defaultMatch = defaultMatches.find(dm => dm.id === match.id);
-        if (defaultMatch) {
-          let innerSections = match.innerSections;
-          if (!innerSections) {
-            innerSections = [];
-            if (match.team1) innerSections.push({ ...match.team1, id: match.team1.id || 't1' });
-            if (match.team2) innerSections.push({ ...match.team2, id: match.team2.id || 't2' });
-            if (match.team3) innerSections.push({ ...match.team3, id: match.team3.id || 't3' });
-          }
-          return {
-            ...match,
-            innerSections,
-            name: defaultMatch.name,
-            group: defaultMatch.group,
-            team1: { ...match.team1, logo: defaultMatch.team1.logo, entryType: match.team1.entryType || defaultMatch.team1.entryType, entryFee: match.team1.entryFee || defaultMatch.team1.entryFee, winPrize: match.team1.winPrize || defaultMatch.team1.winPrize },
-            team2: { ...match.team2, logo: defaultMatch.team2.logo, entryType: match.team2.entryType || defaultMatch.team2.entryType, entryFee: match.team2.entryFee || defaultMatch.team2.entryFee, winPrize: match.team2.winPrize || defaultMatch.team2.winPrize },
-            team3: defaultMatch.team3 ? { ...(match.team3 || {}), ...defaultMatch.team3, entryType: (match.team3 && match.team3.entryType) || defaultMatch.team3.entryType, entryFee: (match.team3 && match.team3.entryFee) || defaultMatch.team3.entryFee, winPrize: (match.team3 && match.team3.winPrize) || defaultMatch.team3.winPrize } : match.team3,
-            category: defaultMatch.category,
-            map: defaultMatch.map,
-            version: defaultMatch.version,
-            perKillReward: defaultMatch.perKillReward,
-            prizePool: defaultMatch.prizePool,
-            bids: defaultMatch.bids,
-            rules: defaultMatch.rules || match.rules,
-            gameId: defaultMatch.gameId || match.gameId,
-            gamePassword: defaultMatch.gamePassword || match.gamePassword,
-            entryType: defaultMatch.entryType || match.entryType,
-            entryFee: defaultMatch.entryFee || match.entryFee
-          };
-        }
-        return match;
-      });
-    }
-    return convertToAdminMatches(defaultMatches);
-  });
-
-  const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>(() => {
-    const saved = localStorage.getItem('adminPayments');
-    return saved ? JSON.parse(saved) : demoPayments;
-  });
-
-  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>(() => {
-    const saved = localStorage.getItem('adminWithdrawals');
-    return saved ? JSON.parse(saved) : demoWithdrawals;
-  });
-
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>(() => {
-    const saved = localStorage.getItem('adminUsers');
-    return saved ? JSON.parse(saved) : demoUsers;
-  });
-
-  const [winners, setWinners] = useState<Winner[]>(() => {
-    const saved = localStorage.getItem('adminWinners');
-    return saved ? JSON.parse(saved) : defaultWinners;
-  });
-
-  const [activities, setActivities] = useState<Activity[]>(() => {
-    const saved = localStorage.getItem('adminActivities');
-    return saved ? JSON.parse(saved) : demoActivities;
-  });
+  const [adminMatches, setAdminMatches] = useState<AdminMatch[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
+  const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [winners, setWinners] = useState<Winner[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
 
@@ -309,79 +182,43 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           status: data.status || 'active'
         };
       });
-      setAdminUsers(prev => {
-        const merged = [...firebaseUsers];
-        demoUsers.forEach(du => {
-          if (!merged.find(u => u.id === du.id)) merged.push(du);
-        });
-        return merged;
-      });
+      setAdminUsers(firebaseUsers);
     }, (error) => console.error('Error fetching firebase users:', error));
 
     // Payments Listener
     const qPayments = query(collection(db, 'payments'), orderBy('timestamp', 'desc'));
     const unsubscribePayments = onSnapshot(qPayments, (snapshot) => {
-      const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPaymentRequests(prev => {
-        const merged = [...payments];
-        demoPayments.forEach(dp => {
-          if (!merged.find(p => p.id === dp.id)) merged.push(dp);
-        });
-        return merged;
-      });
+      const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PaymentRequest[];
+      setPaymentRequests(payments);
     });
 
     // Withdrawals Listener
     const qWithdrawals = query(collection(db, 'withdrawals'), orderBy('timestamp', 'desc'));
     const unsubscribeWithdrawals = onSnapshot(qWithdrawals, (snapshot) => {
-      const withdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setWithdrawalRequests(prev => {
-        const merged = [...withdrawals];
-        demoWithdrawals.forEach(dw => {
-          if (!merged.find(w => w.id === dw.id)) merged.push(dw);
-        });
-        return merged;
-      });
+      const withdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as WithdrawalRequest[];
+      setWithdrawalRequests(withdrawals);
     });
     
     // Activities Listener
     const qActivities = query(collection(db, 'activities'), orderBy('timestamp', 'desc'));
     const unsubscribeActivities = onSnapshot(qActivities, (snapshot) => {
-      const fbActivities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setActivities(prev => {
-        const merged = [...fbActivities];
-        demoActivities.forEach(da => {
-          if (!merged.find(a => a.id === da.id)) merged.push(da);
-        });
-        return merged.slice(0, 50); // Keep last 50
-      });
+      const fbActivities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Activity[];
+      setActivities(fbActivities.slice(0, 50));
     });
 
     
     // Matches Listener
     const qMatches = query(collection(db, 'matches'), orderBy('createdAt', 'desc'));
     const unsubscribeMatches = onSnapshot(qMatches, (snapshot) => {
-      const fbMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAdminMatches(prev => {
-        const merged = [...fbMatches];
-        defaultMatches.forEach(dm => {
-          if (!merged.find(m => m.id === dm.id)) merged.push(dm);
-        });
-        return merged;
-      });
+      const fbMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AdminMatch[];
+      setAdminMatches(fbMatches);
     });
 
     // Winners Listener
     const qWinners = query(collection(db, 'winners'), orderBy('id', 'desc'));
     const unsubscribeWinners = onSnapshot(qWinners, (snapshot) => {
-      const fbWinners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setWinners(prev => {
-        const merged = [...fbWinners];
-        defaultWinners.forEach(dw => {
-          if (!merged.find(w => w.id === dw.id)) merged.push(dw);
-        });
-        return merged;
-      });
+      const fbWinners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Winner[];
+      setWinners(fbWinners);
     });
 
     return () => {
