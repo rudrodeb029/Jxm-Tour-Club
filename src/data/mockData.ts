@@ -12,6 +12,7 @@ export interface Team {
   entryType?: string;
   entryFee?: number;
   winPrize?: number;
+  mainCategory?: string;
 }
 
 export interface User {

@@ -15,6 +15,7 @@ const InnerSectionsTab = () => {
     logo: '',
     color: '#DC2626',
     entryType: 'Solo',
+    mainCategory: 'Full Map Match',
     entryFee: 10,
     winPrize: 500,
     percentage: '50%',
@@ -39,7 +40,7 @@ const InnerSectionsTab = () => {
     setShowAddCard(false);
     setEditingCard(null);
     setCardForm({
-      name: '', logo: '', color: '#DC2626', entryType: 'Solo', entryFee: 10, winPrize: 500,
+      name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
       percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
     });
   };
@@ -65,7 +66,7 @@ const InnerSectionsTab = () => {
           onClick={() => {
             setEditingCard(null);
             setCardForm({
-              name: '', logo: '', color: '#DC2626', entryType: 'Solo', entryFee: 10, winPrize: 500,
+              name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
               percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
             });
             setShowAddCard(true);
@@ -105,7 +106,10 @@ const InnerSectionsTab = () => {
                 <img src={card.logo} alt={card.name} style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', objectFit: 'cover', border: `2px solid ${card.color}` }} />
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>{card.name}</h3>
-                  <span style={{ color: card.color, fontWeight: 700, fontSize: '0.85rem' }}>{card.entryType}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                    <span style={{ color: card.color, fontWeight: 700, fontSize: '0.85rem' }}>{card.entryType}</span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '8px' }}>{card.mainCategory || 'Full Map Match'}</span>
+                  </div>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', fontSize: '0.9rem' }}>
@@ -146,6 +150,15 @@ const InnerSectionsTab = () => {
               <div>
                 <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Logo URL</label>
                 <input type="text" value={cardForm.logo} onChange={e => setCardForm({...cardForm, logo: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="/images/teams/red_dragons.png" />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Main Category</label>
+                <select value={cardForm.mainCategory} onChange={e => setCardForm({...cardForm, mainCategory: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px', appearance: 'none', cursor: 'pointer' }}>
+                  <option value="Full Map Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Full Map Match</option>
+                  <option value="Lone-Wolf Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Lone-Wolf Match</option>
+                  <option value="CS Rank Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>CS Rank Match</option>
+                </select>
               </div>
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
