@@ -68,8 +68,6 @@ const Profile = () => {
   const { currentUser, logout } = useAuth();
   const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
   
-  const isAnyProfileModalOpen = showSecurity || showPayments || showEditProfile || showNotifications || showLanguage || showHelp || deleteConfirmation !== null;
-  useLockBodyScroll(isAnyProfileModalOpen);
 
   // Sync with Admin Dashboard user data
   const adminUser = adminUsers.find(u => u.id === displayUserId);
@@ -141,6 +139,10 @@ const Profile = () => {
     const saved = localStorage.getItem('notificationPrefs');
     return saved ? JSON.parse(saved) : { push: true, email: false, updates: true };
   });
+
+  const isAnyProfileModalOpen = showSecurity || showPayments || showEditProfile || showNotifications || showLanguage || showHelp || deleteConfirmation !== null || showAddMethod;
+  useLockBodyScroll(isAnyProfileModalOpen);
+
 
   useEffect(() => {
     localStorage.setItem('notificationPrefs', JSON.stringify(notificationPrefs));
