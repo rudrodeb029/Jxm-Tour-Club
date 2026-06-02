@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { matches as defaultMatches, winners as defaultWinners } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 
 
 // ============ TYPES ============
@@ -277,6 +279,48 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
 
   const clearWinnerCeremony = () => setActiveWinnerCeremony(null);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const firebaseUsers: AdminUser[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        let joinDate = new Date().toISOString().split('T')[0];
+        if (data.createdAt) {
+          if (typeof data.createdAt.toDate === 'function') {
+            joinDate = data.createdAt.toDate().toISOString().split('T')[0];
+          } else if (data.createdAt.seconds) {
+            joinDate = new Date(data.createdAt.seconds * 1000).toISOString().split('T')[0];
+          }
+        }
+        return {
+          id: doc.id,
+          name: data.name || 'Unknown',
+          username: data.username || '@user',
+          avatar: data.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown',
+          balance: data.balance || 0,
+          joinDate: joinDate,
+          phone: data.phone || 'N/A',
+          totalMatches: data.totalMatches || 0,
+          totalWins: data.totalWins || 0,
+          status: data.status || 'active'
+        };
+      });
+      
+      setAdminUsers(prev => {
+        const merged = [...firebaseUsers];
+        demoUsers.forEach(du => {
+          if (!merged.find(u => u.id === du.id)) {
+            merged.push(du);
+          }
+        });
+        return merged;
+      });
+    }, (error) => {
+      console.error("Error fetching firebase users:", error);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Persist to localStorage
   useEffect(() => { localStorage.setItem('adminMatches', JSON.stringify(adminMatches)); }, [adminMatches]);
