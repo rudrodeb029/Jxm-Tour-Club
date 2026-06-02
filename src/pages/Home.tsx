@@ -60,6 +60,7 @@ const Home = () => {
   });
 
   const displayStats = [
+    { id: 'live', value: adminStats.activeMatches.toString(), label: 'Live Matches' },
     { id: 'participants', value: adminStats.totalUsers.toLocaleString(), label: 'Participants' },
     { id: 'winners', value: adminStats.totalWinners.toLocaleString(), label: 'Winners' }
   ];

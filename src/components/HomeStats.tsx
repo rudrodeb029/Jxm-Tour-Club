@@ -10,6 +10,7 @@ interface HomeStatsProps {
 
 const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit, customStats }) => {
   const defaultStats = [
+    { id: 'live', label: 'LIVE MATCHES', value: '2', color: '#10B981', glow: 'rgba(16, 185, 129, 0.5)' },
     { id: 'participants', label: 'PARTICIPANTS', value: '7', color: '#38BDF8', glow: 'rgba(56, 189, 248, 0.5)' },
     { id: 'winners', label: 'WINNERS', value: '5', color: '#FBBF24', glow: 'rgba(251, 191, 36, 0.5)' }
   ];
@@ -22,7 +23,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
   return (
     <div style={{ 
       display: 'grid', 
-      gridTemplateColumns: 'repeat(2, 1fr)', 
+      gridTemplateColumns: 'repeat(3, 1fr)', 
       gap: '12px', 
       padding: '0 16px', 
       marginBottom: '32px',
@@ -96,6 +97,11 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           box-shadow: var(--card-shadow);
         }
         
+        @keyframes blink {
+          0%, 100% { opacity: 1; box-shadow: 0 0 10px #10B981; }
+          50% { opacity: 0.4; box-shadow: 0 0 2px #10B981; }
+        }
+        
         .led-indicator {
           position: absolute;
           top: -4px;
@@ -106,10 +112,41 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           border-radius: 50%;
           border: 2px solid var(--modal-bg);
           box-shadow: 0 0 10px #10B981;
+          animation: blink 1.5s infinite ease-in-out;
         }
       `}</style>
       
-        <div className="stat-value" style={{ color: '#38BDF8' }}>{stats[0].value}</div>
+      {/* 1. Live Matches */}
+      <div 
+        className="stat-card-3d"
+        onClick={() => onStatClick('live')}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="icon-box-3d">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 12h4l3-9 5 18 3-9h3"/>
+          </svg>
+          <div className="led-indicator" />
+        </div>
+        <div className="stat-value" style={{ color: '#10B981' }}>{stats[0].value}</div>
+        <div className="stat-label">LIVE MATCHES</div>
+      </div>
+
+      {/* 2. Participants */}
+      <div 
+        className="stat-card-3d"
+        onClick={() => onStatClick('participants')}
+        style={{ cursor: 'pointer' }}
+      >
+        <div className="bridge-pipe bridge-left" />
+        <div className="bridge-pipe bridge-right" />
+        
+        <div className="icon-box-3d">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div className="stat-value" style={{ color: '#38BDF8' }}>{stats[1].value}</div>
         <div className="stat-label">PARTICIPANTS</div>
       </div>
 
@@ -138,7 +175,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
             </svg>
           </div>
         </div>
-        <div className="stat-value" style={{ color: '#FBBF24' }}>{stats[1].value}</div>
+        <div className="stat-value" style={{ color: '#FBBF24' }}>{stats[2].value}</div>
         <div className="stat-label">WINNERS</div>
       </div>
 
