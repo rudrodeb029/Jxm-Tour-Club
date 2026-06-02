@@ -218,54 +218,66 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           </div>
         </div>
         
-        {/* Match Status (Live/Upcoming/Finished) */}
+        {/* 1st Win / Team 1 (Gold) */}
         <div style={{ 
-          flex: 3, 
-          background: status === 'live' ? 'linear-gradient(135deg, #10b981, #047857)' : (status === 'finished' ? 'linear-gradient(135deg, #475569, #1e293b)' : 'linear-gradient(135deg, #f59e0b, #b45309)'), 
-          border: status === 'live' ? '1px solid #34d399' : (status === 'finished' ? '1px solid #64748b' : '1px solid #fbbf24'),
+          flex: 1, 
+          background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
+          border: '1px solid #fef08a',
           borderRadius: '8px', 
           padding: '12px 6px', 
           transform: 'skewX(-8deg)',
           boxShadow: 'var(--card-shadow)',
           display: 'flex', justifyContent: 'center'
         }}>
-          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            {status === 'live' && (
-              <>
-                <div style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px', color: '#a7f3d0', textShadow: 'var(--text-shadow-sm)' }}>
-                  MATCH STATUS
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#fff', animation: 'pulse 1.5s infinite', boxShadow: '0 0 10px #fff' }} />
-                  <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', textShadow: 'var(--text-shadow-md)', letterSpacing: '0.05em' }}>
-                    LIVE NOW
-                  </div>
-                </div>
-              </>
-            )}
-            {status === 'upcoming' && (
-              <>
-                <div style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px', color: '#fef3c7', textShadow: 'var(--text-shadow-sm)' }}>
-                  STARTS IN
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '1.1rem' }}>🕒</span>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                    {timeLeft}
-                  </div>
-                </div>
-              </>
-            )}
-            {status === 'finished' && (
-              <>
-                <div style={{ fontSize: '0.65rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px', color: '#cbd5e1', textShadow: 'var(--text-shadow-sm)' }}>
-                  MATCH STATUS
-                </div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', textShadow: 'var(--text-shadow-md)', letterSpacing: '0.05em' }}>
-                  ENDED
-                </div>
-              </>
-            )}
+          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)' }}>
+              👤 {team1?.entryType || 'SOLO'}
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
+              {status === 'live' ? <span style={{ color: '#ef4444' }}>LIVE NOW</span> : (status === 'upcoming' ? timeLeft : 'ENDED')}
+            </div>
+          </div>
+        </div>
+
+        {/* 2nd Win / Team 2 (Silver) */}
+        <div style={{ 
+          flex: 1, 
+          background: 'linear-gradient(135deg, #94a3b8, #475569)', 
+          border: '1px solid #f1f5f9',
+          borderRadius: '8px', 
+          padding: '12px 6px', 
+          transform: 'skewX(-8deg)',
+          boxShadow: 'var(--card-shadow)',
+          display: 'flex', justifyContent: 'center'
+        }}>
+          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)' }}>
+              👥 {team2?.entryType || 'DUO'}
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
+              {status === 'live' ? <span style={{ color: '#ef4444' }}>LIVE NOW</span> : (status === 'upcoming' ? timeLeft : 'ENDED')}
+            </div>
+          </div>
+        </div>
+
+        {/* 3rd Win / Team 3 (Bronze) */}
+        <div style={{ 
+          flex: 1, 
+          background: 'linear-gradient(135deg, #92400e, #5c2705)', 
+          border: '1px solid #fbbf24',
+          borderRadius: '8px', 
+          padding: '12px 6px', 
+          transform: 'skewX(-8deg)',
+          boxShadow: 'var(--card-shadow)',
+          display: 'flex', justifyContent: 'center'
+        }}>
+          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)' }}>
+              🛡️ {team3?.entryType || 'SQUAD'}
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
+              {status === 'live' ? <span style={{ color: '#ef4444' }}>LIVE NOW</span> : (status === 'upcoming' ? timeLeft : 'ENDED')}
+            </div>
           </div>
         </div>
       </div>
@@ -312,17 +324,39 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         </div>
       </div>
 
-      {/* Bottom Join Area */}
+      {/* Bottom Join & Live/Countdown Area */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ display: 'flex', marginLeft: '0px' }}>
-            {[1,2,3].map(i => (
-              <div key={i} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #334155', background: 'var(--modal-bg)', marginLeft: i > 1 ? '-14px' : '0', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.6)' }}>
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+123}`} alt="" style={{ width: '100%' }} />
-              </div>
-            ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {status === 'live' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', animation: 'pulse 1.5s infinite' }} />
+              <span style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: 900, letterSpacing: '0.05em' }}>MATCH IS LIVE</span>
+            </div>
+          )}
+          {status === 'upcoming' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '1rem' }}>🕒</span>
+              <span style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 900, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                STARTS IN: {timeLeft}
+              </span>
+            </div>
+          )}
+          {status === 'finished' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 900, letterSpacing: '0.05em' }}>MATCH ENDED</span>
+            </div>
+          )}
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', marginLeft: '0px' }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #334155', background: 'var(--modal-bg)', marginLeft: i > 1 ? '-10px' : '0', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.6)' }}>
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+123}`} alt="" style={{ width: '100%' }} />
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{currentParticipants} Joined</span>
           </div>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{currentParticipants} Joined</span>
         </div>
         
         {/* Giant Physical 3D Button */}
