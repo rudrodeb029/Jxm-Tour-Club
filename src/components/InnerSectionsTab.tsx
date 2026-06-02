@@ -18,6 +18,9 @@ const InnerSectionsTab = () => {
     mainCategory: 'Full Map Match',
     entryFee: 10,
     winPrize: 500,
+    perKill: 0,
+    map: 'Bermuda',
+    version: 'MOBILE',
     percentage: '50%',
     kills: 0,
     damage: 0,
@@ -41,6 +44,7 @@ const InnerSectionsTab = () => {
     setEditingCard(null);
     setCardForm({
       name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
+      perKill: 0, map: 'Bermuda', version: 'MOBILE',
       percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
     });
   };
@@ -67,6 +71,7 @@ const InnerSectionsTab = () => {
             setEditingCard(null);
             setCardForm({
               name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
+              perKill: 0, map: 'Bermuda', version: 'MOBILE',
               percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
             });
             setShowAddCard(true);
@@ -185,6 +190,22 @@ const InnerSectionsTab = () => {
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Win Prize</label>
                   <input type="number" value={cardForm.winPrize} onChange={e => setCardForm({...cardForm, winPrize: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Map</label>
+                  <input type="text" value={cardForm.map || ''} onChange={e => setCardForm({...cardForm, map: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. Bermuda" />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Version</label>
+                  <input type="text" value={cardForm.version || ''} onChange={e => setCardForm({...cardForm, version: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. MOBILE" />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Per Kill Reward</label>
+                <input type="number" value={cardForm.perKill || 0} onChange={e => setCardForm({...cardForm, perKill: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
               </div>
             </div>
 

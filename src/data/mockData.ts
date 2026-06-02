@@ -13,6 +13,9 @@ export interface Team {
   entryFee?: number;
   winPrize?: number;
   mainCategory?: string;
+  perKill?: number;
+  map?: string;
+  version?: string;
 }
 
 export interface User {

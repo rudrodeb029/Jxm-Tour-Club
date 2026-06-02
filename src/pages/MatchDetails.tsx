@@ -101,6 +101,10 @@ const MatchDetails = () => {
   const dynamicFirstPrize = firstPrizeValue;
   const dynamicSecondPrize = secondPrizeValue;
   const dynamicThirdPrize = thirdPrizeValue;
+  
+  const dynamicPerKill = currentTeam?.perKill || match.perKillReward || 0;
+  const dynamicMap = currentTeam?.map || match.map || 'Bermuda';
+  const dynamicVersion = currentTeam?.version || match.version || 'MOBILE';
 
   useEffect(() => {
     if (entryFee) {
@@ -297,9 +301,9 @@ const MatchDetails = () => {
             { label: 'WIN PRIZE', value: formatCurrency(dynamicPrizePool), color: 'var(--accent-orange)' },
             { label: 'ENTRY TYPE', value: dynamicEntryType, color: 'var(--text-primary)' },
             { label: 'ENTRY FEE', value: formatCurrency(dynamicEntryFee), color: 'var(--text-primary)' },
-            { label: 'PER KILL', value: formatCurrency(match.perKillReward || 0), color: '#4ADE80' },
-            { label: 'MAP', value: match.map || 'Bermuda', color: 'var(--text-primary)' },
-            { label: 'VERSION', value: match.version || 'MOBILE', color: 'var(--text-primary)' }
+            { label: 'PER KILL', value: formatCurrency(dynamicPerKill), color: '#4ADE80' },
+            { label: 'MAP', value: dynamicMap, color: 'var(--text-primary)' },
+            { label: 'VERSION', value: dynamicVersion, color: 'var(--text-primary)' }
           ].map((item, idx, arr) => {
             const styles = [
               { bg: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', text: '#fde047' }, // Teal / Gold
