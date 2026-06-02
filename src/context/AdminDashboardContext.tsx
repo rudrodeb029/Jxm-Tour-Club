@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { matches as defaultMatches, winners as defaultWinners } from '../data/mockData';
-import type { Match, Winner } from '../data/mockData';
+import type { Match, Winner, Team } from '../data/mockData';
 
 
 // ============ TYPES ============
@@ -72,6 +72,7 @@ export type AdminMatch = Match & {
   winners?: MatchWinner[];
   participantIds: string[]; // Track who joined for accurate stat updates
   liveStartedAt?: number; // Unix timestamp when match went live
+  innerSections?: Team[];
 };
 
 export interface WinnerCeremony {
@@ -89,6 +90,9 @@ interface AdminDashboardContextType {
   toggleMatchStatus: (id: string, status: 'live' | 'upcoming' | 'finished') => void;
   setMatchWinners: (matchId: string, winners: MatchWinner[]) => void;
   addParticipantToMatch: (matchId: string, userId: string) => void;
+  addMatchCard: (matchId: string, card: Omit<Team, 'id'>) => void;
+  updateMatchCard: (matchId: string, cardId: string, cardUpdates: Partial<Team>) => void;
+  deleteMatchCard: (matchId: string, cardId: string) => void;
   
   // Payments
   paymentRequests: PaymentRequest[];
@@ -180,14 +184,22 @@ const demoActivities: Activity[] = [
 
 const AdminDashboardContext = createContext<AdminDashboardContextType | undefined>(undefined);
 
-const convertToAdminMatches = (m: Match[]): AdminMatch[] => m.map(match => ({
-  ...match,
-  createdAt: '2026-05-01',
-  scheduledStart: match.time,
-  countdownMinutes: match.status === 'live' ? 600 : 0,
-  participantIds: match.joinedUsers.map(u => u.id),
-  liveStartedAt: match.status === 'live' ? Date.now() : undefined,
-}));
+const convertToAdminMatches = (m: Match[]): AdminMatch[] => m.map(match => {
+  const innerSections: Team[] = [];
+  if (match.team1) innerSections.push({ ...match.team1, id: match.team1.id || 't1' });
+  if (match.team2) innerSections.push({ ...match.team2, id: match.team2.id || 't2' });
+  if (match.team3) innerSections.push({ ...match.team3, id: match.team3.id || 't3' });
+
+  return {
+    ...match,
+    innerSections,
+    createdAt: '2026-05-01',
+    scheduledStart: match.time,
+    countdownMinutes: match.status === 'live' ? 600 : 0,
+    participantIds: match.joinedUsers.map(u => u.id),
+    liveStartedAt: match.status === 'live' ? Date.now() : undefined,
+  };
+});
 
 export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [adminMatches, setAdminMatches] = useState<AdminMatch[]>(() => {
@@ -203,8 +215,16 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       return parsed.map(match => {
         const defaultMatch = defaultMatches.find(dm => dm.id === match.id);
         if (defaultMatch) {
+          let innerSections = match.innerSections;
+          if (!innerSections) {
+            innerSections = [];
+            if (match.team1) innerSections.push({ ...match.team1, id: match.team1.id || 't1' });
+            if (match.team2) innerSections.push({ ...match.team2, id: match.team2.id || 't2' });
+            if (match.team3) innerSections.push({ ...match.team3, id: match.team3.id || 't3' });
+          }
           return {
             ...match,
+            innerSections,
             name: defaultMatch.name,
             group: defaultMatch.group,
             team1: { ...match.team1, logo: defaultMatch.team1.logo, entryType: match.team1.entryType || defaultMatch.team1.entryType, entryFee: match.team1.entryFee || defaultMatch.team1.entryFee, winPrize: match.team1.winPrize || defaultMatch.team1.winPrize },
@@ -459,6 +479,37 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const addMatchCard = (matchId: string, card: Omit<Team, 'id'>) => {
+    setAdminMatches(prev => prev.map(m => {
+      if (m.id === matchId) {
+        const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5) };
+        const innerSections = [...(m.innerSections || []), newCard];
+        return { ...m, innerSections, team1: innerSections[0] as any, team2: innerSections[1] as any, team3: innerSections[2] as any };
+      }
+      return m;
+    }));
+  };
+
+  const updateMatchCard = (matchId: string, cardId: string, cardUpdates: Partial<Team>) => {
+    setAdminMatches(prev => prev.map(m => {
+      if (m.id === matchId) {
+        const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cardUpdates } : c);
+        return { ...m, innerSections, team1: innerSections[0] as any, team2: innerSections[1] as any, team3: innerSections[2] as any };
+      }
+      return m;
+    }));
+  };
+
+  const deleteMatchCard = (matchId: string, cardId: string) => {
+    setAdminMatches(prev => prev.map(m => {
+      if (m.id === matchId) {
+        const innerSections = (m.innerSections || []).filter(c => c.id !== cardId);
+        return { ...m, innerSections, team1: innerSections[0] as any, team2: innerSections[1] as any, team3: innerSections[2] as any };
+      }
+      return m;
+    }));
+  };
+
   // Payment operations
   const approvePayment = (id: string) => {
     setPaymentRequests(prev => prev.map(p => {
@@ -608,6 +659,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       winners,
       stats,
       addParticipantToMatch,
+      addMatchCard,
+      updateMatchCard,
+      deleteMatchCard,
       activeWinnerCeremony,
       clearWinnerCeremony,
       activities,

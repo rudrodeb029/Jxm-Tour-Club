@@ -5,6 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import type { AdminMatch } from '../context/AdminDashboardContext';
 import { useChat } from '../context/ChatContext';
 import { useRef } from 'react';
+import InnerSectionsTab from '../components/InnerSectionsTab';
 
 
 const AdminDashboard = () => {
@@ -133,6 +134,7 @@ const AdminDashboard = () => {
     { id: 'payments', icon: '💳', label: 'Payments' },
     { id: 'withdrawals', icon: '💸', label: 'Withdrawals' },
     { id: 'users', icon: '👥', label: 'Users' },
+    { id: 'inner_sections', icon: '🎴', label: 'Inner Sections' },
     { id: 'chats', icon: '💬', label: 'Support' },
   ];
 
@@ -886,6 +888,10 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'inner_sections' && (
+          <InnerSectionsTab />
         )}
 
         {/* CHATS TAB */}

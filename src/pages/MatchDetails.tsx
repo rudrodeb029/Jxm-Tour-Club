@@ -59,8 +59,14 @@ const MatchDetails = () => {
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<'team1' | 'team2' | 'team3' | null>('team1');
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const cards = match?.innerSections || [];
   
+  useEffect(() => {
+    if (!selectedTeam && cards.length > 0) {
+      setSelectedTeam(cards[0].id);
+    }
+  }, [cards, selectedTeam]);
   const hasJoined = (match.participantIds || []).includes(displayUserId);
 
   // Logic to determine if room ID should be visible
@@ -88,7 +94,7 @@ const MatchDetails = () => {
     return false;
   };
 
-  const currentTeam = selectedTeam ? (match[selectedTeam as keyof typeof match] as any) : match.team1;
+  const currentTeam = cards.find(c => c.id === selectedTeam) || cards[0];
   const dynamicEntryType = currentTeam?.entryType || 'Solo';
   const dynamicEntryFee = currentTeam?.entryFee || entryFee;
   const dynamicPrizePool = currentTeam?.winPrize || totalPrizePool;
@@ -138,249 +144,21 @@ const MatchDetails = () => {
       <div style={{ padding: '0 12px', marginBottom: '32px' }}>
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: match.team3 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr', 
+          gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr', 
           gap: '12px' 
         }}>
-          {/* Team 1 Card */}
-          <div 
-            onClick={() => {
-              if (match.status !== 'finished') {
-                setSelectedTeam('team1');
-              }
-            }}
-            className="hover-scale"
-            style={{
-              background: 'var(--glass-bg)',
-              border: `1px solid ${selectedTeam === 'team1' ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-              borderRadius: '28px',
-              padding: '24px 16px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: match.status === 'finished' ? 'default' : 'pointer',
-              boxShadow: selectedTeam === 'team1' 
-                ? `0 15px 35px ${match.team1.color}33, 0 0 15px ${match.team1.color}22` 
-                : 'var(--card-shadow)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            {/* 3D Glow Backlight */}
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              width: '120px',
-              height: '120px',
-              background: `radial-gradient(circle, ${match.team1.color}22 0%, transparent 70%)`,
-              filter: 'blur(20px)',
-              pointerEvents: 'none',
-              zIndex: 0
-            }} />
-
-            {match.status === 'live' && (
-              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                LIVE
-              </div>
-            )}
-            {match.status === 'upcoming' && (
-              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span>🕒</span>
-                {match.time}
-              </div>
-            )}
-            {/* Glowing Logo Container */}
-            <div style={{ 
-              width: '88px', 
-              height: '88px', 
-              borderRadius: '50%', 
-              background: 'rgba(0,0,0,0.4)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              border: `2px solid ${selectedTeam === 'team1' ? 'var(--accent-orange)' : match.team1.color}cc`,
-              boxShadow: `0 0 20px ${match.team1.color}55`,
-              position: 'relative',
-              zIndex: 1,
-              overflow: 'hidden',
-              transition: 'all 0.3s ease'
-            }}>
-              <img 
-                src={match.team1.logo} 
-                alt={match.team1.name} 
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: 'cover',
-                  transition: 'transform 0.5s ease'
-                }} 
-              />
-            </div>
-            
-            <div style={{ zIndex: 1 }}>
-
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{match.team1.name}</h3>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <span>Entry Type</span>
-                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{match.team1.entryType || 'Solo'}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <span>Entry Fee</span>
-                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(match.team1.entryFee || entryFee)}</span>
-              </div>
-            </div>
-
-            {match.status !== 'finished' && (
-              <button
-                type="button"
-                className={selectedTeam === 'team1' ? 'btn btn-primary' : 'btn btn-outline'}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedTeam('team1');
-                  setShowJoinSuccess(false);
-                  setIsBetModalOpen(true);
-                }}
-                style={{
-                  marginTop: '12px'
-                }}
-              >
-                JOIN
-              </button>
-            )}
-          </div>
-
-          {/* Team 2 Card */}
-          <div 
-            onClick={() => {
-              if (match.status !== 'finished') {
-                setSelectedTeam('team2');
-              }
-            }}
-            className="hover-scale"
-            style={{
-              background: 'var(--glass-bg)',
-              border: `1px solid ${selectedTeam === 'team2' ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-              borderRadius: '28px',
-              padding: '24px 16px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: match.status === 'finished' ? 'default' : 'pointer',
-              boxShadow: selectedTeam === 'team2' 
-                ? `0 15px 35px ${match.team2.color}33, 0 0 15px ${match.team2.color}22` 
-                : 'var(--card-shadow)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            {/* 3D Glow Backlight */}
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              width: '120px',
-              height: '120px',
-              background: `radial-gradient(circle, ${match.team2.color}22 0%, transparent 70%)`,
-              filter: 'blur(20px)',
-              pointerEvents: 'none',
-              zIndex: 0
-            }} />
-
-            {match.status === 'live' && (
-              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                LIVE
-              </div>
-            )}
-            {match.status === 'upcoming' && (
-              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span>🕒</span>
-                {match.time}
-              </div>
-            )}
-            {/* Glowing Logo Container */}
-            <div style={{ 
-              width: '88px', 
-              height: '88px', 
-              borderRadius: '50%', 
-              background: 'rgba(0,0,0,0.4)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              border: `2px solid ${selectedTeam === 'team2' ? 'var(--accent-orange)' : match.team2.color}cc`,
-              boxShadow: `0 0 20px ${match.team2.color}55`,
-              position: 'relative',
-              zIndex: 1,
-              overflow: 'hidden',
-              transition: 'all 0.3s ease'
-            }}>
-              <img 
-                src={match.team2.logo} 
-                alt={match.team2.name} 
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: 'cover',
-                  transition: 'transform 0.5s ease'
-                }} 
-              />
-            </div>
-            
-            <div style={{ zIndex: 1 }}>
-
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{match.team2.name}</h3>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <span>Entry Type</span>
-                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{match.team2.entryType || 'Duo'}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <span>Entry Fee</span>
-                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(match.team2.entryFee || (entryFee * 2))}</span>
-              </div>
-            </div>
-
-            {match.status !== 'finished' && (
-              <button
-                type="button"
-                className={selectedTeam === 'team2' ? 'btn btn-primary' : 'btn btn-outline'}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedTeam('team2');
-                  setShowJoinSuccess(false);
-                  setIsBetModalOpen(true);
-                }}
-                style={{
-                  marginTop: '12px'
-                }}
-              >
-                JOIN
-              </button>
-            )}
-          </div>
-
-          {/* Team 3 Card */}
-          {match.team3 && (
+          {cards.map((card) => (
             <div 
+              key={card.id}
               onClick={() => {
                 if (match.status !== 'finished') {
-                  setSelectedTeam('team3');
+                  setSelectedTeam(card.id);
                 }
               }}
               className="hover-scale"
               style={{
                 background: 'var(--glass-bg)',
-                border: `1px solid ${selectedTeam === 'team3' ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+                border: `1px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
                 borderRadius: '28px',
                 padding: '24px 16px',
                 display: 'flex',
@@ -388,8 +166,8 @@ const MatchDetails = () => {
                 alignItems: 'center',
                 gap: '16px',
                 cursor: match.status === 'finished' ? 'default' : 'pointer',
-                boxShadow: selectedTeam === 'team3' 
-                  ? `0 15px 35px ${match.team3.color}33, 0 0 15px ${match.team3.color}22` 
+                boxShadow: selectedTeam === card.id 
+                  ? `0 15px 35px ${card.color}33, 0 0 15px ${card.color}22` 
                   : 'var(--card-shadow)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 textAlign: 'center',
@@ -403,7 +181,7 @@ const MatchDetails = () => {
                 top: '-20px',
                 width: '120px',
                 height: '120px',
-                background: `radial-gradient(circle, ${match.team3.color}22 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${card.color}22 0%, transparent 70%)`,
                 filter: 'blur(20px)',
                 pointerEvents: 'none',
                 zIndex: 0
@@ -430,16 +208,16 @@ const MatchDetails = () => {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                border: `2px solid ${selectedTeam === 'team3' ? 'var(--accent-orange)' : match.team3.color}cc`,
-                boxShadow: `0 0 20px ${match.team3.color}55`,
+                border: `2px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : card.color + 'cc'}`,
+                boxShadow: `0 0 20px ${card.color}55`,
                 position: 'relative',
                 zIndex: 1,
                 overflow: 'hidden',
                 transition: 'all 0.3s ease'
               }}>
                 <img 
-                  src={match.team3.logo} 
-                  alt={match.team3.name} 
+                  src={card.logo} 
+                  alt={card.name} 
                   style={{ 
                     width: '100%', 
                     height: '100%', 
@@ -450,27 +228,27 @@ const MatchDetails = () => {
               </div>
               
               <div style={{ zIndex: 1 }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{match.team3.name}</h3>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{card.name}</h3>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                   <span>Entry Type</span>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{match.team3.entryType || 'Squad'}</span>
+                  <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{card.entryType || 'Solo'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                   <span>Entry Fee</span>
-                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(match.team3.entryFee || (entryFee * 4))}</span>
+                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(card.entryFee || entryFee)}</span>
                 </div>
               </div>
 
               {match.status !== 'finished' && (
                 <button
                   type="button"
-                  className={selectedTeam === 'team3' ? 'btn btn-primary' : 'btn btn-outline'}
+                  className={selectedTeam === card.id ? 'btn btn-primary' : 'btn btn-outline'}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedTeam('team3');
+                    setSelectedTeam(card.id);
                     setShowJoinSuccess(false);
                     setIsBetModalOpen(true);
                   }}
@@ -482,7 +260,7 @@ const MatchDetails = () => {
                 </button>
               )}
             </div>
-          )}
+          ))}
         </div>
       </div>
 
@@ -822,48 +600,32 @@ const MatchDetails = () => {
                   <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>{match.group} Arena</p>
                 </div>
 
-                {/* Team Selection Options */}
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '10px' }}>Betting Team</p>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <button 
-                      type="button"
-                      onClick={() => setSelectedTeam('team1')}
-                      style={{ 
-                        flex: 1, 
-                        padding: '12px 10px', 
-                        borderRadius: '16px', 
-                        border: '2px solid',
-                        borderColor: selectedTeam === 'team1' ? 'var(--accent-orange)' : 'var(--glass-border)', 
-                        background: selectedTeam === 'team1' ? 'rgba(249, 111, 46, 0.1)' : 'var(--glass-bg)', 
-                        color: 'var(--text-primary)', 
-                        fontWeight: 700, 
-                        fontSize: '0.85rem', 
-                        cursor: 'pointer', 
-                        transition: 'all 0.3s ease' 
-                      }}
-                    >
-                      {match.team1.name}
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => setSelectedTeam('team2')}
-                      style={{ 
-                        flex: 1, 
-                        padding: '12px 10px', 
-                        borderRadius: '16px', 
-                        border: '2px solid',
-                        borderColor: selectedTeam === 'team2' ? 'var(--accent-orange)' : 'var(--glass-border)', 
-                        background: selectedTeam === 'team2' ? 'rgba(249, 111, 46, 0.1)' : 'var(--glass-bg)', 
-                        color: 'var(--text-primary)', 
-                        fontWeight: 700, 
-                        fontSize: '0.85rem', 
-                        cursor: 'pointer', 
-                        transition: 'all 0.3s ease' 
-                      }}
-                    >
-                      {match.team2.name}
-                    </button>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {cards.map(card => (
+                      <button 
+                        key={card.id}
+                        type="button"
+                        onClick={() => setSelectedTeam(card.id)}
+                        style={{ 
+                          flex: 1, 
+                          minWidth: '100px',
+                          padding: '12px 10px', 
+                          borderRadius: '16px', 
+                          border: '2px solid',
+                          borderColor: selectedTeam === card.id ? 'var(--accent-orange)' : 'var(--glass-border)', 
+                          background: selectedTeam === card.id ? 'rgba(249, 111, 46, 0.1)' : 'var(--glass-bg)', 
+                          color: 'var(--text-primary)', 
+                          fontWeight: 700, 
+                          fontSize: '0.85rem', 
+                          cursor: 'pointer', 
+                          transition: 'all 0.3s ease' 
+                        }}
+                      >
+                        {card.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -893,7 +655,7 @@ const MatchDetails = () => {
                   style={{ padding: '16px', borderRadius: '16px', fontSize: '1rem', letterSpacing: '0.05em' }}
                   onClick={handleJoinMatch}
                 >
-                  Join Now {selectedTeam ? `(Bet ${selectedTeam === 'team1' ? match.team1.name : match.team2.name})` : ''}
+                  Join Now {selectedTeam ? `(Bet ${currentTeam?.name || ''})` : ''}
                 </button>
                 
                 <button 
