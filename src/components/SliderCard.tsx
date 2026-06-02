@@ -3,11 +3,22 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
 
+interface TeamInfo {
+  name: string; 
+  logo: string; 
+  percentage: string; 
+  color: string;
+  entryType?: string;
+  entryFee?: number;
+  winPrize?: number;
+}
+
 interface SliderCardProps {
   group: string;
   players: string;
-  team1: { name: string; logo: string; percentage: string; color: string };
-  team2: { name: string; logo: string; percentage: string; color: string };
+  team1: TeamInfo;
+  team2: TeamInfo;
+  team3?: TeamInfo;
   score: string;
   time: string;
   bids: string[];
@@ -30,7 +41,7 @@ interface SliderCardProps {
   map?: string;
 }
 
-const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map }: SliderCardProps) => {
+const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map }: SliderCardProps) => {
   const { t } = useLanguage();
   const { formatCurrency } = useCurrency();
   const isLive = status === 'live';
@@ -55,6 +66,43 @@ const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids
   const firstPrizeValue = Math.round((firstPrize !== undefined && firstPrize > 0 ? firstPrize : totalPrizePool * 0.5) * 100) / 100;
   const secondPrizeValue = Math.round((secondPrize !== undefined && secondPrize > 0 ? secondPrize : totalPrizePool * 0.3) * 100) / 100;
   const thirdPrizeValue = Math.round((thirdPrize !== undefined && thirdPrize > 0 ? thirdPrize : totalPrizePool * 0.2) * 100) / 100;
+
+  // Countdown timer logic
+  const [timeLeft, setTimeLeft] = useState('');
+  
+  useEffect(() => {
+    if (status !== 'upcoming' || !time) return;
+    
+    const updateCountdown = () => {
+      const nowTime = new Date();
+      const [hours, minutes] = time.split(':').map(Number);
+      
+      let targetTime = new Date();
+      targetTime.setHours(hours || 0, minutes || 0, 0, 0);
+      
+      // If time has already passed today, assume it's for tomorrow
+      if (targetTime.getTime() < nowTime.getTime()) {
+        targetTime.setDate(targetTime.getDate() + 1);
+      }
+      
+      const diff = targetTime.getTime() - nowTime.getTime();
+      
+      if (diff <= 0) {
+        setTimeLeft('STARTING SOON');
+        return;
+      }
+      
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    };
+    
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [status, time]);
 
   return (
     <div 
@@ -170,7 +218,7 @@ const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids
           </div>
         </div>
         
-        {/* 1st Win (Gold) */}
+        {/* 1st Win / Team 1 (Gold) */}
         <div style={{ 
           flex: 1, 
           background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
@@ -182,12 +230,16 @@ const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids
           display: 'flex', justifyContent: 'center'
         }}>
           <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)' }}>🏆 1ST WIN</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{formatCurrency(firstPrizeValue)}</div>
+            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)' }}>
+              👤 {team1?.entryType || 'SOLO'}
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>
+              {formatCurrency(team1?.winPrize || firstPrizeValue)}
+            </div>
           </div>
         </div>
 
-        {/* 2nd Win (Silver) */}
+        {/* 2nd Win / Team 2 (Silver) */}
         <div style={{ 
           flex: 1, 
           background: 'linear-gradient(135deg, #94a3b8, #475569)', 
@@ -199,12 +251,16 @@ const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids
           display: 'flex', justifyContent: 'center'
         }}>
           <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)' }}>🥈 2ND WIN</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{formatCurrency(secondPrizeValue)}</div>
+            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)' }}>
+              👥 {team2?.entryType || 'DUO'}
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>
+              {formatCurrency(team2?.winPrize || secondPrizeValue)}
+            </div>
           </div>
         </div>
 
-        {/* 3rd Win (Bronze) */}
+        {/* 3rd Win / Team 3 (Bronze) */}
         <div style={{ 
           flex: 1, 
           background: 'linear-gradient(135deg, #92400e, #5c2705)', 
@@ -216,8 +272,12 @@ const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids
           display: 'flex', justifyContent: 'center'
         }}>
           <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)' }}>🥉 3RD WIN</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{formatCurrency(thirdPrizeValue)}</div>
+            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)' }}>
+              🛡️ {team3?.entryType || 'SQUAD'}
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>
+              {formatCurrency(team3?.winPrize || thirdPrizeValue)}
+            </div>
           </div>
         </div>
       </div>
@@ -264,17 +324,39 @@ const SliderCard = ({ group, players, team1, team2, score, time, bids, totalBids
         </div>
       </div>
 
-      {/* Bottom Join Area */}
+      {/* Bottom Join & Live/Countdown Area */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ display: 'flex', marginLeft: '0px' }}>
-            {[1,2,3].map(i => (
-              <div key={i} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #334155', background: 'var(--modal-bg)', marginLeft: i > 1 ? '-14px' : '0', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.6)' }}>
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+123}`} alt="" style={{ width: '100%' }} />
-              </div>
-            ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {status === 'live' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', animation: 'pulse 1.5s infinite' }} />
+              <span style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: 900, letterSpacing: '0.05em' }}>MATCH IS LIVE</span>
+            </div>
+          )}
+          {status === 'upcoming' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '1rem' }}>🕒</span>
+              <span style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 900, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                STARTS IN: {timeLeft}
+              </span>
+            </div>
+          )}
+          {status === 'finished' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 900, letterSpacing: '0.05em' }}>MATCH ENDED</span>
+            </div>
+          )}
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', marginLeft: '0px' }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #334155', background: 'var(--modal-bg)', marginLeft: i > 1 ? '-10px' : '0', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.6)' }}>
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+123}`} alt="" style={{ width: '100%' }} />
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{currentParticipants} Joined</span>
           </div>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{currentParticipants} Joined</span>
         </div>
         
         {/* Giant Physical 3D Button */}
