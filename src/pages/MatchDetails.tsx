@@ -60,7 +60,13 @@ const MatchDetails = () => {
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
   const cards = match?.innerSections || [];
+  
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
   
   useEffect(() => {
     if (!selectedTeam && cards.length > 0) {
@@ -191,18 +197,47 @@ const MatchDetails = () => {
                 zIndex: 0
               }} />
 
-              {match.status === 'live' && (
-                <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                  LIVE
-                </div>
-              )}
-              {match.status === 'upcoming' && (
-                <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span>🕒</span>
-                  {match.time}
-                </div>
-              )}
+              {/* Dynamic Status Badge */}
+              {(() => {
+                let cardStatus = match.status;
+                let cardTimeLeft = match.time;
+                
+                if (card.startTime && match.status !== 'finished') {
+                  const nowTime = new Date(now);
+                  const [hours, minutes] = card.startTime.split(':').map(Number);
+                  
+                  let targetTime = new Date(now);
+                  targetTime.setHours(hours || 0, minutes || 0, 0, 0);
+                  
+                  const diff = targetTime.getTime() - nowTime.getTime();
+                  if (diff <= 0) {
+                    cardStatus = 'live';
+                  } else {
+                    cardStatus = 'upcoming';
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    cardTimeLeft = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                  }
+                }
+                
+                return (
+                  <>
+                    {cardStatus === 'live' && (
+                      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                        LIVE
+                      </div>
+                    )}
+                    {cardStatus === 'upcoming' && (
+                      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px', fontVariantNumeric: 'tabular-nums' }}>
+                        <span>🕒</span>
+                        {cardTimeLeft}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
               {/* Glowing Logo Container */}
               <div style={{ 
                 width: '88px', 

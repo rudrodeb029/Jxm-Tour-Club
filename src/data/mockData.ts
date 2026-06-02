@@ -16,6 +16,7 @@ export interface Team {
   perKill?: number;
   map?: string;
   version?: string;
+  startTime?: string;
 }
 
 export interface User {

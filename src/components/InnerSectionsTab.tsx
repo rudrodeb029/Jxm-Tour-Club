@@ -21,6 +21,7 @@ const InnerSectionsTab = () => {
     perKill: 0,
     map: 'Bermuda',
     version: 'MOBILE',
+    startTime: '',
     percentage: '50%',
     kills: 0,
     damage: 0,
@@ -44,7 +45,7 @@ const InnerSectionsTab = () => {
     setEditingCard(null);
     setCardForm({
       name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
-      perKill: 0, map: 'Bermuda', version: 'MOBILE',
+      perKill: 0, map: 'Bermuda', version: 'MOBILE', startTime: '',
       percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
     });
   };
@@ -71,7 +72,7 @@ const InnerSectionsTab = () => {
             setEditingCard(null);
             setCardForm({
               name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
-              perKill: 0, map: 'Bermuda', version: 'MOBILE',
+              perKill: 0, map: 'Bermuda', version: 'MOBILE', startTime: '',
               percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
             });
             setShowAddCard(true);
@@ -203,9 +204,15 @@ const InnerSectionsTab = () => {
                 </div>
               </div>
 
-              <div>
-                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Per Kill Reward</label>
-                <input type="number" value={cardForm.perKill || 0} onChange={e => setCardForm({...cardForm, perKill: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Per Kill Reward</label>
+                  <input type="number" value={cardForm.perKill || 0} onChange={e => setCardForm({...cardForm, perKill: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Start Time</label>
+                  <input type="time" value={cardForm.startTime || ''} onChange={e => setCardForm({...cardForm, startTime: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                </div>
               </div>
             </div>
 
