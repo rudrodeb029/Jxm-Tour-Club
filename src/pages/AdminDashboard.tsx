@@ -317,12 +317,23 @@ const AdminDashboard = () => {
                     <input value={newMatch.name} onChange={e => setNewMatch({ ...newMatch, name: e.target.value })} placeholder="Bermuda Battle Royale" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type</label>
-                    <select value={newMatch.group} onChange={e => setNewMatch({ ...newMatch, group: e.target.value })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}>
-                      <option value="Squad Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Squad Match</option>
-                      <option value="Duo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Duo Match</option>
-                      <option value="Solo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo Match</option>
-                    </select>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool Amount (Overall)</label>
+                    <input type="number" value={newMatch.prizePool || ''} onChange={e => setNewMatch({ ...newMatch, prizePool: Number(e.target.value) })} placeholder="e.g. 5000" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Available Modes (Check to show on card)</label>
+                    <div style={{ display: 'flex', gap: '16px', background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+                      {['Solo', 'Duo', 'Squad'].map(mode => (
+                        <label key={mode} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                          <input type="checkbox" checked={(newMatch.availableModes || []).includes(mode)} onChange={(e) => {
+                            const modes = newMatch.availableModes || [];
+                            if (e.target.checked) setNewMatch({ ...newMatch, availableModes: [...modes, mode] });
+                            else setNewMatch({ ...newMatch, availableModes: modes.filter((m: string) => m !== mode) });
+                          }} />
+                          {mode}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                   <div>
                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Image URL</label>
@@ -360,7 +371,7 @@ const AdminDashboard = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <div>
                       <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: '4px' }}>{match.name}</div>
-                      <div style={{ color: '#F96F2E', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{match.group}</div>
+                      <div style={{ color: '#F96F2E', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{(match.availableModes || []).join(' | ')}</div>
                     </div>
                     <StatusBadge status={match.status} />
                   </div>
@@ -386,12 +397,23 @@ const AdminDashboard = () => {
                   <input value={editingMatchData.name} onChange={e => setEditingMatchData({...editingMatchData, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type (Squad/Duo/Solo)</label>
-                  <select value={editingMatchData.group} onChange={e => setEditingMatchData({...editingMatchData, group: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', appearance: 'none', cursor: 'pointer' }}>
-                    <option value="Squad Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Squad Match</option>
-                    <option value="Duo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Duo Match</option>
-                    <option value="Solo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo Match</option>
-                  </select>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool Amount (Overall)</label>
+                  <input type="number" value={editingMatchData.prizePool || ''} onChange={e => setEditingMatchData({...editingMatchData, prizePool: Number(e.target.value)})} placeholder="e.g. 5000" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Available Modes (Check to show on card)</label>
+                  <div style={{ display: 'flex', gap: '16px', background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+                    {['Solo', 'Duo', 'Squad'].map(mode => (
+                      <label key={mode} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                        <input type="checkbox" checked={(editingMatchData.availableModes || []).includes(mode)} onChange={(e) => {
+                          const modes = editingMatchData.availableModes || [];
+                          if (e.target.checked) setEditingMatchData({ ...editingMatchData, availableModes: [...modes, mode] });
+                          else setEditingMatchData({ ...editingMatchData, availableModes: modes.filter((m: string) => m !== mode) });
+                        }} />
+                        {mode}
+                      </label>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Image URL</label>

@@ -41,9 +41,10 @@ interface SliderCardProps {
   perKillReward?: number;
   map?: string;
   image?: string;
+  availableModes?: string[];
 }
 
-const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image }: SliderCardProps) => {
+const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image, availableModes }: SliderCardProps) => {
   const { t } = useLanguage();
   const { formatCurrency } = useCurrency();
   const isLive = status === 'live';
@@ -202,68 +203,74 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           </div>
         </div>
         
-        {/* 1st Win / Team 1 (Gold) */}
-        <div style={{ 
-          flex: 1, 
-          background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
-          border: '1px solid #fef08a',
-          borderRadius: '8px', 
-          padding: '12px 6px', 
-          transform: 'skewX(-8deg)',
-          boxShadow: 'var(--card-shadow)',
-          display: 'flex', justifyContent: 'center'
-        }}>
-          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)' }}>
-              👤 {team1?.entryType || 'SOLO'}
-            </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-              {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+        {/* 1st Win / Team 1 (Gold) - Solo */}
+        {(!availableModes || availableModes.includes('Solo')) && (
+          <div style={{ 
+            flex: 1, 
+            background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
+            border: '1px solid #fef08a',
+            borderRadius: '8px', 
+            padding: '12px 6px', 
+            transform: 'skewX(-8deg)',
+            boxShadow: 'var(--card-shadow)',
+            display: 'flex', justifyContent: 'center'
+          }}>
+            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)' }}>
+                👤 {team1?.entryType || 'SOLO'}
+              </div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
+                {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* 2nd Win / Team 2 (Silver) */}
-        <div style={{ 
-          flex: 1, 
-          background: 'linear-gradient(135deg, #94a3b8, #475569)', 
-          border: '1px solid #f1f5f9',
-          borderRadius: '8px', 
-          padding: '12px 6px', 
-          transform: 'skewX(-8deg)',
-          boxShadow: 'var(--card-shadow)',
-          display: 'flex', justifyContent: 'center'
-        }}>
-          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)' }}>
-              👥 {team2?.entryType || 'DUO'}
-            </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-              {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+        {/* 2nd Win / Team 2 (Silver) - Duo */}
+        {(!availableModes || availableModes.includes('Duo')) && (
+          <div style={{ 
+            flex: 1, 
+            background: 'linear-gradient(135deg, #94a3b8, #475569)', 
+            border: '1px solid #f1f5f9',
+            borderRadius: '8px', 
+            padding: '12px 6px', 
+            transform: 'skewX(-8deg)',
+            boxShadow: 'var(--card-shadow)',
+            display: 'flex', justifyContent: 'center'
+          }}>
+            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)' }}>
+                👥 {team2?.entryType || 'DUO'}
+              </div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
+                {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* 3rd Win / Team 3 (Bronze) */}
-        <div style={{ 
-          flex: 1, 
-          background: 'linear-gradient(135deg, #92400e, #5c2705)', 
-          border: '1px solid #fbbf24',
-          borderRadius: '8px', 
-          padding: '12px 6px', 
-          transform: 'skewX(-8deg)',
-          boxShadow: 'var(--card-shadow)',
-          display: 'flex', justifyContent: 'center'
-        }}>
-          <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)' }}>
-              🛡️ {team3?.entryType || 'SQUAD'}
-            </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-              {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+        {/* 3rd Win / Team 3 (Bronze) - Squad */}
+        {(!availableModes || availableModes.includes('Squad')) && (
+          <div style={{ 
+            flex: 1, 
+            background: 'linear-gradient(135deg, #92400e, #5c2705)', 
+            border: '1px solid #fbbf24',
+            borderRadius: '8px', 
+            padding: '12px 6px', 
+            transform: 'skewX(-8deg)',
+            boxShadow: 'var(--card-shadow)',
+            display: 'flex', justifyContent: 'center'
+          }}>
+            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)' }}>
+                🛡️ {team3?.entryType || 'SQUAD'}
+              </div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
+                {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Capacity & Physical Speedometer Section */}

@@ -38,6 +38,7 @@ export interface Match {
   score: string;
   time: string;
   status: 'live' | 'upcoming' | 'finished';
+  availableModes?: string[];
   bids: string[];
   totalBidsCount: string;
   joinedUsers: User[];
