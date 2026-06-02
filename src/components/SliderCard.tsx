@@ -170,25 +170,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           borderRadius: '50%', pointerEvents: 'none'
         }} />
 
-        {isLive && (
-          <div style={{
-            position: 'absolute',
-            top: '-10px',
-            left: '-15px',
-            background: 'linear-gradient(180deg, #10B981, #047857)',
-            border: '2px solid #064e3b',
-            borderTop: '2px solid #34d399',
-            borderRadius: '16px',
-            padding: '6px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: '0 4px 0 #022c22, 0 8px 15px rgba(0,0,0,0.6)'
-          }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff', boxShadow: '0 0 10px #fff' }} />
-            <span style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '0.05em', textShadow: 'var(--text-shadow-sm)' }}>LIVE</span>
-          </div>
-        )}
+
       </div>
 
       {/* Title */}
@@ -327,26 +309,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       {/* Bottom Join & Live/Countdown Area */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {status === 'live' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', animation: 'pulse 1.5s infinite' }} />
-              <span style={{ fontSize: '0.85rem', color: '#ef4444', fontWeight: 900, letterSpacing: '0.05em' }}>MATCH IS LIVE</span>
-            </div>
-          )}
-          {status === 'upcoming' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '1rem' }}>🕒</span>
-              <span style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 900, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                STARTS IN: {timeLeft}
-              </span>
-            </div>
-          )}
-          {status === 'finished' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 900, letterSpacing: '0.05em' }}>MATCH ENDED</span>
-            </div>
-          )}
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
             <div style={{ display: 'flex', marginLeft: '0px' }}>
               {[1,2,3].map(i => (
