@@ -75,30 +75,7 @@ const MatchDetails = () => {
   }, [cards, selectedTeam]);
   const hasJoined = (match.participantIds || []).includes(displayUserId);
 
-  // Logic to determine if room ID should be visible
-  const isRoomIdVisible = () => {
-    if (!hasJoined) return false;
-    if (match.status === 'live' || match.status === 'finished') return true;
-    
-    // For upcoming matches, check if we're within 15 mins of match time
-    if (match.time) {
-      const now = new Date();
-      const currentHours = now.getHours();
-      const currentMinutes = now.getMinutes();
-      
-      const [matchHours, matchMinutes] = match.time.split(':').map(Number);
-      
-      // Calculate minutes from midnight
-      const nowTotalMinutes = currentHours * 60 + currentMinutes;
-      const matchTotalMinutes = matchHours * 60 + matchMinutes;
-      
-      // If the match is within the next 15 minutes (or has already passed today)
-      if (matchTotalMinutes - nowTotalMinutes <= 15 && matchTotalMinutes - nowTotalMinutes >= -120) {
-        return true;
-      }
-    }
-    return false;
-  };
+  // Logic to determine if room ID should be visible is moved down
 
   const currentTeam = cards.find(c => c.id === selectedTeam) || cards[0];
   const dynamicEntryType = currentTeam?.entryType || 'Solo';
@@ -114,6 +91,27 @@ const MatchDetails = () => {
   const dynamicRules = currentTeam?.rules || match.rules || [];
   const dynamicGameId = currentTeam?.gameId || match.gameId || '';
   const dynamicGamePassword = currentTeam?.gamePassword || match.gamePassword || '';
+  const dynamicRevealTime = currentTeam?.roomDetailsRevealTime || 15;
+
+  const isRoomIdVisible = () => {
+    if (!hasJoined) return false;
+    if (match.status === 'live' || match.status === 'finished') return true;
+    
+    const targetTimeString = currentTeam?.startTime || match.time;
+    if (targetTimeString) {
+      const nowTime = new Date();
+      const [hours, minutes] = targetTimeString.split(':').map(Number);
+      let targetTime = new Date();
+      targetTime.setHours(hours || 0, minutes || 0, 0, 0);
+      
+      const diffMinutes = (targetTime.getTime() - nowTime.getTime()) / (1000 * 60);
+      
+      if (diffMinutes <= dynamicRevealTime && diffMinutes >= -120) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   useEffect(() => {
     if (entryFee) {
@@ -397,7 +395,7 @@ const MatchDetails = () => {
                   <li>Players must use mobile devices only. Emulators are strictly prohibited.</li>
                   <li>Teaming up with opponents is not allowed and will result in a ban.</li>
                   <li>Any form of hacking or cheating will lead to permanent account suspension.</li>
-                  <li>Room ID and Password will be shared 15 minutes before the match starts.</li>
+                  <li>Room ID and Password will be shared {dynamicRevealTime} minutes before the match starts.</li>
                 </>
               )}
             </ul>
@@ -415,7 +413,7 @@ const MatchDetails = () => {
               </div>
             ) : !isRoomIdVisible() ? (
               <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                Room ID and Password will be revealed 15 minutes before the match begins.
+                Room ID and Password will be revealed {dynamicRevealTime} minutes before the match begins.
               </div>
             ) : (
               <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px' }}>

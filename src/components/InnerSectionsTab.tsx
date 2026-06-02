@@ -218,7 +218,7 @@ const InnerSectionsTab = () => {
                   <input type="number" value={cardForm.liveDuration || ''} onChange={e => setCardForm({...cardForm, liveDuration: Number(e.target.value)})} placeholder="e.g. 60" style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Game Room ID</label>
                   <input type="text" value={cardForm.gameId || ''} onChange={e => setCardForm({...cardForm, gameId: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. 1234567" />
@@ -226,6 +226,10 @@ const InnerSectionsTab = () => {
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Game Password</label>
                   <input type="text" value={cardForm.gamePassword || ''} onChange={e => setCardForm({...cardForm, gamePassword: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. PASS123" />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Reveal Details Before (mins)</label>
+                  <input type="number" value={cardForm.roomDetailsRevealTime || ''} onChange={e => setCardForm({...cardForm, roomDetailsRevealTime: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. 15" />
                 </div>
               </div>
 

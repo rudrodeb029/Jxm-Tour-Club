@@ -21,6 +21,7 @@ export interface Team {
   rules?: string[];
   gameId?: string;
   gamePassword?: string;
+  roomDetailsRevealTime?: number;
 }
 
 export interface User {
