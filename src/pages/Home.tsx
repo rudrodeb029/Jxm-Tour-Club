@@ -78,7 +78,7 @@ const Home = () => {
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [showAddConfirm, setShowAddConfirm] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
-  const [activeStatType, setActiveStatType] = useState<'live' | 'participants' | 'winners' | null>(null);
+
   const [successConfig, setSuccessConfig] = useState<{ isOpen: boolean, title: string, message: string }>({
     isOpen: false,
     title: '',
@@ -330,7 +330,11 @@ const Home = () => {
       <HomeStats 
         isAdminMode={isAdminMode} 
         customStats={displayStats as any}
-        onStatClick={(type) => setActiveStatType(type)} 
+        onStatClick={(type) => {
+          if (type === 'live') navigate('/live-matches');
+          if (type === 'participants') navigate('/participants');
+          if (type === 'winners') navigate('/winners');
+        }} 
         onEdit={(stat) => setEditingStat(stat)}
       />
 
@@ -530,137 +534,7 @@ const Home = () => {
         </ModalPortal>
       )}
 
-      {/* Stat Detail Modal */}
-      {activeStatType && (
-        <div 
-          className="animate-fade-in"
-          style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(16px)',
-            zIndex: 150,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}
-          onClick={() => setActiveStatType(null)}
-        >
-          <div 
-            className="animate-fade-in"
-            style={{
-              background: 'var(--modal-bg)',
-              width: '100%',
-              maxWidth: '400px',
-              maxHeight: '85vh',
-              borderRadius: '24px',
-              padding: '32px 24px',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--glass-border)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
-              overflowY: 'auto'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0, textTransform: 'capitalize' }}>
-                {activeStatType === 'live' ? t('live') : activeStatType} <span style={{ color: 'var(--accent-orange)' }}>{t('details')}</span>
-              </h3>
-              <button 
-                onClick={() => setActiveStatType(null)}
-                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', padding: '8px', borderRadius: '12px', color: 'var(--text-primary)' }}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
 
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {activeStatType === 'live' && localMatches.filter(m => m.status === 'live').flatMap((match) => {
-                const teams = [];
-                if (match.team1) teams.push({ ...match.team1, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
-                if (match.team2) teams.push({ ...match.team2, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
-                if (match.team3) teams.push({ ...match.team3, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
-                
-                return teams.map(team => (
-                  <div key={`${match.id}-${team.id}`} style={{ background: 'var(--glass-bg)', padding: '20px', borderRadius: '24px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-                    {isAdminMode && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setEditingMatch(match); }}
-                        style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
-                      >EDIT</button>
-                    )}
-                    <div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', marginBottom: '4px' }}>{team.entryType} MATCH</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{team.matchName}</div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{team.currentParticipants}/{team.maxParticipants} Joined</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div className="live-badge-glow" style={{ background: '#10B981', padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900, color: 'white', marginBottom: '8px', display: 'inline-block' }}>LIVE</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>{team.score}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700 }}>{formatElapsedTime(team.liveStartedAt, team.time)} Elapsed</div>
-                    </div>
-                  </div>
-                ));
-              })}
-
-              {activeStatType === 'participants' && adminUsers.map((player) => (
-                <div key={player.id} style={{ background: 'var(--glass-bg)', padding: '16px', borderRadius: '24px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
-                  {isAdminMode && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setEditingParticipant(player); }}
-                      style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
-                    >EDIT</button>
-                  )}
-                  <img src={player.avatar} alt={player.name} style={{ width: '56px', height: '56px', borderRadius: '16px', border: '1px solid var(--glass-border)' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>{player.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>@{player.username} • {player.totalMatches} Matches</div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{player.totalMatches}</div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>PLAYED</div>
-                  </div>
-
-                </div>
-              ))}
-
-              {activeStatType === 'winners' && globalWinners.map((winner) => (
-                <div key={winner.id} style={{ background: 'var(--glass-bg)', padding: '16px', borderRadius: '24px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
-                  {isAdminMode && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setEditingWinner(winner); }}
-                      style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
-                    >EDIT</button>
-                  )}
-                  <img src={winner.avatar} alt={winner.name} style={{ width: '56px', height: '56px', borderRadius: '16px', border: '1px solid var(--glass-border)' }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>{winner.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{winner.match} • {winner.time}</div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FBBF24' }}>{winner.amount}</div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>PRIZE</div>
-                  </div>
-
-                </div>
-              ))}
-            </div>
-
-            <button 
-              onClick={() => setActiveStatType(null)}
-              style={{ width: '100%', padding: '18px', borderRadius: '20px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontWeight: 700, marginTop: '32px', cursor: 'pointer' }}
-            >
-
-              CLOSE DETAILS
-            </button>
-          </div>
-        </div>
-      )}
       {isAddBalanceOpen && (
         <div 
           className="animate-fade-in"

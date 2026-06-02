@@ -14,6 +14,9 @@ import { ChatProvider } from './context/ChatContext';
 import LiveChat from './components/LiveChat';
 import WinnerCelebration from './components/WinnerCelebration';
 import BottomNav from './components/BottomNav';
+import LiveMatches from './pages/LiveMatches';
+import Participants from './pages/Participants';
+import Winners from './pages/Winners';
 
 import { BalanceProvider } from './context/BalanceContext';
 import { AdminProvider } from './context/AdminContext';
@@ -64,6 +67,9 @@ const AnimatedRoutes = () => {
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/live-matches" element={<LiveMatches />} />
+          <Route path="/participants" element={<Participants />} />
+          <Route path="/winners" element={<Winners />} />
         </Routes>
       </div>
       {showNav && <BottomNav />}
