@@ -15,6 +15,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 
 import { 
@@ -159,6 +160,9 @@ const Home = () => {
 
 
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
+  
+  const isAnyHomeModalOpen = selectedMatch !== null || isMenuOpen || isAddBalanceOpen || isInsufficientBalanceOpen || editingStat !== null || editingMatch !== null || editingWinner !== null || editingParticipant !== null || successConfig.isOpen;
+  useLockBodyScroll(isAnyHomeModalOpen);
 
   const handleDeposit = () => {
     const amount = parseFloat(depositAmount);

@@ -9,6 +9,7 @@ import { useChat } from '../context/ChatContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAuth } from '../context/AuthContext';
 import ModalPortal from '../components/ModalPortal';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { db, storage } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -67,6 +68,9 @@ const Profile = () => {
   const { currentUser, logout } = useAuth();
   const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
   
+  const isAnyProfileModalOpen = showSecurity || showPayments || showEditProfile || showNotifications || showLanguage || showHelp || deleteConfirmation !== null;
+  useLockBodyScroll(isAnyProfileModalOpen);
+
   // Sync with Admin Dashboard user data
   const adminUser = adminUsers.find(u => u.id === displayUserId);
 

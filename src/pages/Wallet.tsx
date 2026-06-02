@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import GlobalActivityFeed from '../components/GlobalActivityFeed';
 import SuccessModal from '../components/SuccessModal';
-
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 const Wallet = () => {
   const { isDarkMode } = useTheme();
@@ -50,7 +50,6 @@ const Wallet = () => {
     message: ''
   });
 
-  
   // Dynamic Gateways State
   const [localGateways, setLocalGateways] = useState(() => {
     const saved = localStorage.getItem('localGateways');
@@ -81,6 +80,9 @@ const Wallet = () => {
   useEffect(() => {
     localStorage.setItem('savedMethods', JSON.stringify(savedMethods));
   }, [savedMethods]);
+
+  const isAnyWalletModalOpen = isConfirming || isWithdrawConfirming || showAddGateway || showAddMethod || deleteConfirmation !== null || successConfig.isOpen;
+  useLockBodyScroll(isAnyWalletModalOpen);
 
   // Automatic Logo Migration for broken seeklogo URLs
   useEffect(() => {
