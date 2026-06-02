@@ -324,39 +324,7 @@ const AdminDashboard = () => {
                       <option value="Solo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo Match</option>
                     </select>
                   </div>
-                  <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Max Participants</label>
-                    <input type="number" value={newMatch.maxParticipants} onChange={e => setNewMatch({ ...newMatch, maxParticipants: +e.target.value })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
-                  <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Start Time</label>
-                    <input value={newMatch.time} onChange={e => setNewMatch({ ...newMatch, time: e.target.value })} placeholder="21:00" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                  </div>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(4, 1fr)', 
-                    gap: '12px', 
-                    gridColumn: '1 / -1',
-                    marginTop: '8px'
-                  }}>
-                    <div>
-                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool</label>
-                      <input type="number" value={newMatch.prizePool} onChange={e => setNewMatch({ ...newMatch, prizePool: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥇 1st Prize</label>
-                      <input type="number" value={newMatch.firstPrize} onChange={e => setNewMatch({ ...newMatch, firstPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥈 2nd Prize</label>
-                      <input type="number" value={newMatch.secondPrize} onChange={e => setNewMatch({ ...newMatch, secondPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                    <div>
-                      <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>🥉 3rd Prize</label>
-                      <input type="number" value={newMatch.thirdPrize} onChange={e => setNewMatch({ ...newMatch, thirdPrize: e.target.value })} placeholder="Auto" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                  </div>
-                </div>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                   <Btn onClick={handleCreateMatch}>Create Match</Btn>
                   <Btn variant="ghost" onClick={() => setShowCreateMatch(false)}>Cancel</Btn>
@@ -384,38 +352,9 @@ const AdminDashboard = () => {
                     </div>
                     <StatusBadge status={match.status} />
                   </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', background: 'var(--input-bg)', padding: '16px', borderRadius: '18px' }}>
-                    <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Schedule</div>
-                      <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>🕒 {match.time}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Players</div>
-                      <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>👥 {match.currentParticipants}/{match.maxParticipants}</div>
-                    </div>
-                  </div>
                   
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {match.status !== 'finished' && (
-                      <>
-                        {match.status !== 'live' && <Btn small variant="primary" onClick={() => toggleMatchStatus(match.id, 'live')} style={{ flex: 1 }}>Go Live</Btn>}
-                        {match.status === 'live' && <Btn small variant="success" onClick={() => { setSelectingWinnersMatch(match); }} style={{ flex: 1 }}>Set Winners</Btn>}
-                      </>
-                    )}
-                    {match.winners && (
-                       <div style={{ width: '100%', marginTop: '10px', padding: '12px', background: 'rgba(16,185,129,0.1)', borderRadius: '14px', border: '1px solid rgba(16,185,129,0.2)' }}>
-                         <div style={{ color: '#10B981', fontWeight: 900, fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '8px' }}>🏆 Winners Announced</div>
-                         {match.winners.map(w => (
-                           <div key={w.rank} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
-                             <span style={{ color: 'var(--text-secondary)' }}>{w.rank === 1 ? '🥇' : w.rank === 2 ? '🥈' : '🥉'} {w.userName}</span>
-                             <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>+{formatCurrency(w.reward)}</span>
-                           </div>
-                         ))}
-                       </div>
-                    )}
                     <Btn small variant="primary" onClick={() => setEditingMatchData(match)} style={{ flex: 1 }}>Edit</Btn>
-                    <Btn small variant="ghost" onClick={() => handleDuplicateMatch(match)} style={{ flex: 1, border: '1px solid var(--card-border)' }}>Duplicate</Btn>
                     <Btn small variant="ghost" onClick={() => deleteMatch(match.id)} style={{ width: '44px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</Btn>
                   </div>
                 </div>
@@ -441,95 +380,6 @@ const AdminDashboard = () => {
                     <option value="Duo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Duo Match</option>
                     <option value="Solo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo Match</option>
                   </select>
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Map</label>
-                  <input value={editingMatchData.map || ''} onChange={e => setEditingMatchData({...editingMatchData, map: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Version (Mobile/PC)</label>
-                  <input value={editingMatchData.version || ''} onChange={e => setEditingMatchData({...editingMatchData, version: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Per Kill Reward</label>
-                  <input type="number" value={editingMatchData.perKillReward || 0} onChange={e => setEditingMatchData({...editingMatchData, perKillReward: +e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool</label>
-                  <input type="number" value={editingMatchData.prizePool || 0} onChange={e => setEditingMatchData({...editingMatchData, prizePool: +e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Game Room ID</label>
-                  <input value={editingMatchData.gameId || ''} onChange={e => setEditingMatchData({...editingMatchData, gameId: e.target.value})} placeholder="e.g. 9842 1530" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Game Password</label>
-                  <input value={editingMatchData.gamePassword || ''} onChange={e => setEditingMatchData({...editingMatchData, gamePassword: e.target.value})} placeholder="e.g. FF2026" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div style={{ gridColumn: '1 / -1', marginTop: '20px', borderTop: '1px solid var(--divider)', paddingTop: '20px' }}>
-                  <h4 style={{ fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>🃏 Cards Settings (Team 1, 2, 3)</h4>
-                  
-                  {['team1', 'team2', 'team3'].map((teamKey, idx) => {
-                    const teamData = editingMatchData[teamKey as keyof typeof editingMatchData] as any;
-                    if (!teamData && teamKey === 'team3') return null; // Team 3 is optional
-                    return (
-                      <div key={teamKey} style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px solid var(--glass-border)' }}>
-                        <div style={{ fontWeight: 800, color: 'var(--accent-orange)', marginBottom: '12px' }}>Card {idx + 1}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                          <div>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Title</label>
-                            <input 
-                              value={teamData.name || ''} 
-                              onChange={e => setEditingMatchData({
-                                ...editingMatchData, 
-                                [teamKey]: { ...teamData, name: e.target.value }
-                              })} 
-                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }} 
-                            />
-                          </div>
-                          <div>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Entry Type</label>
-                            <select 
-                              value={teamData.entryType || ''} 
-                              onChange={e => setEditingMatchData({
-                                ...editingMatchData, 
-                                [teamKey]: { ...teamData, entryType: e.target.value }
-                              })} 
-                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }}
-                            >
-                              <option value="Solo" style={{ background: 'var(--bg-dark)' }}>Solo</option>
-                              <option value="Duo" style={{ background: 'var(--bg-dark)' }}>Duo</option>
-                              <option value="Squad" style={{ background: 'var(--bg-dark)' }}>Squad</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Entry Fee</label>
-                            <input 
-                              type="number" 
-                              value={teamData.entryFee || 0} 
-                              onChange={e => setEditingMatchData({
-                                ...editingMatchData, 
-                                [teamKey]: { ...teamData, entryFee: +e.target.value }
-                              })} 
-                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }} 
-                            />
-                          </div>
-                          <div>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Win Prize</label>
-                            <input 
-                              type="number" 
-                              value={teamData.winPrize || 0} 
-                              onChange={e => setEditingMatchData({
-                                ...editingMatchData, 
-                                [teamKey]: { ...teamData, winPrize: +e.target.value }
-                              })} 
-                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }} 
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Rules (One per line)</label>
