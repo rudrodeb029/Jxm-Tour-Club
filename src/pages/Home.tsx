@@ -375,10 +375,6 @@ const Home = () => {
 
         {localMatches.filter(m => m.status !== 'live').length > 0 && (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px', marginTop: '16px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '1.2rem' }}>🕒</span>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0, letterSpacing: '0.05em' }}>UPCOMING MATCHES</h2>
-            </div>
             {localMatches.filter(m => m.status !== 'live').map((match, index) => (
               <div 
                 key={match.id} 
