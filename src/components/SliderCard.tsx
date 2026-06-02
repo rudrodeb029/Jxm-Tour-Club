@@ -96,7 +96,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((diff % (1000 * 60)) / 1000);
       
-      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
     };
     
     updateCountdown();
@@ -212,7 +212,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         }}>
           <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ fontSize: '0.55rem', fontWeight: 900, color: '#fde047', textTransform: 'uppercase', marginBottom: '4px', lineHeight: 1.1, textAlign: 'center' }}>
-              <span>💰 TOTAL</span><br/><span>PRIZE POOL</span>
+              <span>💰 PRIZE POOL</span>
             </div>
             <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#4ADE80', textShadow: 'var(--text-shadow-md)' }}>{formatCurrency(totalPrizePool)}</div>
           </div>
@@ -234,7 +234,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               👤 {team1?.entryType || 'SOLO'}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-              {status === 'live' ? <span style={{ color: '#ef4444' }}>LIVE NOW</span> : (status === 'upcoming' ? timeLeft : 'ENDED')}
+              {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
             </div>
           </div>
         </div>
@@ -255,7 +255,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               👥 {team2?.entryType || 'DUO'}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-              {status === 'live' ? <span style={{ color: '#ef4444' }}>LIVE NOW</span> : (status === 'upcoming' ? timeLeft : 'ENDED')}
+              {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
             </div>
           </div>
         </div>
@@ -276,7 +276,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               🛡️ {team3?.entryType || 'SQUAD'}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-              {status === 'live' ? <span style={{ color: '#ef4444' }}>LIVE NOW</span> : (status === 'upcoming' ? timeLeft : 'ENDED')}
+              {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
             </div>
           </div>
         </div>
