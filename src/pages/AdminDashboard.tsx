@@ -318,10 +318,10 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type</label>
-                    <select value={newMatch.group} onChange={e => setNewMatch({ ...newMatch, group: e.target.value })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none' }}>
-                      <option value="Solo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Solo Match</option>
-                      <option value="Duo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Duo Match</option>
-                      <option value="Squad Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Squad Match</option>
+                    <select value={newMatch.group} onChange={e => setNewMatch({ ...newMatch, group: e.target.value })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}>
+                      <option value="Squad Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Squad Match</option>
+                      <option value="Duo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Duo Match</option>
+                      <option value="Solo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo Match</option>
                     </select>
                   </div>
                   <div>
@@ -435,11 +435,11 @@ const AdminDashboard = () => {
                   <input value={editingMatchData.name} onChange={e => setEditingMatchData({...editingMatchData, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type (Solo/Duo/Squad)</label>
-                  <select value={editingMatchData.group} onChange={e => setEditingMatchData({...editingMatchData, group: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }}>
-                    <option value="Solo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Solo Match</option>
-                    <option value="Duo Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Duo Match</option>
-                    <option value="Squad Match" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Squad Match</option>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Group Type (Squad/Duo/Solo)</label>
+                  <select value={editingMatchData.group} onChange={e => setEditingMatchData({...editingMatchData, group: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', appearance: 'none', cursor: 'pointer' }}>
+                    <option value="Squad Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Squad Match</option>
+                    <option value="Duo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Duo Match</option>
+                    <option value="Solo Match" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo Match</option>
                   </select>
                 </div>
                 <div>

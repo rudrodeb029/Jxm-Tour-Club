@@ -81,10 +81,10 @@ const InnerSectionsTab = () => {
         <select 
           value={selectedMatchId}
           onChange={(e) => setSelectedMatchId(e.target.value)}
-          style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}
+          style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', appearance: 'none', cursor: 'pointer' }}
         >
           {adminMatches.map(m => (
-            <option key={m.id} value={m.id}>{m.name} ({m.group})</option>
+            <option key={m.id} value={m.id} style={{ background: '#1E293B', color: '#F8FAFC' }}>{m.name}</option>
           ))}
         </select>
       </div>
@@ -151,10 +151,10 @@ const InnerSectionsTab = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Entry Type</label>
-                  <select value={cardForm.entryType} onChange={e => setCardForm({...cardForm, entryType: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }}>
-                    <option value="Solo">Solo</option>
-                    <option value="Duo">Duo</option>
-                    <option value="Squad">Squad</option>
+                  <select value={cardForm.entryType} onChange={e => setCardForm({...cardForm, entryType: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px', appearance: 'none', cursor: 'pointer' }}>
+                    <option value="Solo" style={{ background: '#1E293B', color: '#F8FAFC' }}>Solo</option>
+                    <option value="Duo" style={{ background: '#1E293B', color: '#F8FAFC' }}>Duo</option>
+                    <option value="Squad" style={{ background: '#1E293B', color: '#F8FAFC' }}>Squad</option>
                   </select>
                 </div>
                 <div>
