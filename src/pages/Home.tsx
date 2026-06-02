@@ -342,28 +342,67 @@ const Home = () => {
         padding: '0 12px',
         paddingBottom: '24px',
       }}>
-        {localMatches.map((match, index) => (
-          <div 
-            key={match.id} 
-            className="animate-slide-up" 
-            style={{ animationDelay: `${index * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
-          >
-            <SliderCard 
-              group={match.group}
-              players={match.totalPlayersCount}
-              team1={match.team1}
-              team2={match.team2}
-              {...match}
-              status={match.status}
-              name={match.name}
-              liveStartedAt={match.liveStartedAt}
-              onClick={() => navigate(`/match/${match.id}`)}
-              onJoin={() => navigate(`/match/${match.id}`)}
-              isAdminMode={isAdminMode}
-              onEdit={() => setEditingMatch(match)}
-            />
-          </div>
-        ))}
+        {localMatches.filter(m => m.status === 'live').length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px', marginBottom: '4px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981', animation: 'pulse 1.5s infinite' }} />
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0, letterSpacing: '0.05em' }}>LIVE MATCHES</h2>
+            </div>
+            {localMatches.filter(m => m.status === 'live').map((match, index) => (
+              <div 
+                key={match.id} 
+                className="animate-slide-up" 
+                style={{ animationDelay: `${index * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
+              >
+                <SliderCard 
+                  group={match.group}
+                  players={match.totalPlayersCount}
+                  team1={match.team1}
+                  team2={match.team2}
+                  {...match}
+                  status={match.status}
+                  name={match.name}
+                  liveStartedAt={match.liveStartedAt}
+                  onClick={() => navigate(`/match/${match.id}`)}
+                  onJoin={() => navigate(`/match/${match.id}`)}
+                  isAdminMode={isAdminMode}
+                  onEdit={() => setEditingMatch(match)}
+                />
+              </div>
+            ))}
+          </>
+        )}
+
+        {localMatches.filter(m => m.status !== 'live').length > 0 && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px', marginTop: '16px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '1.2rem' }}>🕒</span>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0, letterSpacing: '0.05em' }}>UPCOMING MATCHES</h2>
+            </div>
+            {localMatches.filter(m => m.status !== 'live').map((match, index) => (
+              <div 
+                key={match.id} 
+                className="animate-slide-up" 
+                style={{ animationDelay: `${(localMatches.filter(m => m.status === 'live').length + index) * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
+              >
+                <SliderCard 
+                  group={match.group}
+                  players={match.totalPlayersCount}
+                  team1={match.team1}
+                  team2={match.team2}
+                  {...match}
+                  status={match.status}
+                  name={match.name}
+                  liveStartedAt={match.liveStartedAt}
+                  onClick={() => navigate(`/match/${match.id}`)}
+                  onJoin={() => navigate(`/match/${match.id}`)}
+                  isAdminMode={isAdminMode}
+                  onEdit={() => setEditingMatch(match)}
+                />
+              </div>
+            ))}
+          </>
+        )}
       </div>
       
 
