@@ -70,7 +70,7 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
         style={{
           width: '85%',
           maxWidth: '340px',
-          height: '100%',
+          height: '100dvh',
           background: 'var(--nav-bg)', // Deep Metallic
           padding: '24px 20px',
           display: 'flex',
@@ -141,70 +141,12 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
           </button>
         </div>
 
-        {/* 3D Pipe Divider */}
-        <div style={{
-          height: '6px',
-          background: 'linear-gradient(180deg, #94a3b8 0%, #cbd5e1 20%, #475569 80%, #334155 100%)',
-          borderRadius: '4px',
-          margin: '24px 0',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.8)',
-          position: 'relative'
-        }}>
-          {/* Pipe ends */}
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: '#334155', borderRadius: '4px' }} />
-          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '4px', background: '#334155', borderRadius: '4px' }} />
-        </div>
-
-        {/* Developer Settings Area */}
-        <div style={{ marginBottom: '32px' }}>
-          {/* Metallic Nameplate */}
-          <div style={{
-            background: 'linear-gradient(135deg, #94a3b8, #475569)',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            display: 'inline-block',
-            boxShadow: '0 6px 10px rgba(0,0,0,0.6), inset 0 2px 2px rgba(255,255,255,0.4)',
-            position: 'relative',
-            marginBottom: '16px'
-          }}>
-            {/* Screws */}
-            {[[4,4],[4,'calc(100% - 8px)'],['calc(100% - 8px)',4],['calc(100% - 8px)','calc(100% - 8px)']].map((pos, i) => (
-              <div key={i} style={{ position: 'absolute', top: pos[0], left: pos[1], width: '4px', height: '4px', borderRadius: '50%', background: '#334155', boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.8)' }} />
-            ))}
-            <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', textShadow: '0 1px 1px rgba(255,255,255,0.4)' }}>
-              Developer Settings
-            </div>
-          </div>
-
-          <button 
-            onClick={() => { toggleAdminMode(); onClose(); }} 
-            style={{ 
-              textAlign: 'left', 
-              background: 'none', 
-              border: 'none',
-              padding: '8px 0', 
-              cursor: 'pointer', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '16px', 
-              width: '100%',
-            }} 
-          >
-            <div style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.6))' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#64748b" stroke="#cbd5e1" strokeWidth="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-            </div>
-            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9', textShadow: 'var(--text-shadow-md)' }}>
-              {isAdminMode ? 'Disable Admin Mode' : 'Enable Admin Mode'}
-            </span>
-          </button>
-        </div>
-
         {/* Bottom Section: Logout */}
         <div style={{
           marginTop: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          paddingBottom: '16px'
+          paddingBottom: '100px'
         }}>
           <button onClick={async () => { await logout(); navigate('/auth'); onClose(); }} style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)', padding: '12px 20px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '20px', width: '100%', boxShadow: 'var(--card-shadow)' }}>
             <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '50%', border: '1px solid rgba(239, 68, 68, 0.3)', filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.8))' }}>
