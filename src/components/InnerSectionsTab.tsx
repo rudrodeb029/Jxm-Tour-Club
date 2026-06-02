@@ -40,7 +40,7 @@ const InnerSectionsTab = () => {
   });
 
   const selectedMatch = adminMatches.find(m => m.id === selectedMatchId);
-  const cards = selectedMatch?.innerSections || [];
+  const cards: Team[] = selectedMatch?.innerSections || [];
 
   const handleSaveCard = () => {
     if (!selectedMatchId || !cardForm.name || !cardForm.logo) return;
