@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { currentUser } from '../data/mockData';
+import { currentUser as mockUser } from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 import { ArrowLeft, Plus, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw, Check, DollarSign } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
@@ -28,8 +31,9 @@ const Wallet = () => {
   const { formatCurrency, currency } = useCurrency();
   const { isAdminMode } = useAdmin();
   const { balance, addBalance, deductBalance, transactions: localTransactions } = useBalance();
-  const { addPaymentRequest, addWithdrawalRequest, paymentRequests, withdrawalRequests } = useAdminDashboard();
-  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || currentUser.id);
+  const { paymentRequests, withdrawalRequests } = useAdminDashboard();
+  const { currentUser } = useAuth();
+  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser.id);
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [transactionId, setTransactionId] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
@@ -233,32 +237,39 @@ const Wallet = () => {
     setIsWithdrawConfirming(true);
   };
 
-  const confirmWithdraw = () => {
+  const confirmWithdraw = async () => {
     const amountUSD = getUSDAmount(withdrawAmount);
     const method = savedMethods.find(m => m.id === selectedWithdrawMethod);
     
-    if (amountUSD > 0 && method) {
-      addWithdrawalRequest({
-        userId: displayUserId,
-        amount: amountUSD,
-        withdrawMethod: method.name,
-        accountNumber: method.number,
-        accountName: 'User Account',
-      });
-      
-      setWithdrawAmount('');
-      setSelectedWithdrawMethod(null);
-      setIsWithdrawConfirming(false);
-      setSuccessConfig({
-        isOpen: true,
-        title: "Withdrawal Requested!",
-        message: "Your withdrawal request has been submitted. It will be processed after admin approval."
-      });
+    if (amountUSD > 0 && method && currentUser) {
+      try {
+        await addDoc(collection(db, 'withdrawals'), {
+          userId: currentUser.uid,
+          displayUserId: displayUserId,
+          amount: amountUSD,
+          withdrawMethod: method.name,
+          accountNumber: method.number,
+          accountName: currentUser.displayName || 'User Account',
+          timestamp: new Date().toISOString(),
+          status: 'pending'
+        });
+        
+        setWithdrawAmount('');
+        setSelectedWithdrawMethod(null);
+        setIsWithdrawConfirming(false);
+        setSuccessConfig({
+          isOpen: true,
+          title: "Withdrawal Requested!",
+          message: "Your withdrawal request has been submitted. It will be processed after admin approval."
+        });
+      } catch (error) {
+        console.error("Error adding withdrawal request:", error);
+        alert("Failed to submit withdrawal request.");
+      }
     }
   };
 
-
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
     const amountUSD = getUSDAmount(depositAmount);
     const gateway = localGateways.find(g => g.id === selectedGateway);
     
@@ -267,24 +278,34 @@ const Wallet = () => {
       return;
     }
 
-    if (amountUSD > 0 && gateway) {
-      addPaymentRequest({
-        userId: displayUserId,
-        amount: amountUSD,
-        transactionId: transactionId,
-        paymentMethod: gateway.name,
-        accountNumber: 'User Account',
-      });
-      
-      setDepositAmount('');
-      setTransactionId('');
-      setSelectedGateway(null);
-      setIsConfirming(false);
-      setSuccessConfig({
-        isOpen: true,
-        title: "Deposit Requested!",
-        message: "Deposit request submitted! Balance will update after admin approval."
-      });
+    if (amountUSD > 0 && gateway && currentUser) {
+      try {
+        await addDoc(collection(db, 'payments'), {
+          userId: currentUser.uid,
+          displayUserId: displayUserId,
+          amount: amountUSD,
+          transactionId: transactionId,
+          paymentMethod: gateway.name,
+          accountNumber: 'User Account',
+          userName: currentUser.displayName || 'User',
+          userAvatar: currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+          timestamp: new Date().toISOString(),
+          status: 'pending'
+        });
+        
+        setDepositAmount('');
+        setTransactionId('');
+        setSelectedGateway(null);
+        setIsConfirming(false);
+        setSuccessConfig({
+          isOpen: true,
+          title: "Deposit Requested!",
+          message: "Deposit request submitted! Balance will update after admin approval."
+        });
+      } catch (error) {
+        console.error("Error adding deposit request:", error);
+        alert("Failed to submit deposit request.");
+      }
     }
   };
 

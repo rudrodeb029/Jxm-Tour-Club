@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { matches as defaultMatches, winners as defaultWinners } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
 
 
@@ -280,9 +280,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const clearWinnerCeremony = () => setActiveWinnerCeremony(null);
 
+  
+  // Firebase Listeners
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
-      const firebaseUsers: AdminUser[] = snapshot.docs.map(doc => {
+    // Users Listener
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const firebaseUsers = snapshot.docs.map(doc => {
         const data = doc.data();
         let joinDate = new Date().toISOString().split('T')[0];
         if (data.createdAt) {
@@ -305,22 +308,92 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           status: data.status || 'active'
         };
       });
-      
       setAdminUsers(prev => {
         const merged = [...firebaseUsers];
         demoUsers.forEach(du => {
-          if (!merged.find(u => u.id === du.id)) {
-            merged.push(du);
-          }
+          if (!merged.find(u => u.id === du.id)) merged.push(du);
         });
         return merged;
       });
-    }, (error) => {
-      console.error("Error fetching firebase users:", error);
+    }, (error) => console.error('Error fetching firebase users:', error));
+
+    // Payments Listener
+    const qPayments = query(collection(db, 'payments'), orderBy('timestamp', 'desc'));
+    const unsubscribePayments = onSnapshot(qPayments, (snapshot) => {
+      const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setPaymentRequests(prev => {
+        const merged = [...payments];
+        demoPayments.forEach(dp => {
+          if (!merged.find(p => p.id === dp.id)) merged.push(dp);
+        });
+        return merged;
+      });
     });
 
-    return () => unsubscribe();
+    // Withdrawals Listener
+    const qWithdrawals = query(collection(db, 'withdrawals'), orderBy('timestamp', 'desc'));
+    const unsubscribeWithdrawals = onSnapshot(qWithdrawals, (snapshot) => {
+      const withdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setWithdrawalRequests(prev => {
+        const merged = [...withdrawals];
+        demoWithdrawals.forEach(dw => {
+          if (!merged.find(w => w.id === dw.id)) merged.push(dw);
+        });
+        return merged;
+      });
+    });
+    
+    // Activities Listener
+    const qActivities = query(collection(db, 'activities'), orderBy('timestamp', 'desc'));
+    const unsubscribeActivities = onSnapshot(qActivities, (snapshot) => {
+      const fbActivities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setActivities(prev => {
+        const merged = [...fbActivities];
+        demoActivities.forEach(da => {
+          if (!merged.find(a => a.id === da.id)) merged.push(da);
+        });
+        return merged.slice(0, 50); // Keep last 50
+      });
+    });
+
+    
+    // Matches Listener
+    const qMatches = query(collection(db, 'matches'), orderBy('createdAt', 'desc'));
+    const unsubscribeMatches = onSnapshot(qMatches, (snapshot) => {
+      const fbMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAdminMatches(prev => {
+        const merged = [...fbMatches];
+        defaultMatches.forEach(dm => {
+          if (!merged.find(m => m.id === dm.id)) merged.push(dm);
+        });
+        return merged;
+      });
+    });
+
+    // Winners Listener
+    const qWinners = query(collection(db, 'winners'), orderBy('id', 'desc'));
+    const unsubscribeWinners = onSnapshot(qWinners, (snapshot) => {
+      const fbWinners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setWinners(prev => {
+        const merged = [...fbWinners];
+        defaultWinners.forEach(dw => {
+          if (!merged.find(w => w.id === dw.id)) merged.push(dw);
+        });
+        return merged;
+      });
+    });
+
+    return () => {
+      unsubscribeUsers();
+      unsubscribePayments();
+      unsubscribeWithdrawals();
+      unsubscribeActivities();
+      unsubscribeMatches();
+      unsubscribeWinners();
+    };
+
   }, []);
+
 
   // Persist to localStorage
   useEffect(() => { localStorage.setItem('adminMatches', JSON.stringify(adminMatches)); }, [adminMatches]);
@@ -414,235 +487,262 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     return () => clearInterval(interval);
   }, [adminMatches]);
 
-  const logActivity = (activity: Omit<Activity, 'id' | 'timestamp'>) => {
-    const newActivity: Activity = {
-      ...activity,
-      id: 'act-' + Date.now() + Math.random().toString(36).substr(2, 5),
-      timestamp: 'Just now'
-    };
-    setActivities(prev => [newActivity, ...prev].slice(0, 50)); // Keep last 50
-  };
-
-  // Match operations
-  const createMatch = (match: Omit<AdminMatch, 'id' | 'createdAt'>) => {
-    const newMatch: AdminMatch = {
-      ...match,
-      id: 'm' + Date.now(),
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setAdminMatches(prev => [newMatch, ...prev]);
-  };
-
-  const updateMatch = (id: string, updates: Partial<AdminMatch>) => {
-    setAdminMatches(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
-  };
-
-  const deleteMatch = (id: string) => {
-    setAdminMatches(prev => prev.filter(m => m.id !== id));
-  };
-
-  const toggleMatchStatus = (id: string, status: 'live' | 'upcoming' | 'finished') => {
-    setAdminMatches(prev => prev.map(m => m.id === id ? { 
-      ...m, 
-      status,
-      liveStartedAt: status === 'live' ? (m.liveStartedAt || Date.now()) : m.liveStartedAt
-    } : m));
-  };
-
-  const setMatchWinners = (matchId: string, winnersList: MatchWinner[]) => {
-    setAdminMatches(prev => prev.map(m => {
-      if (m.id === matchId) {
-        const matchName = m.name;
-        const matchGroup = m.group;
-        const participants = m.participantIds || [];
-        
-        // 1. Update EVERY participant's totalMatches
-        setAdminUsers(users => users.map(u => 
-          participants.includes(u.id) ? { ...u, totalMatches: u.totalMatches + 1 } : u
-        ));
-
-        // 2. Update winners' totalWins and balance
-        winnersList.forEach(winner => {
-          setAdminUsers(users => users.map(u => 
-            u.id === winner.userId ? { ...u, balance: u.balance + winner.reward, totalWins: u.totalWins + 1 } : u
-          ));
-
-          // Add to global winners list for Home page
-          const userObj = adminUsers.find(u => u.id === winner.userId);
-          if (userObj) {
-            const newWinnerRecord: Winner = {
-              id: 'w' + Date.now() + Math.random(),
-              name: userObj.name,
-              avatar: userObj.avatar,
-              amount: `$${winner.reward}`,
-              match: `${matchGroup} - ${matchName}`,
-              time: 'Just now'
-            };
-            setWinners(prevWinners => [newWinnerRecord, ...prevWinners]);
-          }
-
-          // Log Activity
-          logActivity({
-            type: 'win',
-            userId: winner.userId,
-            userName: winner.userName,
-            userAvatar: adminUsers.find(u => u.id === winner.userId)?.avatar || '',
-            amount: winner.reward,
-            matchName: m.name
-          });
-        });
-        // 3. Trigger Ceremony
-        const ceremony: WinnerCeremony = {
-          matchId,
-          matchName: m.name,
-          winners: winnersList
-        };
-        setActiveWinnerCeremony(ceremony);
-
-        return { ...m, winners: winnersList, status: 'finished' as const };
-      }
-      return m;
-    }));
-  };
-  const addParticipantToMatch = (matchId: string, userId: string) => {
-    setAdminMatches(prev => prev.map(m => 
-      m.id === matchId ? { ...m, participantIds: [...(m.participantIds || []), userId] } : m
-    ));
-
-    // Log Activity
-    const match = adminMatches.find(m => m.id === matchId);
-    const user = adminUsers.find(u => u.id === userId);
-    if (match && user) {
-      logActivity({
-        type: 'join',
-        userId: user.id,
-        userName: user.name,
-        userAvatar: user.avatar,
-        matchName: match.name
+  
+  const logActivity = async (activity: Omit<Activity, 'id' | 'timestamp'>) => {
+    try {
+      await addDoc(collection(db, 'activities'), {
+        ...activity,
+        timestamp: new Date().toISOString()
       });
+    } catch(e) {
+      console.error('Error logging activity', e);
+    }
+  };
+ // Keep last 50
+  };
+
+  
+  // Match operations
+  const createMatch = async (match: Omit<AdminMatch, 'id' | 'createdAt'>) => {
+    try {
+      await addDoc(collection(db, 'matches'), {
+        ...match,
+        createdAt: new Date().toISOString().split('T')[0],
+      });
+    } catch (e) {
+      console.error('Error creating match', e);
     }
   };
 
-  const addMatchCard = (matchId: string, card: Omit<Team, 'id'>) => {
-    setAdminMatches(prev => prev.map(m => {
-      if (m.id === matchId) {
+  const updateMatch = async (id: string, updates: Partial<AdminMatch>) => {
+    try {
+      await updateDoc(doc(db, 'matches', id), updates);
+    } catch (e) {
+      console.error('Error updating match', e);
+    }
+  };
+
+  const deleteMatch = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'matches', id));
+    } catch (e) {
+      console.error('Error deleting match', e);
+    }
+  };
+
+  const toggleMatchStatus = async (id: string, status: 'live' | 'upcoming' | 'finished') => {
+    try {
+      const m = adminMatches.find(x => x.id === id);
+      if (m) {
+        await updateDoc(doc(db, 'matches', id), { 
+          status,
+          liveStartedAt: status === 'live' ? (m.liveStartedAt || Date.now()) : m.liveStartedAt
+        });
+      }
+    } catch (e) {
+      console.error('Error toggling status', e);
+    }
+  };
+
+  const setMatchWinners = async (matchId: string, winnersList: MatchWinner[]) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (!m) return;
+      
+      const matchName = m.name;
+      const matchGroup = m.group;
+      const participants = m.participantIds || [];
+      
+      // Update participants totalMatches
+      for (const pId of participants) {
+        await runTransaction(db, async (t) => {
+          const userRef = doc(db, 'users', pId);
+          const uDoc = await t.get(userRef);
+          if (uDoc.exists()) {
+            t.update(userRef, { totalMatches: (uDoc.data().totalMatches || 0) + 1 });
+          }
+        });
+      }
+
+      // Update winners
+      for (const winner of winnersList) {
+        await runTransaction(db, async (t) => {
+          const userRef = doc(db, 'users', winner.userId);
+          const uDoc = await t.get(userRef);
+          if (uDoc.exists()) {
+            const data = uDoc.data();
+            t.update(userRef, { 
+              totalWins: (data.totalWins || 0) + 1,
+              balance: (data.balance || 0) + winner.reward
+            });
+          }
+        });
+
+        // Add to winners global
+        const userObj = adminUsers.find(u => u.id === winner.userId);
+        if (userObj) {
+          await addDoc(collection(db, 'winners'), {
+            id: 'w' + Date.now() + Math.random(),
+            name: userObj.name,
+            avatar: userObj.avatar,
+            amount: `${winner.reward}`,
+            match: `${matchGroup} - ${matchName}`,
+            time: new Date().toISOString()
+          });
+        }
+        
+        await logActivity({
+          type: 'win',
+          userId: winner.userId,
+          userName: winner.userName,
+          userAvatar: userObj?.avatar || '',
+          amount: winner.reward,
+          matchName: m.name
+        });
+      }
+      
+      // Trigger ceremony
+      setActiveWinnerCeremony({
+        matchId,
+        matchName: m.name,
+        winners: winnersList
+      });
+
+      await updateDoc(doc(db, 'matches', matchId), { winners: winnersList, status: 'finished' });
+
+    } catch (e) {
+      console.error('Error setting winners', e);
+    }
+  };
+
+  const addParticipantToMatch = async (matchId: string, userId: string) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (m) {
+        const newParticipants = [...(m.participantIds || []), userId];
+        await updateDoc(doc(db, 'matches', matchId), { participantIds: newParticipants });
+        
+        const user = adminUsers.find(u => u.id === userId);
+        if (user) {
+          await logActivity({
+            type: 'join',
+            userId: user.id,
+            userName: user.name,
+            userAvatar: user.avatar,
+            matchName: m.name
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Error adding participant', e);
+    }
+  };
+
+  const addMatchCard = async (matchId: string, card: Omit<Team, 'id'>) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (m) {
         const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5) };
         const innerSections = [...(m.innerSections || []), newCard];
-        return { ...m, innerSections, team1: innerSections[0] as any, team2: innerSections[1] as any, team3: innerSections[2] as any };
+        await updateDoc(doc(db, 'matches', matchId), { 
+          innerSections,
+          team1: innerSections[0] || null,
+          team2: innerSections[1] || null,
+          team3: innerSections[2] || null
+        });
       }
-      return m;
-    }));
+    } catch (e) {
+      console.error('Error adding match card', e);
+    }
   };
 
-  const updateMatchCard = (matchId: string, cardId: string, cardUpdates: Partial<Team>) => {
-    setAdminMatches(prev => prev.map(m => {
-      if (m.id === matchId) {
+  const updateMatchCard = async (matchId: string, cardId: string, cardUpdates: Partial<Team>) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (m) {
         const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cardUpdates } : c);
-        return { ...m, innerSections, team1: innerSections[0] as any, team2: innerSections[1] as any, team3: innerSections[2] as any };
+        await updateDoc(doc(db, 'matches', matchId), { 
+          innerSections,
+          team1: innerSections[0] || null,
+          team2: innerSections[1] || null,
+          team3: innerSections[2] || null
+        });
       }
-      return m;
-    }));
+    } catch (e) {
+      console.error('Error updating match card', e);
+    }
   };
 
-  const deleteMatchCard = (matchId: string, cardId: string) => {
-    setAdminMatches(prev => prev.map(m => {
-      if (m.id === matchId) {
+  const deleteMatchCard = async (matchId: string, cardId: string) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (m) {
         const innerSections = (m.innerSections || []).filter(c => c.id !== cardId);
-        return { ...m, innerSections, team1: innerSections[0] as any, team2: innerSections[1] as any, team3: innerSections[2] as any };
+        await updateDoc(doc(db, 'matches', matchId), { 
+          innerSections,
+          team1: innerSections[0] || null,
+          team2: innerSections[1] || null,
+          team3: innerSections[2] || null
+        });
       }
-      return m;
-    }));
+    } catch (e) {
+      console.error('Error deleting match card', e);
+    }
   };
 
   // Payment operations
-  const approvePayment = (id: string) => {
-    setPaymentRequests(prev => prev.map(p => {
-      if (p.id === id && p.status === 'pending') {
-        // Credit user balance
-        setAdminUsers(users => users.map(u => 
-          u.id === p.userId ? { ...u, balance: u.balance + p.amount } : u
-        ));
+  const approvePayment = async (id: string) => {
+    try {
+      const p = paymentRequests.find(pr => pr.id === id);
+      if (p && p.status === 'pending') {
+        // Update in Firebase
+        await updateDoc(doc(db, 'payments', id), { status: 'approved' });
+        
+        // Use transaction to update user balance safely
+        await runTransaction(db, async (transaction) => {
+          const userRef = doc(db, 'users', p.userId);
+          const userDoc = await transaction.get(userRef);
+          if (userDoc.exists()) {
+            const currentBalance = userDoc.data().balance || 0;
+            transaction.update(userRef, { balance: currentBalance + p.amount });
+          }
+        });
+
+        // Also add a transaction record
+        await addDoc(collection(db, 'transactions'), {
+          userId: p.userId,
+          type: 'Deposit',
+          amount: p.amount,
+          date: new Date().toISOString(),
+          status: 'Completed'
+        });
 
         // Log Activity
-        logActivity({
+        await addDoc(collection(db, 'activities'), {
           type: 'deposit',
           userId: p.userId,
           userName: p.userName,
           userAvatar: p.userAvatar,
           amount: p.amount,
-          status: 'approved'
+          status: 'approved',
+          timestamp: new Date().toISOString()
         });
-
-        return { ...p, status: 'approved' as const };
       }
-      return p;
-    }));
+    } catch (e) {
+      console.error('Error approving payment', e);
+    }
   };
 
-  const rejectPayment = (id: string, note: string) => {
-    setPaymentRequests(prev => prev.map(p => 
-      p.id === id ? { ...p, status: 'rejected' as const, note } : p
-    ));
+  const rejectPayment = async (id: string, note: string) => {
+    try {
+      await updateDoc(doc(db, 'payments', id), { status: 'rejected', note });
+    } catch (e) {
+      console.error('Error rejecting payment', e);
+    }
   };
 
   const addPaymentRequest = (request: Omit<PaymentRequest, 'id' | 'status' | 'timestamp' | 'userName' | 'userAvatar'>) => {
-    const user = adminUsers.find(u => u.id === request.userId);
-    const newRequest: PaymentRequest = {
-      ...request,
-      id: 'pay' + Date.now(),
-      status: 'pending',
-      timestamp: new Date().toLocaleString(),
-      userName: user?.name || 'Current User',
-      userAvatar: user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
-    };
-    setPaymentRequests(prev => [newRequest, ...prev]);
-
-    // Log Activity (Initial pending)
-    logActivity({
-      type: 'deposit',
-      userId: request.userId,
-      userName: user?.name || 'Current User',
-      userAvatar: user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
-      amount: request.amount,
-      status: 'pending'
-    });
-  };
-
-  // Withdrawal operations
-  const processWithdrawal = (id: string) => {
-    setWithdrawalRequests(prev => prev.map(w => 
-      w.id === id && w.status === 'pending' ? { ...w, status: 'processing' as const } : w
-    ));
-  };
-
-  const completeWithdrawal = (id: string) => {
-    setWithdrawalRequests(prev => prev.map(w => {
-      if (w.id === id && w.status === 'processing') {
-        // Deduct user balance
-        setAdminUsers(users => users.map(u => 
-          u.id === w.userId ? { ...u, balance: Math.max(0, u.balance - w.amount) } : u
-        ));
-
-        // Log Activity
-        logActivity({
-          type: 'withdrawal',
-          userId: w.userId,
-          userName: w.userName,
-          userAvatar: w.userAvatar,
-          amount: w.amount,
-          status: 'completed'
-        });
-
-        return { ...w, status: 'completed' as const };
-      }
-      return w;
-    }));
-  };
-
-  const rejectWithdrawal = (id: string, note: string) => {
-    setWithdrawalRequests(prev => prev.map(w => 
-      w.id === id ? { ...w, status: 'rejected' as const, note } : w
-    ));
+    console.warn("addPaymentRequest is deprecated. Use addDoc directly in Wallet.");
   };
 
   const addWithdrawalRequest = (request: Omit<WithdrawalRequest, 'id' | 'status' | 'timestamp' | 'userName' | 'userAvatar'>) => {
