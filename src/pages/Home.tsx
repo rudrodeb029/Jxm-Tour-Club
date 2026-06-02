@@ -367,6 +367,7 @@ const Home = () => {
                   team1={match.team1}
                   team2={match.team2}
                   {...match}
+                  currentParticipants={match.participantIds ? match.participantIds.length : (match.currentParticipants || 0)}
                   status={match.status}
                   name={match.name}
                   liveStartedAt={match.liveStartedAt}
@@ -394,6 +395,7 @@ const Home = () => {
                   team1={match.team1}
                   team2={match.team2}
                   {...match}
+                  currentParticipants={match.participantIds ? match.participantIds.length : (match.currentParticipants || 0)}
                   status={match.status}
                   name={match.name}
                   liveStartedAt={match.liveStartedAt}

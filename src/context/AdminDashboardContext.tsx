@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
-import { collection, onSnapshot, updateDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
 
 
@@ -373,7 +373,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const updateMatch = async (id: string, updates: Partial<AdminMatch>) => {
     try {
-      await updateDoc(doc(db, 'matches', id), updates);
+      await setDoc(doc(db, 'matches', id), updates, { merge: true });
     } catch (e) {
       console.error('Error updating match', e);
     }
@@ -488,13 +488,13 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           );
         }
 
-        await updateDoc(doc(db, 'matches', matchId), { 
+        await setDoc(doc(db, 'matches', matchId), { 
           participantIds: newParticipants,
           innerSections,
           team1: innerSections[0] || null,
           team2: innerSections[1] || null,
           team3: innerSections[2] || null
-        });
+        }, { merge: true });
         
         const user = adminUsers.find(u => u.id === userId);
         if (user) {
@@ -606,14 +606,14 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
-        const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5) };
+        const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5), participantIds: [] };
         const innerSections = [...(m.innerSections || []), newCard];
-        await updateDoc(doc(db, 'matches', matchId), { 
+        await setDoc(doc(db, 'matches', matchId), { 
           innerSections,
           team1: innerSections[0] || null,
           team2: innerSections[1] || null,
           team3: innerSections[2] || null
-        });
+        }, { merge: true });
       }
     } catch (e) {
       console.error('Error adding match card', e);
@@ -625,12 +625,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
         const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cardUpdates } : c);
-        await updateDoc(doc(db, 'matches', matchId), { 
+        await setDoc(doc(db, 'matches', matchId), { 
           innerSections,
           team1: innerSections[0] || null,
           team2: innerSections[1] || null,
           team3: innerSections[2] || null
-        });
+        }, { merge: true });
       }
     } catch (e) {
       console.error('Error updating match card', e);
@@ -642,12 +642,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
         const innerSections = (m.innerSections || []).filter(c => c.id !== cardId);
-        await updateDoc(doc(db, 'matches', matchId), { 
+        await setDoc(doc(db, 'matches', matchId), { 
           innerSections,
           team1: innerSections[0] || null,
           team2: innerSections[1] || null,
           team3: innerSections[2] || null
-        });
+        }, { merge: true });
       }
     } catch (e) {
       console.error('Error deleting match card', e);
