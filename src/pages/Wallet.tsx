@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import GlobalActivityFeed from '../components/GlobalActivityFeed';
 import SuccessModal from '../components/SuccessModal';
+import ModalPortal from '../components/ModalPortal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 const Wallet = () => {
@@ -855,6 +856,7 @@ const Wallet = () => {
 
 
       {isConfirming && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -954,9 +956,11 @@ const Wallet = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
       
       {isWithdrawConfirming && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -1032,9 +1036,11 @@ const Wallet = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {showAddGateway && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -1145,10 +1151,12 @@ const Wallet = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Add Saved Method Modal */}
       {showAddMethod && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -1220,10 +1228,12 @@ const Wallet = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -1311,6 +1321,7 @@ const Wallet = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       <SuccessModal 

@@ -15,6 +15,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
+import ModalPortal from '../components/ModalPortal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 
@@ -539,6 +540,7 @@ const Home = () => {
 
 
       {isAddBalanceOpen && (
+        <ModalPortal>
         <div 
           className="animate-fade-in"
           style={{
@@ -731,9 +733,11 @@ const Home = () => {
             )}
           </div>
         </div>
+        </ModalPortal>
       )}
       {/* Edit Stat Modal */}
       {editingStat && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingStat(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '400px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>{editingStat.label}</span></h3>
@@ -763,10 +767,12 @@ const Home = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Edit Match Modal */}
       {editingMatch && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingMatch(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '450px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Match</span></h3>
@@ -889,9 +895,11 @@ const Home = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
       {/* Edit Winner Modal */}
       {editingWinner && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingWinner(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '400px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Winner</span></h3>
@@ -923,10 +931,12 @@ const Home = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Edit Participant Modal */}
       {editingParticipant && (
+        <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingParticipant(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '400px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }} onClick={(e) => e.stopPropagation()}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Participant</span></h3>
@@ -958,6 +968,7 @@ const Home = () => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Admin Reset Button */}
