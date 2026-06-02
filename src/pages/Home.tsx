@@ -578,28 +578,33 @@ const Home = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {activeStatType === 'live' && localMatches.filter(m => m.status === 'live').map((match) => (
-                <div key={match.id} style={{ background: 'var(--glass-bg)', padding: '20px', borderRadius: '24px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-                  {isAdminMode && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); setEditingMatch(match); }}
-                      style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
-                    >EDIT</button>
-                  )}
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', marginBottom: '4px' }}>{match.group}</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{match.name}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{match.currentParticipants}/{match.maxParticipants} Joined</div>
+              {activeStatType === 'live' && localMatches.filter(m => m.status === 'live').flatMap((match) => {
+                const teams = [];
+                if (match.team1) teams.push({ ...match.team1, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
+                if (match.team2) teams.push({ ...match.team2, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
+                if (match.team3) teams.push({ ...match.team3, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
+                
+                return teams.map(team => (
+                  <div key={`${match.id}-${team.id}`} style={{ background: 'var(--glass-bg)', padding: '20px', borderRadius: '24px', border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+                    {isAdminMode && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setEditingMatch(match); }}
+                        style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
+                      >EDIT</button>
+                    )}
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', marginBottom: '4px' }}>{team.entryType} MATCH</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 900 }}>{team.matchName}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{team.currentParticipants}/{team.maxParticipants} Joined</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="live-badge-glow" style={{ background: '#10B981', padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900, color: 'white', marginBottom: '8px', display: 'inline-block' }}>LIVE</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>{team.score}</div>
+                      <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700 }}>{formatElapsedTime(team.liveStartedAt, team.time)} Elapsed</div>
+                    </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="live-badge-glow" style={{ background: '#10B981', padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 900, color: 'white', marginBottom: '8px', display: 'inline-block' }}>LIVE</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>{match.score}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700 }}>{formatElapsedTime(match.liveStartedAt, match.time)} Elapsed</div>
-                  </div>
-
-
-                </div>
-              ))}
+                ));
+              })}
 
               {activeStatType === 'participants' && adminUsers.map((player) => (
                 <div key={player.id} style={{ background: 'var(--glass-bg)', padding: '16px', borderRadius: '24px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
