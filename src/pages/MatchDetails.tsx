@@ -111,6 +111,9 @@ const MatchDetails = () => {
   const dynamicPerKill = currentTeam?.perKill || match.perKillReward || 0;
   const dynamicMap = currentTeam?.map || match.map || 'Bermuda';
   const dynamicVersion = currentTeam?.version || match.version || 'MOBILE';
+  const dynamicRules = currentTeam?.rules || match.rules || [];
+  const dynamicGameId = currentTeam?.gameId || match.gameId || '';
+  const dynamicGamePassword = currentTeam?.gamePassword || match.gamePassword || '';
 
   useEffect(() => {
     if (entryFee) {
@@ -387,7 +390,7 @@ const MatchDetails = () => {
           <div className="glass-panel" style={{ padding: '20px', borderRadius: '20px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
             <h4 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '12px', color: 'var(--text-primary)' }}>Match Rules</h4>
             <ul style={{ paddingLeft: '16px', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {(match.rules && match.rules.length > 0) ? match.rules.map((rule, idx) => (
+              {(dynamicRules && dynamicRules.length > 0) ? dynamicRules.map((rule, idx) => (
                 <li key={idx}>{rule}</li>
               )) : (
                 <>
@@ -417,9 +420,9 @@ const MatchDetails = () => {
             ) : (
               <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Room ID</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{match.gameId || 'Pending...'}</div>
+                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{dynamicGameId || 'Pending...'}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '12px', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Password</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{match.gamePassword || 'Pending...'}</div>
+                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{dynamicGamePassword || 'Pending...'}</div>
               </div>
             )}
           </div>

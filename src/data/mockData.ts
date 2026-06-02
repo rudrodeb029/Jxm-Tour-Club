@@ -18,6 +18,9 @@ export interface Team {
   version?: string;
   startTime?: string;
   liveDuration?: number;
+  rules?: string[];
+  gameId?: string;
+  gamePassword?: string;
 }
 
 export interface User {
