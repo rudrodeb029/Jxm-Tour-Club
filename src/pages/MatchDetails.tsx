@@ -88,13 +88,13 @@ const MatchDetails = () => {
     return false;
   };
 
-  const dynamicMultiplier = selectedTeam === 'team3' ? 4 : selectedTeam === 'team2' ? 2 : 1;
-  const dynamicEntryType = selectedTeam === 'team3' ? 'Squad' : selectedTeam === 'team2' ? 'Duo' : 'Solo';
-  const dynamicEntryFee = entryFee * dynamicMultiplier;
-  const dynamicPrizePool = totalPrizePool * dynamicMultiplier;
-  const dynamicFirstPrize = firstPrizeValue * dynamicMultiplier;
-  const dynamicSecondPrize = secondPrizeValue * dynamicMultiplier;
-  const dynamicThirdPrize = thirdPrizeValue * dynamicMultiplier;
+  const currentTeam = selectedTeam ? (match[selectedTeam as keyof typeof match] as any) : match.team1;
+  const dynamicEntryType = currentTeam?.entryType || 'Solo';
+  const dynamicEntryFee = currentTeam?.entryFee || entryFee;
+  const dynamicPrizePool = currentTeam?.winPrize || totalPrizePool;
+  const dynamicFirstPrize = firstPrizeValue;
+  const dynamicSecondPrize = secondPrizeValue;
+  const dynamicThirdPrize = thirdPrizeValue;
 
   useEffect(() => {
     if (entryFee) {
@@ -180,6 +180,18 @@ const MatchDetails = () => {
               zIndex: 0
             }} />
 
+            {match.status === 'live' && (
+              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                LIVE
+              </div>
+            )}
+            {match.status === 'upcoming' && (
+              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>🕒</span>
+                {match.time}
+              </div>
+            )}
             {/* Glowing Logo Container */}
             <div style={{ 
               width: '88px', 
@@ -216,11 +228,11 @@ const MatchDetails = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                 <span>Entry Type</span>
-                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>Solo</span>
+                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{match.team1.entryType || 'Solo'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                 <span>Entry Fee</span>
-                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(entryFee)}</span>
+                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(match.team1.entryFee || entryFee)}</span>
               </div>
             </div>
 
@@ -282,6 +294,18 @@ const MatchDetails = () => {
               zIndex: 0
             }} />
 
+            {match.status === 'live' && (
+              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                LIVE
+              </div>
+            )}
+            {match.status === 'upcoming' && (
+              <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>🕒</span>
+                {match.time}
+              </div>
+            )}
             {/* Glowing Logo Container */}
             <div style={{ 
               width: '88px', 
@@ -318,11 +342,11 @@ const MatchDetails = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                 <span>Entry Type</span>
-                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>Duo</span>
+                <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{match.team2.entryType || 'Duo'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                 <span>Entry Fee</span>
-                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(entryFee)}</span>
+                <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(match.team2.entryFee || (entryFee * 2))}</span>
               </div>
             </div>
 
@@ -385,6 +409,18 @@ const MatchDetails = () => {
                 zIndex: 0
               }} />
 
+              {match.status === 'live' && (
+                <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                  LIVE
+                </div>
+              )}
+              {match.status === 'upcoming' && (
+                <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>🕒</span>
+                  {match.time}
+                </div>
+              )}
               {/* Glowing Logo Container */}
               <div style={{ 
                 width: '88px', 
@@ -420,11 +456,11 @@ const MatchDetails = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                   <span>Entry Type</span>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>Squad</span>
+                  <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{match.team3.entryType || 'Squad'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                   <span>Entry Fee</span>
-                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(entryFee)}</span>
+                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(match.team3.entryFee || (entryFee * 4))}</span>
                 </div>
               </div>
 
@@ -485,7 +521,7 @@ const MatchDetails = () => {
             { label: 'ENTRY FEE', value: formatCurrency(dynamicEntryFee), color: 'var(--text-primary)' },
             { label: 'PER KILL', value: formatCurrency(match.perKillReward || 0), color: '#4ADE80' },
             { label: 'MAP', value: match.map || 'Bermuda', color: 'var(--text-primary)' },
-            { label: 'VERSION', value: 'MOBILE', color: 'var(--text-primary)' }
+            { label: 'VERSION', value: match.version || 'MOBILE', color: 'var(--text-primary)' }
           ].map((item, idx, arr) => {
             const styles = [
               { bg: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', text: '#fde047' }, // Teal / Gold

@@ -464,6 +464,71 @@ const AdminDashboard = () => {
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Game Password</label>
                   <input value={editingMatchData.gamePassword || ''} onChange={e => setEditingMatchData({...editingMatchData, gamePassword: e.target.value})} placeholder="e.g. FF2026" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
+                <div style={{ gridColumn: '1 / -1', marginTop: '20px', borderTop: '1px solid var(--divider)', paddingTop: '20px' }}>
+                  <h4 style={{ fontWeight: 800, marginBottom: '16px', color: 'var(--text-primary)' }}>🃏 Cards Settings (Team 1, 2, 3)</h4>
+                  
+                  {['team1', 'team2', 'team3'].map((teamKey, idx) => {
+                    const teamData = editingMatchData[teamKey as keyof typeof editingMatchData] as any;
+                    if (!teamData && teamKey === 'team3') return null; // Team 3 is optional
+                    return (
+                      <div key={teamKey} style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '12px', marginBottom: '16px', border: '1px solid var(--glass-border)' }}>
+                        <div style={{ fontWeight: 800, color: 'var(--accent-orange)', marginBottom: '12px' }}>Card {idx + 1}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Title</label>
+                            <input 
+                              value={teamData.name || ''} 
+                              onChange={e => setEditingMatchData({
+                                ...editingMatchData, 
+                                [teamKey]: { ...teamData, name: e.target.value }
+                              })} 
+                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }} 
+                            />
+                          </div>
+                          <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Entry Type</label>
+                            <select 
+                              value={teamData.entryType || ''} 
+                              onChange={e => setEditingMatchData({
+                                ...editingMatchData, 
+                                [teamKey]: { ...teamData, entryType: e.target.value }
+                              })} 
+                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }}
+                            >
+                              <option value="Solo" style={{ background: 'var(--bg-dark)' }}>Solo</option>
+                              <option value="Duo" style={{ background: 'var(--bg-dark)' }}>Duo</option>
+                              <option value="Squad" style={{ background: 'var(--bg-dark)' }}>Squad</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Entry Fee</label>
+                            <input 
+                              type="number" 
+                              value={teamData.entryFee || 0} 
+                              onChange={e => setEditingMatchData({
+                                ...editingMatchData, 
+                                [teamKey]: { ...teamData, entryFee: +e.target.value }
+                              })} 
+                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }} 
+                            />
+                          </div>
+                          <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Win Prize</label>
+                            <input 
+                              type="number" 
+                              value={teamData.winPrize || 0} 
+                              onChange={e => setEditingMatchData({
+                                ...editingMatchData, 
+                                [teamKey]: { ...teamData, winPrize: +e.target.value }
+                              })} 
+                              style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Rules (One per line)</label>
                   <textarea 

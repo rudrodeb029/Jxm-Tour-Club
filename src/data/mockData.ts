@@ -9,6 +9,9 @@ export interface Team {
   damage: number;
   headshots: number;
   rank: number;
+  entryType?: string;
+  entryFee?: number;
+  winPrize?: number;
 }
 
 export interface User {
@@ -79,15 +82,15 @@ export const matches: Match[] = [
     maxParticipants: 48,
     team1: {
       id: 't1', name: 'Red Dragons', shortName: 'RDG', logo: '/images/teams/red_dragons.png', color: '#DC2626', percentage: '65%',
-      kills: 12, damage: 4500, headshots: 5, rank: 2
+      kills: 12, damage: 4500, headshots: 5, rank: 2, entryType: 'Solo', entryFee: 10, winPrize: 500
     },
     team2: {
       id: 't2', name: 'Shadow Ninjas', shortName: 'SHN', logo: '/images/teams/shadow_ninjas.png', color: '#F59E0B', percentage: '35%',
-      kills: 8, damage: 3200, headshots: 2, rank: 5
+      kills: 8, damage: 3200, headshots: 2, rank: 5, entryType: 'Duo', entryFee: 20, winPrize: 1000
     },
     team3: {
       id: 't3', name: 'Thunder Bolts', shortName: 'THB', logo: '/images/teams/inferno_squad.png', color: '#3B82F6', percentage: '20%',
-      kills: 5, damage: 2100, headshots: 1, rank: 3
+      kills: 5, damage: 2100, headshots: 1, rank: 3, entryType: 'Squad', entryFee: 40, winPrize: 2000
     },
     joinedUsers: [mockUsers[0], mockUsers[1], mockUsers[2]],
     timeline: [
@@ -120,15 +123,15 @@ export const matches: Match[] = [
     maxParticipants: 24,
     team1: {
       id: 't7', name: 'Silent Killers', shortName: 'SLK', logo: '/images/teams/silent_killers.png', color: '#10B981', percentage: '70%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
+      kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Solo', entryFee: 15, winPrize: 1500
     },
     team2: {
       id: 't8', name: 'Swift Snipers', shortName: 'SWS', logo: '/images/teams/swift_snipers.png', color: '#F59E0B', percentage: '30%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
+      kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Duo', entryFee: 30, winPrize: 3000
     },
     team3: {
       id: 't9', name: 'Phantom Assassins', shortName: 'PHA', logo: '/images/teams/cyber_elites.png', color: '#8B5CF6', percentage: '25%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
+      kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Squad', entryFee: 60, winPrize: 6000
     },
     joinedUsers: [mockUsers[1], mockUsers[2]],
     timeline: [],
@@ -152,15 +155,15 @@ export const matches: Match[] = [
     maxParticipants: 12,
     team1: {
       id: 't5', name: 'Inferno Squad', shortName: 'INF', logo: '/images/teams/inferno_squad.png', color: '#1F2937', percentage: '55%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
+      kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Solo', entryFee: 25, winPrize: 3000
     },
     team2: {
       id: 't6', name: 'Cyber Elites', shortName: 'CYB', logo: '/images/teams/cyber_elites.png', color: '#EF4444', percentage: '45%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
+      kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Duo', entryFee: 50, winPrize: 6000
     },
     team3: {
       id: 't10', name: 'Venom Strikers', shortName: 'VNM', logo: '/images/teams/silent_killers.png', color: '#14B8A6', percentage: '35%',
-      kills: 0, damage: 0, headshots: 0, rank: 0
+      kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Squad', entryFee: 100, winPrize: 12000
     },
     joinedUsers: [mockUsers[0], mockUsers[4]],
     timeline: [],
