@@ -911,6 +911,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       winners,
       stats,
       addParticipantToMatch,
+      setCardWinners,
       addMatchCard,
       updateMatchCard,
       deleteMatchCard,

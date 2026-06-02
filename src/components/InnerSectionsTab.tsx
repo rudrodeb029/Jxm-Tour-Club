@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAdminDashboard, AdminMatch } from '../context/AdminDashboardContext';
-import { Trophy, Users, UserPlus } from 'lucide-react';
+import { Trophy, Users } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import type { Team } from '../data/mockData';
 

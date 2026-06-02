@@ -7,9 +7,10 @@ async function main() {
   const d2 = await r2.json();
   const job = d2.jobs[0];
   const r3 = await fetch('https://api.github.com/repos/rudrodeb029/Jxm-Tour-Club/actions/jobs/' + job.id + '/logs');
-  console.log('Status:', r3.status);
   const text = await r3.text();
-  console.log(text.substring(0, 500));
+  fs.writeFileSync('logs.txt', text);
+  console.log('Saved to logs.txt');
+  console.log(text.split('\n').filter(l => l.includes('error TS')).join('\n'));
 }
 
 main().catch(console.error);
