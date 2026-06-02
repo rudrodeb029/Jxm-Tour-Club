@@ -211,7 +211,12 @@ const MatchDetails = () => {
                   
                   const diff = targetTime.getTime() - nowTime.getTime();
                   if (diff <= 0) {
-                    cardStatus = 'live';
+                    const durationMs = (card.liveDuration || 60) * 60 * 1000;
+                    if (Math.abs(diff) >= durationMs) {
+                      cardStatus = 'finished';
+                    } else {
+                      cardStatus = 'live';
+                    }
                   } else {
                     cardStatus = 'upcoming';
                     const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -233,6 +238,11 @@ const MatchDetails = () => {
                       <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px', fontVariantNumeric: 'tabular-nums' }}>
                         <span>🕒</span>
                         {cardTimeLeft}
+                      </div>
+                    )}
+                    {cardStatus === 'finished' && (
+                      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(107, 114, 128, 0.2)', color: '#9ca3af', border: '1px solid #9ca3af', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        ENDED
                       </div>
                     )}
                   </>

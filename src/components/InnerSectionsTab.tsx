@@ -204,7 +204,7 @@ const InnerSectionsTab = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Per Kill Reward</label>
                   <input type="number" value={cardForm.perKill || 0} onChange={e => setCardForm({...cardForm, perKill: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
@@ -212,6 +212,10 @@ const InnerSectionsTab = () => {
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Start Time</label>
                   <input type="time" value={cardForm.startTime || ''} onChange={e => setCardForm({...cardForm, startTime: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Live Duration (mins)</label>
+                  <input type="number" value={cardForm.liveDuration || ''} onChange={e => setCardForm({...cardForm, liveDuration: Number(e.target.value)})} placeholder="e.g. 60" style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
               </div>
             </div>

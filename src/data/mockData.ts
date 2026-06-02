@@ -17,6 +17,7 @@ export interface Team {
   map?: string;
   version?: string;
   startTime?: string;
+  liveDuration?: number;
 }
 
 export interface User {
