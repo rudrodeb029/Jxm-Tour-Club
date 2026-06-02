@@ -129,7 +129,7 @@ const MatchDetails = () => {
         currentParticipants: match.currentParticipants + 1,
         totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
-      addParticipantToMatch(match.id, displayUserId);
+      addParticipantToMatch(match.id, displayUserId, selectedTeam);
       setShowJoinSuccess(true);
     } else {
       setSelectedBetAmount(dynamicEntryFee);

@@ -22,6 +22,7 @@ export interface Team {
   gameId?: string;
   gamePassword?: string;
   roomDetailsRevealTime?: number;
+  participantIds?: string[];
 }
 
 export interface User {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAdminDashboard, AdminMatch } from '../context/AdminDashboardContext';
+import { Trophy, Users, UserPlus } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import type { Team } from '../data/mockData';
 
@@ -7,9 +8,18 @@ const InnerSectionsTab = () => {
   const { adminMatches, addMatchCard, updateMatchCard, deleteMatchCard } = useAdminDashboard();
   const { formatCurrency } = useCurrency();
   
+  
   const [selectedMatchId, setSelectedMatchId] = useState<string>(adminMatches[0]?.id || '');
   const [editingCard, setEditingCard] = useState<Team | null>(null);
   const [showAddCard, setShowAddCard] = useState(false);
+  const [showWinnersModal, setShowWinnersModal] = useState(false);
+  const [selectedCardForWinners, setSelectedCardForWinners] = useState<Team | null>(null);
+  
+  const [matchWinnerId, setMatchWinnerId] = useState<string>('');
+  const [killWinners, setKillWinners] = useState<{userId: string, kills: number}[]>([]);
+  
+  const { setCardWinners, adminUsers } = useAdminDashboard();
+
   const [cardForm, setCardForm] = useState<Partial<Team>>({
     name: '',
     logo: '',
@@ -50,7 +60,25 @@ const InnerSectionsTab = () => {
     });
   };
 
+  
+  const handleSaveWinners = () => {
+    if (!selectedCardForWinners || !selectedMatchId) return;
+    
+    setCardWinners(
+      selectedMatchId, 
+      selectedCardForWinners.id, 
+      matchWinnerId || null, 
+      killWinners.filter(k => k.kills > 0)
+    );
+    
+    alert('Prizes distributed successfully!');
+    setShowWinnersModal(false);
+    setMatchWinnerId('');
+    setKillWinners([]);
+  };
+
   const handleEdit = (card: Team) => {
+
     setEditingCard(card);
     setCardForm({ ...card });
     setShowAddCard(true);
@@ -118,6 +146,7 @@ const InnerSectionsTab = () => {
                   </div>
                 </div>
               </div>
+              
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', fontSize: '0.9rem' }}>
                 <div>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Entry Fee</div>
@@ -128,7 +157,27 @@ const InnerSectionsTab = () => {
                   <div style={{ fontWeight: 800, color: '#4ADE80' }}>{formatCurrency(card.winPrize || 0)}</div>
                 </div>
               </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>{card.participantIds ? card.participantIds.length : 0} Joined</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    setSelectedCardForWinners(card);
+                    setMatchWinnerId('');
+                    setKillWinners((card.participantIds || []).map(id => ({ userId: id, kills: 0 })));
+                    setShowWinnersModal(true);
+                  }}
+                  style={{ background: 'var(--accent-orange)', color: 'white', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '0.8rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                >
+                  <Trophy className="w-3 h-3" /> Select Winners
+                </button>
+              </div>
+
               <div style={{ display: 'flex', gap: '8px' }}>
+
                 <button onClick={() => handleEdit(card)} style={{ flex: 1, padding: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>Edit</button>
                 <button onClick={() => handleDelete(card.id)} style={{ padding: '8px 16px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.5)', color: '#ef4444', borderRadius: '8px', cursor: 'pointer' }}>Delete</button>
               </div>
