@@ -227,11 +227,31 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     const qMatches = query(collection(db, 'matches'), orderBy('createdAt', 'desc'));
     const unsubscribeMatches = onSnapshot(qMatches, (snapshot) => {
       const fbMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AdminMatch[];
-      const merged = [...fbMatches];
       const converted = convertToAdminMatches(defaultMatches);
-      converted.forEach(dm => {
-        if (!merged.find(m => m.id === dm.id)) merged.push(dm);
+      
+      const merged = converted.map(dm => {
+        const fbMatch = fbMatches.find(m => m.id === dm.id);
+        if (fbMatch) {
+          // Merge Firebase dynamic data over the static mock data
+          return {
+            ...dm,
+            ...fbMatch,
+            // Keep innerSections from Firebase if it has them, else use mock
+            innerSections: fbMatch.innerSections && fbMatch.innerSections.length > 0 
+              ? fbMatch.innerSections 
+              : dm.innerSections,
+          };
+        }
+        return dm; // Not in Firebase yet, use mock completely
       });
+      
+      // Also add any matches that are completely new in Firebase (not in defaultMatches)
+      fbMatches.forEach(fb => {
+        if (!merged.find(m => m.id === fb.id)) {
+          merged.push(fb);
+        }
+      });
+      
       setAdminMatches(merged);
     });
 
