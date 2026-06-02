@@ -38,10 +38,12 @@ interface SliderCardProps {
   thirdPrize?: number;
   version?: string;
   perKillReward?: number;
+  perKillReward?: number;
   map?: string;
+  image?: string;
 }
 
-const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map }: SliderCardProps) => {
+const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image }: SliderCardProps) => {
   const { t } = useLanguage();
   const { formatCurrency } = useCurrency();
   const isLive = status === 'live';
@@ -158,7 +160,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         borderRadius: '50%',
         border: '3px solid var(--nav-border)',
         boxShadow: 'var(--card-shadow)',
-        backgroundImage: `url('/images/gaming_arena_banner.png')`,
+        backgroundImage: `url('${image || '/images/gaming_arena_banner.png'}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         zIndex: 10
