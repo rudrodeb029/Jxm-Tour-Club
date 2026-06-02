@@ -320,13 +320,6 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-            <div style={{ display: 'flex', marginLeft: '0px' }}>
-              {[1,2,3].map(i => (
-                <div key={i} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid #334155', background: 'var(--modal-bg)', marginLeft: i > 1 ? '-10px' : '0', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.6)' }}>
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+123}`} alt="" style={{ width: '100%' }} />
-                </div>
-              ))}
-            </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{currentParticipants} Joined</span>
           </div>
         </div>

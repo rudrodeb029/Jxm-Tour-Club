@@ -89,8 +89,8 @@ export const matches: Match[] = [
     score: '12 - 8',
     time: '14:20',
     bids: ['$10', '$50', '$100'],
-    totalBidsCount: '1.2K Players joined',
-    currentParticipants: 32,
+    totalBidsCount: '0 Players joined',
+    currentParticipants: 0,
     maxParticipants: 48,
     team1: {
       id: 't1', name: 'Red Dragons', shortName: 'RDG', logo: '/images/teams/red_dragons.png', color: '#DC2626', percentage: '65%',
@@ -104,11 +104,8 @@ export const matches: Match[] = [
       id: 't3', name: 'Thunder Bolts', shortName: 'THB', logo: '/images/teams/inferno_squad.png', color: '#3B82F6', percentage: '20%',
       kills: 5, damage: 2100, headshots: 1, rank: 3, entryType: 'Squad', entryFee: 40, winPrize: 2000
     },
-    joinedUsers: [mockUsers[0], mockUsers[1], mockUsers[2]],
-    timeline: [
-      { time: '02:15', event: 'First Blood', team: 't1', player: 'Drago' },
-      { time: '05:40', event: 'Double Kill', team: 't2', player: 'Zinx' },
-    ],
+    joinedUsers: [],
+    timeline: [],
     category: 'full_map',
     map: 'Bermuda',
     version: 'Solo',
@@ -130,8 +127,8 @@ export const matches: Match[] = [
     score: '0 - 0',
     time: '23:30',
     bids: ['$15', '$40', '$80'],
-    totalBidsCount: '450 Players joined',
-    currentParticipants: 8,
+    totalBidsCount: '0 Players joined',
+    currentParticipants: 0,
     maxParticipants: 24,
     team1: {
       id: 't7', name: 'Silent Killers', shortName: 'SLK', logo: '/images/teams/silent_killers.png', color: '#10B981', percentage: '70%',
@@ -145,7 +142,7 @@ export const matches: Match[] = [
       id: 't9', name: 'Phantom Assassins', shortName: 'PHA', logo: '/images/teams/cyber_elites.png', color: '#8B5CF6', percentage: '25%',
       kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Squad', entryFee: 60, winPrize: 6000
     },
-    joinedUsers: [mockUsers[1], mockUsers[2]],
+    joinedUsers: [],
     timeline: [],
     category: 'lone_wolf',
     map: 'Purgatory',
@@ -162,7 +159,7 @@ export const matches: Match[] = [
     score: '0 - 0',
     time: '21:00',
     bids: ['$25', '$100', '$250'],
-    totalBidsCount: '800 Players joined',
+    totalBidsCount: '0 Players joined',
     currentParticipants: 0,
     maxParticipants: 12,
     team1: {
@@ -177,7 +174,7 @@ export const matches: Match[] = [
       id: 't10', name: 'Venom Strikers', shortName: 'VNM', logo: '/images/teams/silent_killers.png', color: '#14B8A6', percentage: '35%',
       kills: 0, damage: 0, headshots: 0, rank: 0, entryType: 'Squad', entryFee: 100, winPrize: 12000
     },
-    joinedUsers: [mockUsers[0], mockUsers[4]],
+    joinedUsers: [],
     timeline: [],
     category: 'cs_rank',
     map: 'Kalahari',
