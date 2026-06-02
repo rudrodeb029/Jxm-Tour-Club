@@ -70,9 +70,9 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
         style={{
           width: '85%',
           maxWidth: '340px',
-          height: '100dvh',
+          height: '100%',
           background: 'var(--nav-bg)', // Deep Metallic
-          padding: '24px 20px',
+          padding: '24px 20px 100px 20px',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: 'inset -20px 0 30px rgba(0,0,0,0.6), 10px 0 20px rgba(179, 144, 70, 0.2)',
@@ -139,15 +139,8 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
             <img src="/images/3d_hologram.png" alt="Support" style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '50%', filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.8))' }} />
             <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-3d-sm)', letterSpacing: '0.02em' }}>Support</span>
           </button>
-        </div>
 
-        {/* Bottom Section: Logout */}
-        <div style={{
-          marginTop: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          paddingBottom: '100px'
-        }}>
+          {/* Logout */}
           <button onClick={async () => { await logout(); navigate('/auth'); onClose(); }} style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)', padding: '12px 20px', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '20px', width: '100%', boxShadow: 'var(--card-shadow)' }}>
             <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '50%', border: '1px solid rgba(239, 68, 68, 0.3)', filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.8))' }}>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
