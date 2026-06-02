@@ -592,7 +592,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   const stats = {
     totalUsers: adminUsers.length,
     totalBalance: adminUsers.reduce((sum, u) => sum + u.balance, 0),
-    activeMatches: adminMatches.filter(m => m.status === 'live').length,
+    activeMatches: adminMatches.filter(m => m.status === 'live').reduce((total, m) => total + (m.team1 ? 1 : 0) + (m.team2 ? 1 : 0) + (m.team3 ? 1 : 0), 0),
     pendingPayments: paymentRequests.filter(p => p.status === 'pending').length,
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0),
