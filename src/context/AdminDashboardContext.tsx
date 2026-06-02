@@ -851,6 +851,61 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     console.warn("addPaymentRequest is deprecated. Use addDoc directly in Wallet.");
   };
 
+  const processWithdrawal = async (id: string) => {
+    try {
+      await updateDoc(doc(db, 'withdrawals', id), { status: 'processing' });
+    } catch (e) {
+      console.error('Error processing withdrawal', e);
+    }
+  };
+
+  const completeWithdrawal = async (id: string) => {
+    try {
+      const w = withdrawalRequests.find(wr => wr.id === id);
+      if (w && (w.status === 'pending' || w.status === 'processing')) {
+        await updateDoc(doc(db, 'withdrawals', id), { status: 'completed' });
+
+        // Deduct balance from user
+        await runTransaction(db, async (transaction) => {
+          const userRef = doc(db, 'users', w.userId);
+          const userDoc = await transaction.get(userRef);
+          if (userDoc.exists()) {
+            const currentBalance = userDoc.data().balance || 0;
+            transaction.update(userRef, { balance: Math.max(0, currentBalance - w.amount) });
+          }
+        });
+
+        // Add transaction record
+        await addDoc(collection(db, 'transactions'), {
+          userId: w.userId,
+          type: 'Withdrawal',
+          amount: w.amount,
+          date: new Date().toISOString(),
+          status: 'Completed'
+        });
+
+        await logActivity({
+          type: 'withdrawal',
+          userId: w.userId,
+          userName: w.userName,
+          userAvatar: w.userAvatar,
+          amount: w.amount,
+          status: 'completed'
+        });
+      }
+    } catch (e) {
+      console.error('Error completing withdrawal', e);
+    }
+  };
+
+  const rejectWithdrawal = async (id: string, note: string) => {
+    try {
+      await updateDoc(doc(db, 'withdrawals', id), { status: 'rejected', note });
+    } catch (e) {
+      console.error('Error rejecting withdrawal', e);
+    }
+  };
+
   const addWithdrawalRequest = (request: Omit<WithdrawalRequest, 'id' | 'status' | 'timestamp' | 'userName' | 'userAvatar'>) => {
     const user = adminUsers.find(u => u.id === request.userId);
     const newRequest: WithdrawalRequest = {
