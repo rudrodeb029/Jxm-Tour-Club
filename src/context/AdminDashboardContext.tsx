@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { Winner, Team } from '../data/mockData';
+import { matches as defaultMatches } from '../data/mockData';
+import type { Match, Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -136,14 +137,29 @@ interface AdminDashboardContextType {
   logActivity: (activity: Omit<Activity, 'id' | 'timestamp'>) => void;
 }
 
-// ============ DATA (Firebase only, no demo data) ============
-
 // ============ CONTEXT ============
 
 const AdminDashboardContext = createContext<AdminDashboardContextType | undefined>(undefined);
 
+const convertToAdminMatches = (m: Match[]): AdminMatch[] => m.map(match => {
+  const innerSections: Team[] = [];
+  if (match.team1) innerSections.push({ ...match.team1, id: match.team1.id || 't1' });
+  if (match.team2) innerSections.push({ ...match.team2, id: match.team2.id || 't2' });
+  if (match.team3) innerSections.push({ ...match.team3, id: match.team3.id || 't3' });
+
+  return {
+    ...match,
+    innerSections,
+    createdAt: '2026-05-01',
+    scheduledStart: match.time,
+    countdownMinutes: match.status === 'live' ? 600 : 0,
+    participantIds: match.joinedUsers.map(u => u.id),
+    liveStartedAt: match.status === 'live' ? Date.now() : undefined,
+  };
+});
+
 export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [adminMatches, setAdminMatches] = useState<AdminMatch[]>([]);
+  const [adminMatches, setAdminMatches] = useState<AdminMatch[]>(convertToAdminMatches(defaultMatches));
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequest[]>([]);
   const [withdrawalRequests, setWithdrawalRequests] = useState<WithdrawalRequest[]>([]);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -211,7 +227,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     const qMatches = query(collection(db, 'matches'), orderBy('createdAt', 'desc'));
     const unsubscribeMatches = onSnapshot(qMatches, (snapshot) => {
       const fbMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AdminMatch[];
-      setAdminMatches(fbMatches);
+      const merged = [...fbMatches];
+      const converted = convertToAdminMatches(defaultMatches);
+      converted.forEach(dm => {
+        if (!merged.find(m => m.id === dm.id)) merged.push(dm);
+      });
+      setAdminMatches(merged);
     });
 
     // Winners Listener
