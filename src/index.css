@@ -1,5 +1,10 @@
 /* Removed Outfit font import to use native system fonts */
 
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 :root {
   --bg-dark: #050b14;
   --bg-gradient: radial-gradient(circle at 15% 15%, #1a2333 0%, #0a0f1a 50%, #02060d 100%);
@@ -151,9 +156,15 @@ body {
   background-image: none;
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.no-scroll {
+  overflow: hidden !important;
 }
 
 #root {
@@ -161,6 +172,7 @@ body {
   max-width: 480px; /* Mobile layout max-width */
   margin: 0 auto;
   min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   background: var(--bg-gradient);
   box-shadow: 0 0 50px rgba(0,0,0,0.5);

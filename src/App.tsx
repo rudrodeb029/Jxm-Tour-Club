@@ -54,7 +54,7 @@ const AnimatedRoutes = () => {
 
   return (
     <>
-      <div key={location.pathname} className="page-wrapper" style={{ minHeight: '100vh', width: '100%', paddingBottom: showNav ? '80px' : '0' }}>
+      <div key={location.pathname} className="page-wrapper" style={{ minHeight: '100vh', width: '100%', paddingBottom: showNav ? '100px' : '0' }}>
         <Routes location={location}>
           <Route path="/" element={<RootNavigator />} />
           <Route path="/onboarding" element={<Onboarding />} />
