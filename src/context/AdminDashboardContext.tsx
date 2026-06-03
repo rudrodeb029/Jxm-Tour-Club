@@ -225,9 +225,17 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
     
     // Matches Listener
-    const qMatches = query(collection(db, 'matches'), orderBy('createdAt', 'desc'));
+    const qMatches = collection(db, 'matches');
     const unsubscribeMatches = onSnapshot(qMatches, (snapshot) => {
       const fbMatches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as AdminMatch[];
+      
+      // Sort matches in-memory to prevent documents without 'createdAt' field from being filtered out by Firestore
+      fbMatches.sort((a, b) => {
+        const dateA = a.createdAt || '';
+        const dateB = b.createdAt || '';
+        return dateB.localeCompare(dateA);
+      });
+
       const converted = convertToAdminMatches(defaultMatches);
       
       const merged = converted.map(dm => {

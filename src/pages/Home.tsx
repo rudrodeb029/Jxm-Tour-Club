@@ -870,22 +870,21 @@ const Home = () => {
                   const secondPrize = parseFloat((document.getElementById('edit-match-secondPrize') as HTMLInputElement).value) || 0;
                   const thirdPrize = parseFloat((document.getElementById('edit-match-thirdPrize') as HTMLInputElement).value) || 0;
                   
-                  setLocalMatches(prev => prev.map(m => m.id === editingMatch.id ? { 
-                    ...m, 
+                  updateMatch(editingMatch.id, { 
                     name,
                     score, 
                     status, 
                     group, 
                     time,
-                    team1: { ...m.team1, name: team1Name },
-                    team2: { ...m.team2, name: team2Name },
+                    team1: { ...editingMatch.team1, name: team1Name },
+                    team2: { ...editingMatch.team2, name: team2Name },
                     currentParticipants: current, 
                     maxParticipants: max,
                     prizePool,
                     firstPrize,
                     secondPrize,
                     thirdPrize
-                  } : m));
+                  });
                   setEditingMatch(null);
                 }}
               >SAVE MATCH</button>
