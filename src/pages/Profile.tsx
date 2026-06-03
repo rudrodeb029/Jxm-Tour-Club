@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import ModalPortal from '../components/ModalPortal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { db, storage } from '../firebase';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { 
@@ -72,57 +72,49 @@ const Profile = () => {
   // Sync with Admin Dashboard user data
   const adminUser = adminUsers.find(u => u.id === displayUserId);
 
+  const fallbackAvatar = 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4';
+
   const [user, setUser] = useState(() => ({
     ...currentUser,
     id: displayUserId,
     name: localStorage.getItem('userName') || adminUser?.name || currentUser?.displayName || '',
     username: localStorage.getItem('userUsername') || adminUser?.username || '',
-    avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser?.photoURL || '',
+    avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser?.photoURL || fallbackAvatar,
     totalWins: adminUser?.totalWins || 0,
     totalMatches: adminUser?.totalMatches || 0
   }));
 
-  const [editData, setEditData] = useState({ name: user.name, username: user.username, avatar: user.avatar });
+  const [editData, setEditData] = useState({ 
+    name: user.name, 
+    username: user.username, 
+    avatar: user.avatar || fallbackAvatar 
+  });
 
-  // Update local user state when adminUser changes
+  // Listen to Firestore profile updates in real-time
   useEffect(() => {
-    if (adminUser) {
-      setUser(prev => ({
-        ...prev,
-        name: adminUser.name || prev.name,
-        username: adminUser.username || prev.username,
-        avatar: adminUser.avatar || prev.avatar,
-        totalWins: adminUser.totalWins,
-        totalMatches: adminUser.totalMatches
-      }));
-    }
-  }, [adminUser]);
-
-  // Fetch from Firestore on mount
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (currentUser) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setUser(prev => {
-              const newState = {
-                ...prev,
-                name: data.name || currentUser.displayName || prev.name,
-                username: data.username || prev.username,
-                avatar: data.avatar || currentUser.photoURL || prev.avatar,
-              };
-              setEditData({ name: newState.name, username: newState.username, avatar: newState.avatar });
-              return newState;
-            });
-          }
-        } catch (e) {
-          console.error('Failed to fetch profile', e);
-        }
+    if (!currentUser) return;
+    
+    const unsubscribe = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUser(prev => {
+          const newState = {
+            ...prev,
+            name: data.name || currentUser.displayName || prev.name,
+            username: data.username || prev.username,
+            avatar: data.avatar || currentUser.photoURL || prev.avatar || fallbackAvatar,
+            totalWins: data.totalWins || 0,
+            totalMatches: data.totalMatches || 0
+          };
+          setEditData({ name: newState.name, username: newState.username, avatar: newState.avatar });
+          return newState;
+        });
       }
-    };
-    fetchProfile();
+    }, (error) => {
+      console.error('Failed to fetch/listen user profile:', error);
+    });
+
+    return () => unsubscribe();
   }, [currentUser]);
 
   // Dynamic Saved Methods State
@@ -332,51 +324,61 @@ const Profile = () => {
 
 
       {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-        {[
-          { 
-            label: t('matchesWon'), 
-            value: user.totalWins.toString(), 
-            bg: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
-            border: '#fef08a', 
-            text: '#fef08a',
-            trend: '+12%' 
-          },
-          { 
-            label: t('matchesLost'), 
-            value: (user.totalMatches - user.totalWins).toString(), 
-            bg: 'linear-gradient(135deg, #94a3b8, #475569)', 
-            border: '#f1f5f9', 
-            text: '#f1f5f9',
-            trend: '-5%' 
-          }
-        ].map((stat, i) => (
-          <div 
-            key={i}
-            className="hover-scale" 
-            style={{ 
-              background: stat.bg,
-              border: `1px solid ${stat.border}`,
-              borderRadius: '12px',
-              boxShadow: 'var(--card-shadow)',
-              transform: 'skewX(-8deg)',
-              cursor: 'default'
-            }}
-          >
-            <div style={{
-              padding: '16px 12px', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              transform: 'skewX(8deg)'
-            }}>
-              <span style={{ fontSize: '1.8rem', fontWeight: 900, color: stat.text, marginBottom: '4px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}>{stat.value}</span>
-              <span style={{ fontSize: '0.75rem', color: stat.text, opacity: 0.9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
-              <div style={{ marginTop: '6px', fontSize: '0.65rem', color: stat.text, fontWeight: 800, background: 'rgba(0,0,0,0.3)', border: `1px solid ${stat.border}40`, padding: '2px 6px', borderRadius: '6px' }}>{stat.trend}</div>
-            </div>
+      {(() => {
+        const totalMatches = user.totalMatches || 0;
+        const totalWins = user.totalWins || 0;
+        const totalLosses = totalMatches >= totalWins ? totalMatches - totalWins : 0;
+        const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
+        const lossRate = totalMatches > 0 ? Math.round((totalLosses / totalMatches) * 100) : 0;
+
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+            {[
+              { 
+                label: t('matchesWon'), 
+                value: totalWins.toString(), 
+                bg: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
+                border: '#fef08a', 
+                text: '#fef08a',
+                trend: `${winRate}% Rate` 
+              },
+              { 
+                label: t('matchesLost'), 
+                value: totalLosses.toString(), 
+                bg: 'linear-gradient(135deg, #94a3b8, #475569)', 
+                border: '#f1f5f9', 
+                text: '#f1f5f9',
+                trend: `${lossRate}% Rate` 
+              }
+            ].map((stat, i) => (
+              <div 
+                key={i}
+                className="hover-scale" 
+                style={{ 
+                  background: stat.bg,
+                  border: `1px solid ${stat.border}`,
+                  borderRadius: '12px',
+                  boxShadow: 'var(--card-shadow)',
+                  transform: 'skewX(-8deg)',
+                  cursor: 'default'
+                }}
+              >
+                <div style={{
+                  padding: '16px 12px', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  transform: 'skewX(8deg)'
+                }}>
+                  <span style={{ fontSize: '1.8rem', fontWeight: 900, color: stat.text, marginBottom: '4px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}>{stat.value}</span>
+                  <span style={{ fontSize: '0.75rem', color: stat.text, opacity: 0.9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
+                  <div style={{ marginTop: '6px', fontSize: '0.65rem', color: stat.text, fontWeight: 800, background: 'rgba(0,0,0,0.3)', border: `1px solid ${stat.border}40`, padding: '2px 6px', borderRadius: '6px' }}>{stat.trend}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
 
       {/* Connections / Joined Users */}

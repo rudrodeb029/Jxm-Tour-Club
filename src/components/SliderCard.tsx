@@ -95,11 +95,10 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         return { status: 'revealed', display: 'REVEALED' };
       }
       
-      // Otherwise show countdown (HH:MM:SS)
+      // Otherwise show countdown (HH:MM)
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-      const timeLeftStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      const timeLeftStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
       return { status: 'upcoming', display: timeLeftStr };
     } else {
       // Passed target time: Check if still live or finished
