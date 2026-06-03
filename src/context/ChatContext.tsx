@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, setDoc, getDoc } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -29,6 +29,26 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [autoReplied, setAutoReplied] = useState(false);
+
+  // Check if auto-reply was already sent for this user
+  useEffect(() => {
+    if (!currentUser) {
+      setAutoReplied(false);
+      return;
+    }
+    const checkAutoReplied = async () => {
+      try {
+        const chatDoc = await getDoc(doc(db, 'chats', currentUser.uid));
+        if (chatDoc.exists() && chatDoc.data().autoReplied) {
+          setAutoReplied(true);
+        }
+      } catch (e) {
+        console.error('Error checking autoReplied:', e);
+      }
+    };
+    checkAutoReplied();
+  }, [currentUser]);
 
   // Listen to Firestore messages
   useEffect(() => {
@@ -107,9 +127,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const sendMessage = async (text: string, sender: 'user' | 'support') => {
     if (!currentUser) return;
     
-    // Optimistic UI update could be added here if desired, 
-    // but onSnapshot will handle it fast enough in most cases.
-    
     try {
       const messagesRef = collection(db, 'chats', currentUser.uid, 'messages');
       await addDoc(messagesRef, {
@@ -133,7 +150,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatedAt: serverTimestamp(),
       }, { merge: true });
 
-      if (sender === 'user') {
+      // Auto-reply only ONCE per user (first message only)
+      if (sender === 'user' && !autoReplied) {
+        setAutoReplied(true);
         setIsTyping(true);
         setTimeout(async () => {
           setIsTyping(false);
@@ -146,11 +165,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             userName: 'Support Bot',
           });
 
-          // Update parent chat doc for bot reply
+          // Update parent chat doc for bot reply & mark auto-replied
           await setDoc(chatDocRef, {
             lastMessage: replyText,
             lastMessageTime: serverTimestamp(),
-            unreadByAdmin: false,
+            unreadByAdmin: true,
+            autoReplied: true,
             updatedAt: serverTimestamp(),
           }, { merge: true });
 
