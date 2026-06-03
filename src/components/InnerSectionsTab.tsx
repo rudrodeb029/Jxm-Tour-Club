@@ -17,6 +17,7 @@ const InnerSectionsTab = () => {
   const [selectedCardForParticipants, setSelectedCardForParticipants] = useState<Team | null>(null);
   
   const [matchWinnerId, setMatchWinnerId] = useState<string>('');
+  const [customPerKillRate, setCustomPerKillRate] = useState<number>(0);
   const [killWinners, setKillWinners] = useState<{userId: string, kills: number}[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -103,7 +104,8 @@ const InnerSectionsTab = () => {
         selectedMatchId, 
         selectedCardForWinners.id, 
         matchWinnerId || null, 
-        killWinners.filter(k => k.kills > 0)
+        killWinners.filter(k => k.kills > 0),
+        customPerKillRate
       );
       setSuccessMessage('Prizes distributed successfully!');
       setShowWinnersModal(false);
@@ -303,6 +305,7 @@ const InnerSectionsTab = () => {
                     onClick={() => {
                       setSelectedCardForWinners(card);
                       setMatchWinnerId('');
+                      setCustomPerKillRate(card.perKill || 0);
                       setKillWinners((card.participantIds || []).map(id => ({ userId: id, kills: 0 })));
                       setShowWinnersModal(true);
                     }}
@@ -470,102 +473,116 @@ const InnerSectionsTab = () => {
               </button>
             </div>
 
-            {/* Prize Info */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-              <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.2)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.7rem', color: '#4ADE80', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Win Prize</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#4ADE80' }}>{formatCurrency(selectedCardForWinners.winPrize || 0)}</div>
-              </div>
-              <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.7rem', color: '#F59E0B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Per Kill</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#F59E0B' }}>{formatCurrency(selectedCardForWinners.perKill || 0)}</div>
-              </div>
-            </div>
-
-            {/* Match Winner Selector */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
-                🏆 Match Winner (receives Win Prize)
-              </label>
-              <select 
-                value={matchWinnerId} 
-                onChange={e => setMatchWinnerId(e.target.value)}
-                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', appearance: 'none', cursor: 'pointer' }}
-              >
-                <option value="" style={{ background: '#1E293B', color: '#F8FAFC' }}>-- No Winner --</option>
-                {(selectedCardForWinners.participantIds || []).map(pid => {
-                  const user = adminUsers.find(u => u.id === pid);
-                  return (
-                    <option key={pid} value={pid} style={{ background: '#1E293B', color: '#F8FAFC' }}>
-                      {user ? `${user.name} (${user.username})` : pid}
-                    </option>
-                  );
-                })}
-              </select>
-              {matchWinnerId && (
-                <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#4ADE80', fontWeight: 600 }}>
-                  ✓ Will receive {formatCurrency(selectedCardForWinners.winPrize || 0)} as Win Prize
+            {/* Split layout: Winner vs Per Kill Configuration */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+              {/* Left Column: Match Winner */}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.2)', borderRadius: '14px', padding: '14px', textAlign: 'center', marginBottom: '14px' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#4ADE80', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Win Prize</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#4ADE80' }}>{formatCurrency(selectedCardForWinners.winPrize || 0)}</div>
                 </div>
-              )}
-            </div>
 
-            {/* Kill Rewards Section */}
-            {(selectedCardForWinners.perKill || 0) > 0 && (
-              <div>
-                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '12px' }}>
-                  💀 Kill Rewards ({formatCurrency(selectedCardForWinners.perKill || 0)} per kill)
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+                  🏆 Match Winner
                 </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto', paddingRight: '4px' }}>
-                  {killWinners.map((kw, idx) => {
-                    const user = adminUsers.find(u => u.id === kw.userId);
-                    const totalReward = (selectedCardForWinners.perKill || 0) * kw.kills;
+                <select 
+                  value={matchWinnerId} 
+                  onChange={e => setMatchWinnerId(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', appearance: 'none', cursor: 'pointer' }}
+                >
+                  <option value="" style={{ background: '#1E293B', color: '#F8FAFC' }}>-- No Winner --</option>
+                  {(selectedCardForWinners.participantIds || []).map(pid => {
+                    const user = adminUsers.find(u => u.id === pid);
                     return (
-                      <div key={kw.userId} style={{ 
-                        display: 'flex', alignItems: 'center', gap: '12px', 
-                        background: 'var(--input-bg)', borderRadius: '12px', padding: '10px 14px',
-                        border: kw.kills > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent'
-                      }}>
-                        <img 
-                          src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${kw.userId}`}
-                          alt=""
-                          style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)' }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {user?.name || kw.userId}
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <input 
-                            type="number" 
-                            min="0"
-                            value={kw.kills}
-                            onChange={e => {
-                              const newKills = [...killWinners];
-                              newKills[idx] = { ...kw, kills: Math.max(0, parseInt(e.target.value) || 0) };
-                              setKillWinners(newKills);
-                            }}
-                            style={{ width: '60px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white', textAlign: 'center', fontWeight: 700 }}
-                            placeholder="0"
-                          />
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', minWidth: '30px' }}>kills</span>
-                          {totalReward > 0 && (
-                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F59E0B', minWidth: '60px', textAlign: 'right' }}>
-                              +{formatCurrency(totalReward)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <option key={pid} value={pid} style={{ background: '#1E293B', color: '#F8FAFC' }}>
+                        {user ? `${user.name} (${user.username})` : pid}
+                      </option>
                     );
                   })}
-                  {killWinners.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      No participants to assign kills to
-                    </div>
-                  )}
-                </div>
+                </select>
+                {matchWinnerId && (
+                  <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#4ADE80', fontWeight: 600 }}>
+                    ✓ Will receive {formatCurrency(selectedCardForWinners.winPrize || 0)}
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Right Column: Per Kill Price */}
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '14px', padding: '14px', textAlign: 'center', marginBottom: '14px' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#F59E0B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Per Kill</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#F59E0B' }}>{formatCurrency(customPerKillRate)}</div>
+                </div>
+
+                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>
+                  💀 Kill Price (৳)
+                </label>
+                <input 
+                  type="number"
+                  min="0"
+                  value={customPerKillRate ?? ''}
+                  onChange={e => setCustomPerKillRate(Math.max(0, Number(e.target.value) || 0))}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', fontWeight: 700 }}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            {/* Kill Rewards List */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '12px' }}>
+                💀 Participant Kills (Reward: {formatCurrency(customPerKillRate)}/kill)
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto', paddingRight: '4px' }}>
+                {killWinners.map((kw, idx) => {
+                  const user = adminUsers.find(u => u.id === kw.userId);
+                  const totalReward = customPerKillRate * kw.kills;
+                  return (
+                    <div key={kw.userId} style={{ 
+                      display: 'flex', alignItems: 'center', gap: '12px', 
+                      background: 'var(--input-bg)', borderRadius: '12px', padding: '10px 14px',
+                      border: kw.kills > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent'
+                    }}>
+                      <img 
+                        src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${kw.userId}`}
+                        alt=""
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)' }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {user?.name || kw.userId}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={kw.kills}
+                          onChange={e => {
+                            const newKills = [...killWinners];
+                            newKills[idx] = { ...kw, kills: Math.max(0, parseInt(e.target.value) || 0) };
+                            setKillWinners(newKills);
+                          }}
+                          style={{ width: '60px', padding: '6px 8px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'white', textAlign: 'center', fontWeight: 700 }}
+                          placeholder="0"
+                        />
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', minWidth: '30px' }}>kills</span>
+                        {totalReward > 0 && (
+                          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#F59E0B', minWidth: '60px', textAlign: 'right' }}>
+                            +{formatCurrency(totalReward)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {killWinners.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    No participants to assign kills to
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Warning */}
             {(matchWinnerId || killWinners.some(k => k.kills > 0)) && (

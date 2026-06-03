@@ -253,6 +253,8 @@ const Wallet = () => {
           withdrawMethod: method.name,
           accountNumber: method.number,
           accountName: currentUser.displayName || 'User Account',
+          userName: currentUser.displayName || 'User',
+          userAvatar: currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
           timestamp: new Date().toISOString(),
           status: 'pending',
           isRaw: true

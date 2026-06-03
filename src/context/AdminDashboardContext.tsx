@@ -23,8 +23,8 @@ export interface AdminUser {
 export interface PaymentRequest {
   id: string;
   userId: string;
-  userName: string;
-  userAvatar: string;
+  userName?: string;
+  userAvatar?: string;
   amount: number;
   transactionId: string;
   paymentMethod: string;
@@ -33,13 +33,14 @@ export interface PaymentRequest {
   status: 'pending' | 'approved' | 'rejected';
   note?: string;
   isRaw?: boolean;
+  displayUserId?: string;
 }
 
 export interface WithdrawalRequest {
   id: string;
   userId: string;
-  userName: string;
-  userAvatar: string;
+  userName?: string;
+  userAvatar?: string;
   amount: number;
   withdrawMethod: string;
   accountNumber: string;
@@ -48,6 +49,7 @@ export interface WithdrawalRequest {
   status: 'pending' | 'processing' | 'completed' | 'rejected';
   note?: string;
   isRaw?: boolean;
+  displayUserId?: string;
 }
 
 export interface Activity {
@@ -94,7 +96,7 @@ interface AdminDashboardContextType {
   toggleMatchStatus: (id: string, status: 'live' | 'upcoming' | 'finished') => void;
   setMatchWinners: (matchId: string, winners: MatchWinner[]) => void;
   addParticipantToMatch: (matchId: string, userId: string, cardId?: string) => void;
-  setCardWinners: (matchId: string, cardId: string, winnerId: string | null, killWinners: {userId: string, kills: number}[]) => void;
+  setCardWinners: (matchId: string, cardId: string, winnerId: string | null, killWinners: {userId: string, kills: number}[], customPerKill?: number) => void;
   addMatchCard: (matchId: string, card: Omit<Team, 'id'>) => void;
   updateMatchCard: (matchId: string, cardId: string, cardUpdates: Partial<Team>) => void;
   deleteMatchCard: (matchId: string, cardId: string) => void;
@@ -543,7 +545,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
-  const setCardWinners = async (matchId: string, cardId: string, winnerId: string | null, killWinners: {userId: string, kills: number}[]) => {
+  const setCardWinners = async (matchId: string, cardId: string, winnerId: string | null, killWinners: {userId: string, kills: number}[], customPerKill?: number) => {
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (!m) return;
@@ -554,7 +556,18 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const matchGroup = m.group;
       
       const winPrize = card.winPrize || 0;
-      const perKillReward = card.perKill || 0;
+      const perKillReward = customPerKill !== undefined ? customPerKill : (card.perKill || 0);
+
+      // Update perKill reward on the card in Firestore if customPerKill is provided and differs
+      if (customPerKill !== undefined && customPerKill !== (card.perKill || 0)) {
+        const updatedSections = (m.innerSections || []).map(c => {
+          if (c.id === cardId) {
+            return { ...c, perKill: customPerKill };
+          }
+          return c;
+        });
+        await updateDoc(doc(db, 'matches', matchId), { innerSections: updatedSections });
+      }
 
       // Handle match winner
       if (winnerId && winPrize > 0) {

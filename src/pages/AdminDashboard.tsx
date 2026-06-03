@@ -291,8 +291,8 @@ const AdminDashboard = () => {
               <h3 style={{ fontWeight: 800, marginBottom: '20px' }}>📋 Recent Activity</h3>
               {paymentRequests.slice(0, 5).map(p => (
                 <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--divider)' }}>
-                  <img src={p.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</div></div>
+                  <img src={p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (p.displayUserId || p.userId || 'User')} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName || 'User'}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</div></div>
                   <StatusBadge status={p.status} />
                 </div>
               ))}
@@ -457,10 +457,11 @@ const AdminDashboard = () => {
                 {paymentRequests.map(p => (
                   <div key={p.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                      <img src={p.userAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
+                      <img src={p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (p.displayUserId || p.userId || 'User')} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{p.userName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{p.timestamp}</div>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{p.userName || 'User'}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {p.displayUserId || p.userId || 'N/A'}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{p.timestamp}</div>
                       </div>
                       <StatusBadge status={p.status} />
                     </div>
@@ -505,8 +506,11 @@ const AdminDashboard = () => {
                       <tr key={p.id} style={{ borderBottom: '1px solid var(--divider)' }}>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={p.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.userName}</span>
+                            <img src={p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (p.displayUserId || p.userId || 'User')} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.userName || 'User'}</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {p.displayUserId || p.userId || 'N/A'}</span>
+                            </div>
                           </div>
                         </td>
                         <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</td>
@@ -544,10 +548,11 @@ const AdminDashboard = () => {
                 {withdrawalRequests.map(w => (
                   <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                      <img src={w.userAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
+                      <img src={w.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (w.displayUserId || w.userId || 'User')} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.userName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{w.timestamp}</div>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.userName || 'User'}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {w.displayUserId || w.userId || 'N/A'}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{w.timestamp}</div>
                       </div>
                       <StatusBadge status={w.status} />
                     </div>
@@ -591,8 +596,11 @@ const AdminDashboard = () => {
                       <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={w.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{w.userName}</span>
+                            <img src={w.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (w.displayUserId || w.userId || 'User')} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{w.userName || 'User'}</span>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {w.displayUserId || w.userId || 'N/A'}</span>
+                            </div>
                           </div>
                         </td>
                         <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</td>
