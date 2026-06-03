@@ -18,6 +18,8 @@ import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
 import { isMatchLive } from '../utils/timeUtils';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 
 import { 
@@ -62,6 +64,45 @@ const Home = () => {
     const saved = localStorage.getItem('localParticipants');
     return saved ? JSON.parse(saved) : topParticipants;
   });
+
+  const [userAvatar, setUserAvatar] = useState(() => 
+    localStorage.getItem('userAvatar') || 
+    (currentUser?.photoURL) || 
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.uid || 'default'}`
+  );
+
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      if (currentUser) {
+        // First try local storage
+        const savedAvatar = localStorage.getItem('userAvatar');
+        if (savedAvatar) {
+          setUserAvatar(savedAvatar);
+        }
+
+        // Fetch from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.avatar) {
+              setUserAvatar(data.avatar);
+              localStorage.setItem('userAvatar', data.avatar);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch user avatar in Home:", e);
+        }
+        
+        // Fallback
+        const fallback = currentUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.displayName || currentUser.uid}`;
+        setUserAvatar(fallback);
+      }
+    };
+
+    fetchUserAvatar();
+  }, [currentUser]);
 
   const displayStats = [
     { id: 'live', value: adminStats.activeMatches.toString(), label: 'Live Matches' },
@@ -300,7 +341,7 @@ const Home = () => {
               boxShadow: '0 8px 12px rgba(0,0,0,0.8), 0 0 10px rgba(179, 144, 70, 0.3)'
             }}
           >
-            <img src={localStorage.getItem('userAvatar') || currentUser.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={userAvatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </button>
         </div>
       </div>
