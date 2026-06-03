@@ -124,6 +124,49 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
+      {/* Dynamic Status Badge */}
+      <div style={{
+        position: 'absolute',
+        top: '16px',
+        left: '16px',
+        padding: '6px 12px',
+        borderRadius: '10px',
+        fontSize: '0.75rem',
+        fontWeight: 900,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        zIndex: 10,
+        ...(isLive ? {
+          background: 'rgba(16, 185, 129, 0.15)',
+          color: '#10B981',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)'
+        } : status === 'upcoming' ? {
+          background: 'rgba(249, 115, 22, 0.15)',
+          color: '#f97316',
+          border: '1px solid rgba(249, 115, 22, 0.3)',
+        } : {
+          background: 'rgba(107, 114, 128, 0.15)',
+          color: '#9ca3af',
+          border: '1px solid rgba(107, 114, 128, 0.3)',
+        })
+      }}>
+        {isLive ? (
+          <>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+            LIVE
+          </>
+        ) : status === 'upcoming' ? (
+          <>
+            <span>🕒</span>
+            {timeLeft || time}
+          </>
+        ) : (
+          'ENDED'
+        )}
+      </div>
+
       {isAdminMode && (
         <button 
           onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
@@ -213,14 +256,15 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             padding: '12px 6px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
-            display: 'flex', justifyContent: 'center'
+            display: 'flex', justifyContent: 'center',
+            minWidth: 0
           }}>
-            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)' }}>
+            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
                 👤 {team1?.entryType || 'SOLO'}
               </div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-                {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
+                {team1?.name || 'SOLO'}
               </div>
             </div>
           </div>
@@ -236,14 +280,15 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             padding: '12px 6px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
-            display: 'flex', justifyContent: 'center'
+            display: 'flex', justifyContent: 'center',
+            minWidth: 0
           }}>
-            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)' }}>
+            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
                 👥 {team2?.entryType || 'DUO'}
               </div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-                {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
+                {team2?.name || 'DUO'}
               </div>
             </div>
           </div>
@@ -259,14 +304,15 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             padding: '12px 6px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
-            display: 'flex', justifyContent: 'center'
+            display: 'flex', justifyContent: 'center',
+            minWidth: 0
           }}>
-            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)' }}>
+            <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
                 🛡️ {team3?.entryType || 'SQUAD'}
               </div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', fontFamily: 'monospace' }}>
-                {status === 'live' ? <span style={{ color: '#ef4444', fontSize: '0.9rem', letterSpacing: '0.05em' }}>LIVE</span> : (status === 'upcoming' ? <span style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{timeLeft}</span> : 'ENDED')}
+              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
+                {team3?.name || 'SQUAD'}
               </div>
             </div>
           </div>
