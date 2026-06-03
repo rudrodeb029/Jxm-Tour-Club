@@ -4,6 +4,111 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAdmin } from '../context/AdminContext';
 
+const parseTime = (timeStr: string) => {
+  const clean = timeStr.trim();
+  // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
+  const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let hours = parseInt(match12[1], 10);
+    const minutes = parseInt(match12[2], 10);
+    const ampm = match12[3].toUpperCase();
+    if (ampm === 'PM' && hours < 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    return { hours, minutes };
+  }
+  // 24-hour format e.g. "14:20", "21:00"
+  const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
+  if (match24) {
+    const hours = parseInt(match24[1], 10);
+    const minutes = parseInt(match24[2], 10);
+    return { hours, minutes };
+  }
+  return { hours: 0, minutes: 0 };
+};
+
+const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number) => {
+  const liveDurationMins = durationMins || 10;
+  const liveDurationMs = liveDurationMins * 60 * 1000;
+  const nowTime = new Date(now);
+
+  if (!startTimeStr) {
+    return {
+      isLive: false,
+      statusText: 'UPCOMING',
+      displayTime: 'N/A',
+      elapsedStr: '',
+      remainingStr: '',
+      endTimeStr: '',
+      isOver: false
+    };
+  }
+
+  const { hours, minutes } = parseTime(startTimeStr);
+  const targetTime = new Date(nowTime);
+  targetTime.setHours(hours, minutes, 0, 0);
+
+  const diff = targetTime.getTime() - nowTime.getTime();
+  const end = new Date(targetTime.getTime() + liveDurationMs);
+  const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  if (diff > 0) {
+    // Upcoming
+    const diffMins = Math.floor(diff / 60000);
+    const diffHrs = Math.floor(diffMins / 60);
+    const remainingMins = diffMins % 60;
+    
+    let startsInStr = '';
+    if (diffHrs > 0) {
+      startsInStr = `Starts in: ${diffHrs}h ${remainingMins}m`;
+    } else {
+      startsInStr = `Starts in: ${diffMins}m`;
+    }
+
+    return {
+      isLive: false,
+      statusText: 'UPCOMING',
+      displayTime: `Starts at: ${startTimeStr}`,
+      elapsedStr: startsInStr,
+      remainingStr: startsInStr,
+      endTimeStr: `Ends at: ${endTimeStr}`,
+      isOver: false
+    };
+  } else if (Math.abs(diff) < liveDurationMs) {
+    // Live
+    const elapsedMs = Math.abs(diff);
+    const remainingMs = liveDurationMs - elapsedMs;
+
+    const elapsedMins = Math.floor(elapsedMs / 60000);
+    const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
+    const remainingMins = Math.floor(remainingMs / 60000);
+    const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
+
+    const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
+    const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
+
+    return {
+      isLive: true,
+      statusText: 'LIVE',
+      displayTime: `Starts at: ${startTimeStr}`,
+      elapsedStr,
+      remainingStr,
+      endTimeStr: `Ends at: ${endTimeStr}`,
+      isOver: false
+    };
+  } else {
+    // Ended
+    return {
+      isLive: false,
+      statusText: 'ENDED',
+      displayTime: `Started: ${startTimeStr}`,
+      elapsedStr: 'Match Ended',
+      remainingStr: 'Match Ended',
+      endTimeStr: `Ended at: ${endTimeStr}`,
+      isOver: true
+    };
+  }
+};
+
 const LiveMatches = () => {
   const navigate = useNavigate();
   const { adminMatches } = useAdminDashboard();
@@ -15,183 +120,50 @@ const LiveMatches = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const liveTeams = adminMatches.filter(m => m.status !== 'finished').flatMap((match) => {
-    const teams = [];
-    const baseInfo = {
-      matchId: match.id,
-      matchName: match.name,
-      liveStartedAt: match.liveStartedAt,
-      score: match.score,
-      time: match.time,
-      currentParticipants: match.participantIds ? match.participantIds.length : (match.currentParticipants || 0),
-      maxParticipants: match.maxParticipants
-    };
+  const liveTeams = adminMatches
+    .filter(m => m.status !== 'finished')
+    .flatMap((match) => {
+      const teams = [];
+      const baseInfo = {
+        matchId: match.id,
+        matchName: match.name,
+        liveStartedAt: match.liveStartedAt,
+        score: match.score,
+        time: match.time,
+        currentParticipants: match.participantIds ? match.participantIds.length : (match.currentParticipants || 0),
+        maxParticipants: match.maxParticipants
+      };
 
-    if (match.team1) teams.push({ 
-      ...match.team1, 
-      ...baseInfo,
-      startTime: match.team1.startTime || match.time,
-      liveDuration: match.team1.liveDuration || 10,
-      participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
-      status: match.status
+      if (match.team1) teams.push({ 
+        ...match.team1, 
+        ...baseInfo,
+        startTime: match.team1.startTime || match.time,
+        liveDuration: match.team1.liveDuration || 10,
+        participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
+        status: match.status
+      });
+      if (match.team2) teams.push({ 
+        ...match.team2, 
+        ...baseInfo,
+        startTime: match.team2.startTime || match.time,
+        liveDuration: match.team2.liveDuration || 10,
+        participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
+        status: match.status
+      });
+      if (match.team3) teams.push({ 
+        ...match.team3, 
+        ...baseInfo,
+        startTime: match.team3.startTime || match.time,
+        liveDuration: match.team3.liveDuration || 10,
+        participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
+        status: match.status
+      });
+      return teams;
+    })
+    .filter(team => {
+      const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now);
+      return timeInfo.statusText !== 'ENDED';
     });
-    if (match.team2) teams.push({ 
-      ...match.team2, 
-      ...baseInfo,
-      startTime: match.team2.startTime || match.time,
-      liveDuration: match.team2.liveDuration || 10,
-      participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
-      status: match.status
-    });
-    if (match.team3) teams.push({ 
-      ...match.team3, 
-      ...baseInfo,
-      startTime: match.team3.startTime || match.time,
-      liveDuration: match.team3.liveDuration || 10,
-      participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
-      status: match.status
-    });
-    return teams;
-  });
-
-  const parseTime = (timeStr: string) => {
-    const clean = timeStr.trim();
-    // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
-    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (match12) {
-      let hours = parseInt(match12[1], 10);
-      const minutes = parseInt(match12[2], 10);
-      const ampm = match12[3].toUpperCase();
-      if (ampm === 'PM' && hours < 12) hours += 12;
-      if (ampm === 'AM' && hours === 12) hours = 0;
-      return { hours, minutes };
-    }
-    // 24-hour format e.g. "14:20", "21:00"
-    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
-    if (match24) {
-      const hours = parseInt(match24[1], 10);
-      const minutes = parseInt(match24[2], 10);
-      return { hours, minutes };
-    }
-    return { hours: 0, minutes: 0 };
-  };
-
-  const getTimeInfo = (startTimeStr?: string, durationMins?: number, liveStartedAt?: number, status?: string) => {
-    const liveDurationMins = durationMins || 10;
-    const liveDurationMs = liveDurationMins * 60 * 1000;
-    const nowTime = new Date(now);
-
-    const isLiveInDb = status === 'live';
-
-    // 1. Calculate time based on liveStartedAt if it is live in DB
-    if (isLiveInDb && liveStartedAt) {
-      const startTimestamp = liveStartedAt;
-      const endTimestamp = startTimestamp + liveDurationMs;
-      const elapsedMs = now - startTimestamp;
-      const remainingMs = endTimestamp - now;
-
-      const elapsedMins = Math.max(0, Math.floor(elapsedMs / 60000));
-      const elapsedSecs = Math.max(0, Math.floor((elapsedMs % 60000) / 1000));
-      const remainingMins = Math.max(0, Math.floor(remainingMs / 60000));
-      const remainingSecs = Math.max(0, Math.floor((remainingMs % 60000) / 1000));
-
-      const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
-      const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
-
-      const endDate = new Date(endTimestamp);
-      const endTimeStr = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      const isOver = now > endTimestamp;
-
-      return {
-        isLive: !isOver,
-        statusText: isOver ? 'ENDED' : 'LIVE',
-        displayTime: `Started: ${new Date(startTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        elapsedStr,
-        remainingStr,
-        endTimeStr: `Ends at: ${endTimeStr}`,
-        isOver
-      };
-    }
-
-    // 2. Otherwise, calculate based on scheduled startTimeStr
-    if (!startTimeStr) {
-      return {
-        isLive: false,
-        statusText: 'UPCOMING',
-        displayTime: 'N/A',
-        elapsedStr: '',
-        remainingStr: '',
-        endTimeStr: '',
-        isOver: false
-      };
-    }
-
-    const { hours, minutes } = parseTime(startTimeStr);
-    const targetTime = new Date(nowTime);
-    targetTime.setHours(hours, minutes, 0, 0);
-
-    const diff = targetTime.getTime() - nowTime.getTime();
-    const end = new Date(targetTime.getTime() + liveDurationMs);
-    const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    if (diff > 0) {
-      // Upcoming
-      const diffMins = Math.floor(diff / 60000);
-      const diffHrs = Math.floor(diffMins / 60);
-      const remainingMins = diffMins % 60;
-      
-      let startsInStr = '';
-      if (diffHrs > 0) {
-        startsInStr = `Starts in: ${diffHrs}h ${remainingMins}m`;
-      } else {
-        startsInStr = `Starts in: ${diffMins}m`;
-      }
-
-      return {
-        isLive: false,
-        statusText: 'UPCOMING',
-        displayTime: `Starts at: ${startTimeStr}`,
-        elapsedStr: startsInStr,
-        remainingStr: startsInStr,
-        endTimeStr: `Ends at: ${endTimeStr}`,
-        isOver: false
-      };
-    } else if (Math.abs(diff) < liveDurationMs) {
-      // Live (fell back to scheduled time)
-      const elapsedMs = Math.abs(diff);
-      const remainingMs = liveDurationMs - elapsedMs;
-
-      const elapsedMins = Math.floor(elapsedMs / 60000);
-      const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
-      const remainingMins = Math.floor(remainingMs / 60000);
-      const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
-
-      const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
-      const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
-
-      return {
-        isLive: true,
-        statusText: 'LIVE',
-        displayTime: `Starts at: ${startTimeStr}`,
-        elapsedStr,
-        remainingStr,
-        endTimeStr: `Ends at: ${endTimeStr}`,
-        isOver: false
-      };
-    } else {
-      // Ended
-      return {
-        isLive: false,
-        statusText: 'ENDED',
-        displayTime: `Started: ${startTimeStr}`,
-        elapsedStr: 'Match Ended',
-        remainingStr: 'Match Ended',
-        endTimeStr: `Ended at: ${endTimeStr}`,
-        isOver: true
-      };
-    }
-  };
 
   return (
     <div className="page-container" style={{ padding: '20px', minHeight: '100vh', background: 'var(--bg-dark)' }}>
@@ -220,7 +192,7 @@ const LiveMatches = () => {
           </div>
         ) : (
           liveTeams.map((team, index) => {
-            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, team.liveStartedAt, team.status);
+            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now);
             const isMatchLive = timeInfo.statusText === 'LIVE';
             const isMatchUpcoming = timeInfo.statusText === 'UPCOMING';
 
