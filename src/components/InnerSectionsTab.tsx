@@ -22,24 +22,14 @@ const InnerSectionsTab = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
 
-  const [cardForm, setCardForm] = useState<Partial<Team>>({
-    name: '',
-    logo: '',
-    color: '#DC2626',
-    entryType: 'Solo',
-    mainCategory: 'Full Map Match',
-    entryFee: 10,
-    winPrize: 500,
-    perKill: 0,
-    map: 'Bermuda',
-    version: 'MOBILE',
-    startTime: '',
-    percentage: '50%',
-    kills: 0,
-    damage: 0,
-    headshots: 0,
-    rank: 0
-  });
+  const defaultEmptyCard: Partial<Team> = {
+    name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match',
+    entryFee: '' as any, winPrize: '' as any, perKill: '' as any, map: '', version: '', startTime: '',
+    liveDuration: '' as any, gameId: '', gamePassword: '', roomDetailsRevealTime: '' as any, rules: [],
+    percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
+  };
+
+  const [cardForm, setCardForm] = useState<Partial<Team>>(defaultEmptyCard);
 
   // Tick every second for live status
   useEffect(() => {
@@ -96,11 +86,7 @@ const InnerSectionsTab = () => {
       }
       setShowAddCard(false);
       setEditingCard(null);
-      setCardForm({
-        name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
-        perKill: 0, map: 'Bermuda', version: 'MOBILE', startTime: '',
-        percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
-      });
+      setCardForm(defaultEmptyCard);
     } catch (e) {
       console.error(e);
     } finally {
@@ -198,11 +184,7 @@ const InnerSectionsTab = () => {
           className="btn btn-primary"
           onClick={() => {
             setEditingCard(null);
-            setCardForm({
-              name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match', entryFee: 10, winPrize: 500,
-              perKill: 0, map: 'Bermuda', version: 'MOBILE', startTime: '',
-              percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
-            });
+            setCardForm(defaultEmptyCard);
             setShowAddCard(true);
           }}
           disabled={!selectedMatchId}
@@ -398,11 +380,11 @@ const InnerSectionsTab = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Entry Fee</label>
-                  <input type="number" value={cardForm.entryFee} onChange={e => setCardForm({...cardForm, entryFee: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                  <input type="number" value={cardForm.entryFee ?? ''} onChange={e => setCardForm({...cardForm, entryFee: e.target.value === '' ? undefined : Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Win Prize</label>
-                  <input type="number" value={cardForm.winPrize} onChange={e => setCardForm({...cardForm, winPrize: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                  <input type="number" value={cardForm.winPrize ?? ''} onChange={e => setCardForm({...cardForm, winPrize: e.target.value === '' ? undefined : Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
               </div>
 
@@ -420,7 +402,7 @@ const InnerSectionsTab = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Per Kill Reward</label>
-                  <input type="number" value={cardForm.perKill || 0} onChange={e => setCardForm({...cardForm, perKill: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                  <input type="number" value={cardForm.perKill ?? ''} onChange={e => setCardForm({...cardForm, perKill: e.target.value === '' ? undefined : Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Start Time</label>
@@ -428,7 +410,7 @@ const InnerSectionsTab = () => {
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Live Duration (mins)</label>
-                  <input type="number" value={cardForm.liveDuration || ''} onChange={e => setCardForm({...cardForm, liveDuration: Number(e.target.value)})} placeholder="e.g. 60" style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                  <input type="number" value={cardForm.liveDuration ?? ''} onChange={e => setCardForm({...cardForm, liveDuration: e.target.value === '' ? undefined : Number(e.target.value)})} placeholder="e.g. 60" style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
@@ -442,7 +424,7 @@ const InnerSectionsTab = () => {
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Reveal Details Before (mins)</label>
-                  <input type="number" value={cardForm.roomDetailsRevealTime || ''} onChange={e => setCardForm({...cardForm, roomDetailsRevealTime: Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. 15" />
+                  <input type="number" value={cardForm.roomDetailsRevealTime ?? ''} onChange={e => setCardForm({...cardForm, roomDetailsRevealTime: e.target.value === '' ? undefined : Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. 15" />
                 </div>
               </div>
 
