@@ -458,14 +458,6 @@ const AdminDashboard = () => {
                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Image URL</label>
                     <input value={newMatch.image || ''} onChange={e => setNewMatch({ ...newMatch, image: e.target.value })} placeholder="/images/gaming_arena_banner.png" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
-                  <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Status</label>
-                    <select value={newMatch.status || 'live'} onChange={e => setNewMatch({ ...newMatch, status: e.target.value as any })} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', appearance: 'none', cursor: 'pointer' }}>
-                      <option value="live" style={{ background: '#1E293B', color: '#F8FAFC' }}>Live</option>
-                      <option value="upcoming" style={{ background: '#1E293B', color: '#F8FAFC' }}>Upcoming</option>
-                      <option value="finished" style={{ background: '#1E293B', color: '#F8FAFC' }}>Finished</option>
-                    </select>
-                  </div>
                   </div>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                   <Btn onClick={handleCreateMatch}>Create Match</Btn>
@@ -537,23 +529,6 @@ const AdminDashboard = () => {
                 <div>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Image URL</label>
                   <input value={editingMatchData.image || ''} onChange={e => setEditingMatchData({...editingMatchData, image: e.target.value})} placeholder="/images/gaming_arena_banner.png" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Status</label>
-                  <select value={editingMatchData.status || 'live'} onChange={e => setEditingMatchData({...editingMatchData, status: e.target.value as any})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', appearance: 'none', cursor: 'pointer' }}>
-                    <option value="live" style={{ background: '#1E293B', color: '#F8FAFC' }}>Live</option>
-                    <option value="upcoming" style={{ background: '#1E293B', color: '#F8FAFC' }}>Upcoming</option>
-                    <option value="finished" style={{ background: '#1E293B', color: '#F8FAFC' }}>Finished</option>
-                  </select>
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Rules (One per line)</label>
-                  <textarea 
-                    value={(editingMatchData.rules || []).join('\n')} 
-                    onChange={e => setEditingMatchData({...editingMatchData, rules: e.target.value.split('\n')})} 
-                    rows={4}
-                    style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }} 
-                  />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
