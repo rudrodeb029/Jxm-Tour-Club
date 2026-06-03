@@ -16,6 +16,7 @@ import { useAdminDashboard } from '../context/AdminDashboardContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
+import { useAuth } from '../context/AuthContext';
 
 
 import { 
@@ -39,6 +40,7 @@ const Home = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { isAdminMode } = useAdmin();
   const { t } = useLanguage();
+  const { currentUser } = useAuth();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [transactionId, setTransactionId] = useState('');
@@ -143,7 +145,7 @@ const Home = () => {
         currentParticipants: match.currentParticipants + 1,
         totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
-      addParticipantToMatch(matchId, displayUserId);
+      addParticipantToMatch(matchId, currentUser?.uid || displayUserId);
     }
   };
 

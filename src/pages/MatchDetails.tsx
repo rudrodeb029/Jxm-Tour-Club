@@ -9,6 +9,7 @@ import { useBalance } from '../context/BalanceContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
+import { useAuth } from '../context/AuthContext';
 
 
 
@@ -18,6 +19,7 @@ const MatchDetails = () => {
   const { adminMatches, adminUsers, updateMatch, addParticipantToMatch } = useAdminDashboard();
   const { balance, deductBalance } = useBalance();
   const { formatCurrency } = useCurrency();
+  const { currentUser } = useAuth();
   const { messages, sendMessage } = useChat();
 
 
@@ -73,7 +75,7 @@ const MatchDetails = () => {
       setSelectedTeam(cards[0].id);
     }
   }, [cards, selectedTeam]);
-  const hasJoined = (match.participantIds || []).includes(displayUserId);
+  const hasJoined = currentUser ? (match.participantIds || []).includes(currentUser.uid) : false;
 
   // Logic to determine if room ID should be visible is moved down
 
@@ -129,7 +131,7 @@ const MatchDetails = () => {
         currentParticipants: match.currentParticipants + 1,
         totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
-      addParticipantToMatch(match.id, displayUserId, selectedTeam);
+      addParticipantToMatch(match.id, currentUser?.uid || displayUserId, selectedTeam);
       setShowJoinSuccess(true);
     } else {
       setSelectedBetAmount(dynamicEntryFee);

@@ -4,15 +4,17 @@ import { useBalance } from '../context/BalanceContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { currentUser } from '../data/mockData';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 
 const MyBets = () => {
   const { balance } = useBalance();
   const { formatCurrency } = useCurrency();
   const { adminMatches } = useAdminDashboard();
-  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || currentUser.id);
+  const { currentUser } = useAuth();
+  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
 
   // Filter matches that the user has joined
-  const myMatches = adminMatches.filter(match => match.participantIds.includes(displayUserId));
+  const myMatches = adminMatches.filter(match => currentUser && (match.participantIds || []).includes(currentUser.uid));
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
@@ -54,7 +56,7 @@ const MyBets = () => {
               statusBorder = '#38BDF833';
               resultText = 'In Progress';
             } else if (match.status === 'finished') {
-              const userWin = match.winners?.find(w => w.userId === displayUserId);
+              const userWin = match.winners?.find(w => w.userId === (currentUser?.uid || displayUserId));
               if (userWin) {
                 statusLabel = 'VICTORY';
                 statusColor = '#10B981';
