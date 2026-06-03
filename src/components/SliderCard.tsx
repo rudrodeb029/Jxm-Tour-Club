@@ -297,7 +297,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
             border: '1px solid #fef08a',
             borderRadius: '8px', 
-            padding: '10px 4px', 
+            padding: '12px 6px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
             display: 'flex', justifyContent: 'center',
@@ -307,28 +307,25 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
                 👤 {team1?.entryType || 'SOLO'}
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
-                {team1?.name || 'SOLO'}
+              <div style={{ 
+                fontSize: '1.05rem', 
+                fontWeight: 900, 
+                color: status1.status === 'live' 
+                  ? '#EF4444' 
+                  : status1.status === 'revealed' 
+                    ? '#10B981' 
+                    : '#FBBF24',
+                fontFamily: 'monospace',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                minHeight: '1.5rem',
+                textShadow: 'var(--text-shadow-md)'
+              }}>
+                {status1.status === 'live' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                {status1.display}
               </div>
-              {status1.display && (
-                <div style={{ 
-                  fontSize: '0.7rem', 
-                  fontWeight: 900, 
-                  marginTop: '4px',
-                  color: status1.status === 'live' 
-                    ? '#EF4444' 
-                    : status1.status === 'revealed' 
-                      ? '#10B981' 
-                      : '#FBBF24',
-                  fontFamily: 'monospace',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  {status1.status === 'live' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                  {status1.display}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -340,7 +337,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             background: 'linear-gradient(135deg, #94a3b8, #475569)', 
             border: '1px solid #f1f5f9',
             borderRadius: '8px', 
-            padding: '10px 4px', 
+            padding: '12px 6px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
             display: 'flex', justifyContent: 'center',
@@ -350,28 +347,25 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
                 👥 {team2?.entryType || 'DUO'}
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
-                {team2?.name || 'DUO'}
+              <div style={{ 
+                fontSize: '1.05rem', 
+                fontWeight: 900, 
+                color: status2.status === 'live' 
+                  ? '#EF4444' 
+                  : status2.status === 'revealed' 
+                    ? '#10B981' 
+                    : '#FBBF24',
+                fontFamily: 'monospace',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                minHeight: '1.5rem',
+                textShadow: 'var(--text-shadow-md)'
+              }}>
+                {status2.status === 'live' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                {status2.display}
               </div>
-              {status2.display && (
-                <div style={{ 
-                  fontSize: '0.7rem', 
-                  fontWeight: 900, 
-                  marginTop: '4px',
-                  color: status2.status === 'live' 
-                    ? '#EF4444' 
-                    : status2.status === 'revealed' 
-                      ? '#10B981' 
-                      : '#FBBF24',
-                  fontFamily: 'monospace',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  {status2.status === 'live' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                  {status2.display}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -383,7 +377,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             background: 'linear-gradient(135deg, #92400e, #5c2705)', 
             border: '1px solid #fbbf24',
             borderRadius: '8px', 
-            padding: '10px 4px', 
+            padding: '12px 6px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
             display: 'flex', justifyContent: 'center',
@@ -393,28 +387,25 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
                 🛡️ {team3?.entryType || 'SQUAD'}
               </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
-                {team3?.name || 'SQUAD'}
+              <div style={{ 
+                fontSize: '1.05rem', 
+                fontWeight: 900, 
+                color: status3.status === 'live' 
+                  ? '#EF4444' 
+                  : status3.status === 'revealed' 
+                    ? '#10B981' 
+                    : '#FBBF24',
+                fontFamily: 'monospace',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                minHeight: '1.5rem',
+                textShadow: 'var(--text-shadow-md)'
+              }}>
+                {status3.status === 'live' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                {status3.display}
               </div>
-              {status3.display && (
-                <div style={{ 
-                  fontSize: '0.7rem', 
-                  fontWeight: 900, 
-                  marginTop: '4px',
-                  color: status3.status === 'live' 
-                    ? '#EF4444' 
-                    : status3.status === 'revealed' 
-                      ? '#10B981' 
-                      : '#FBBF24',
-                  fontFamily: 'monospace',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  {status3.status === 'live' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                  {status3.display}
-                </div>
-              )}
             </div>
           </div>
         )}
