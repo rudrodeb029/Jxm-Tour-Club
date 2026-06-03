@@ -11,6 +11,9 @@ interface TeamInfo {
   entryType?: string;
   entryFee?: number;
   winPrize?: number;
+  startTime?: string;
+  liveDuration?: number;
+  roomDetailsRevealTime?: number;
 }
 
 interface SliderCardProps {
@@ -51,6 +54,43 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const [now, setNow] = useState(Date.now());
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+
+  const getCardStatusAndDisplay = (card?: TeamInfo) => {
+    if (!card || !card.startTime) return { status: 'idle', display: '' };
+    
+    const nowTime = new Date(now);
+    const parts = card.startTime.split(':').map(Number);
+    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) {
+      return { status: 'idle', display: '' };
+    }
+    
+    const targetTime = new Date(nowTime);
+    targetTime.setHours(parts[0], parts[1], 0, 0);
+    
+    const diff = targetTime.getTime() - nowTime.getTime();
+    if (diff > 0) {
+      // Upcoming match: Check if details are revealed
+      const revealWindowMs = (card.roomDetailsRevealTime || 0) * 60 * 1000;
+      if (revealWindowMs > 0 && diff <= revealWindowMs) {
+        return { status: 'revealed', display: 'REVEALED' };
+      }
+      
+      // Otherwise show countdown (HH:MM:SS)
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      const timeLeftStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      return { status: 'upcoming', display: timeLeftStr };
+    } else {
+      // Passed target time: Check if still live or finished
+      const durationMs = (card.liveDuration || 60) * 60 * 1000;
+      if (Math.abs(diff) < durationMs) {
+        return { status: 'live', display: 'LIVE' };
+      } else {
+        return { status: 'finished', display: '' };
+      }
+    }
+  };
 
   useEffect(() => {
     if (status === 'finished') return;
@@ -106,6 +146,10 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     const timer = setInterval(updateCountdown, 1000);
     return () => clearInterval(timer);
   }, [status, time]);
+
+  const status1 = getCardStatusAndDisplay(team1);
+  const status2 = getCardStatusAndDisplay(team2);
+  const status3 = getCardStatusAndDisplay(team3);
 
   return (
     <div 
@@ -253,7 +297,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
             border: '1px solid #fef08a',
             borderRadius: '8px', 
-            padding: '12px 6px', 
+            padding: '10px 4px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
             display: 'flex', justifyContent: 'center',
@@ -266,6 +310,25 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
                 {team1?.name || 'SOLO'}
               </div>
+              {status1.display && (
+                <div style={{ 
+                  fontSize: '0.7rem', 
+                  fontWeight: 900, 
+                  marginTop: '4px',
+                  color: status1.status === 'live' 
+                    ? '#EF4444' 
+                    : status1.status === 'revealed' 
+                      ? '#10B981' 
+                      : '#FBBF24',
+                  fontFamily: 'monospace',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {status1.status === 'live' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                  {status1.display}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -277,7 +340,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             background: 'linear-gradient(135deg, #94a3b8, #475569)', 
             border: '1px solid #f1f5f9',
             borderRadius: '8px', 
-            padding: '12px 6px', 
+            padding: '10px 4px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
             display: 'flex', justifyContent: 'center',
@@ -290,6 +353,25 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
                 {team2?.name || 'DUO'}
               </div>
+              {status2.display && (
+                <div style={{ 
+                  fontSize: '0.7rem', 
+                  fontWeight: 900, 
+                  marginTop: '4px',
+                  color: status2.status === 'live' 
+                    ? '#EF4444' 
+                    : status2.status === 'revealed' 
+                      ? '#10B981' 
+                      : '#FBBF24',
+                  fontFamily: 'monospace',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {status2.status === 'live' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                  {status2.display}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -301,7 +383,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             background: 'linear-gradient(135deg, #92400e, #5c2705)', 
             border: '1px solid #fbbf24',
             borderRadius: '8px', 
-            padding: '12px 6px', 
+            padding: '10px 4px', 
             transform: 'skewX(-8deg)',
             boxShadow: 'var(--card-shadow)',
             display: 'flex', justifyContent: 'center',
@@ -314,6 +396,25 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
               <div style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)', textAlign: 'center', wordBreak: 'break-word', minHeight: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', lineHeight: 1.1 }}>
                 {team3?.name || 'SQUAD'}
               </div>
+              {status3.display && (
+                <div style={{ 
+                  fontSize: '0.7rem', 
+                  fontWeight: 900, 
+                  marginTop: '4px',
+                  color: status3.status === 'live' 
+                    ? '#EF4444' 
+                    : status3.status === 'revealed' 
+                      ? '#10B981' 
+                      : '#FBBF24',
+                  fontFamily: 'monospace',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {status3.status === 'live' && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                  {status3.display}
+                </div>
+              )}
             </div>
           </div>
         )}
