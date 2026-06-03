@@ -436,10 +436,6 @@ const AdminDashboard = () => {
                     <input value={newMatch.name} onChange={e => setNewMatch({ ...newMatch, name: e.target.value })} placeholder="Bermuda Battle Royale" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool Amount (Overall)</label>
-                    <input type="number" value={newMatch.prizePool || ''} onChange={e => setNewMatch({ ...newMatch, prizePool: Number(e.target.value) })} placeholder="e.g. 5000" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                  </div>
-                  <div>
                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Available Modes (Check to show on card)</label>
                     <div style={{ display: 'flex', gap: '16px', background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
                       {['Solo', 'Duo', 'Squad'].map(mode => (
@@ -453,10 +449,6 @@ const AdminDashboard = () => {
                         </label>
                       ))}
                     </div>
-                  </div>
-                  <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Image URL</label>
-                    <input value={newMatch.image || ''} onChange={e => setNewMatch({ ...newMatch, image: e.target.value })} placeholder="/images/gaming_arena_banner.png" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   </div>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
@@ -508,10 +500,6 @@ const AdminDashboard = () => {
                   <input value={editingMatchData.name} onChange={e => setEditingMatchData({...editingMatchData, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool Amount (Overall)</label>
-                  <input type="number" value={editingMatchData.prizePool || ''} onChange={e => setEditingMatchData({...editingMatchData, prizePool: Number(e.target.value)})} placeholder="e.g. 5000" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
-                </div>
-                <div>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Available Modes (Check to show on card)</label>
                   <div style={{ display: 'flex', gap: '16px', background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
                     {['Solo', 'Duo', 'Squad'].map(mode => (
@@ -525,10 +513,6 @@ const AdminDashboard = () => {
                       </label>
                     ))}
                   </div>
-                </div>
-                <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Image URL</label>
-                  <input value={editingMatchData.image || ''} onChange={e => setEditingMatchData({...editingMatchData, image: e.target.value})} placeholder="/images/gaming_arena_banner.png" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
