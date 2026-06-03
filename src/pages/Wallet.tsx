@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { currentUser as mockUser } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, onSnapshot } from 'firebase/firestore';
 import { ArrowLeft, Plus, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw, Check, DollarSign } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
@@ -35,6 +35,19 @@ const Wallet = () => {
   const { paymentRequests, withdrawalRequests } = useAdminDashboard();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser.id);
+  const [profileUsername, setProfileUsername] = useState<string>('');
+
+  useEffect(() => {
+    if (!currentUser) return;
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setProfileUsername(data.username || '');
+      }
+    });
+    return () => unsubscribe();
+  }, [currentUser]);
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [transactionId, setTransactionId] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
@@ -248,7 +261,7 @@ const Wallet = () => {
       try {
         await addDoc(collection(db, 'withdrawals'), {
           userId: currentUser.uid,
-          displayUserId: displayUserId,
+          displayUserId: profileUsername || displayUserId,
           amount: amountUSD,
           withdrawMethod: method.name,
           accountNumber: method.number,
@@ -288,7 +301,7 @@ const Wallet = () => {
       try {
         await addDoc(collection(db, 'payments'), {
           userId: currentUser.uid,
-          displayUserId: displayUserId,
+          displayUserId: profileUsername || displayUserId,
           amount: amountUSD,
           transactionId: transactionId,
           paymentMethod: gateway.name,
@@ -398,7 +411,7 @@ const Wallet = () => {
           {/* Card Bottom: User ID & Mastercard Logo */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 1 }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>USER ID: {displayUserId}</div>
+              <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>USER ID: {profileUsername || displayUserId}</div>
             </div>
             
             <div style={{ position: 'relative', width: '50px', height: '32px' }}>
@@ -774,7 +787,7 @@ const Wallet = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {(() => {
               const userPayments = paymentRequests
-                .filter(p => p.userId === displayUserId)
+                .filter(p => currentUser && p.userId === currentUser.uid)
                 .map(p => ({
                   id: p.id,
                   type: 'Deposit' as const,
@@ -784,7 +797,7 @@ const Wallet = () => {
                 }));
               
               const userWithdrawals = withdrawalRequests
-                .filter(w => w.userId === displayUserId)
+                .filter(w => currentUser && w.userId === currentUser.uid)
                 .map(w => ({
                   id: w.id,
                   type: 'Withdraw' as const,
