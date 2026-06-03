@@ -845,11 +845,11 @@ const AdminDashboard = () => {
                   <select 
                     value={editingMatchData.status} 
                     onChange={e => setEditingMatchData({...editingMatchData, status: e.target.value as 'live' | 'upcoming' | 'finished'})} 
-                    style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Outfit',sans-serif" }}
+                    style={{ width: '100%', padding: '14px', background: '#1e293b', border: '1px solid var(--card-border)', borderRadius: '12px', color: '#f3f4f6', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Outfit',sans-serif" }}
                   >
-                    <option value="upcoming">Upcoming</option>
-                    <option value="live">Live</option>
-                    <option value="finished">Finished</option>
+                    <option value="upcoming" style={{ background: '#111827', color: '#f3f4f6' }}>Upcoming</option>
+                    <option value="live" style={{ background: '#111827', color: '#f3f4f6' }}>Live</option>
+                    <option value="finished" style={{ background: '#111827', color: '#f3f4f6' }}>Finished</option>
                   </select>
                 </div>
                 <div>
@@ -1225,11 +1225,11 @@ const AdminDashboard = () => {
                           newWinners[idx].userId = e.target.value;
                           setWinnersData(newWinners);
                         }}
-                        style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif" }}
+                        style={{ padding: '12px', background: '#111827', border: '1px solid var(--card-border)', borderRadius: '12px', color: '#f3f4f6', fontFamily: "'Outfit',sans-serif" }}
                       >
-                        <option value="" style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>Select User</option>
+                        <option value="" style={{ background: '#111827', color: '#f3f4f6' }}>Select User</option>
                         {selectingWinnersMatch.joinedUsers.map(u => (
-                          <option key={u.id} value={u.id} style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>{u.name}</option>
+                          <option key={u.id} value={u.id} style={{ background: '#111827', color: '#f3f4f6' }}>{u.name}</option>
                         ))}
                       </select>
                       <input 
