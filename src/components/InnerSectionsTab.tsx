@@ -87,8 +87,9 @@ const InnerSectionsTab = () => {
       setShowAddCard(false);
       setEditingCard(null);
       setCardForm(defaultEmptyCard);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setSuccessMessage('Error saving card. Check connection or data.');
     } finally {
       setIsProcessing(false);
     }

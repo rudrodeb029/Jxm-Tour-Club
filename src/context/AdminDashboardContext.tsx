@@ -628,7 +628,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
         const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5), participantIds: [] };
-        const innerSections = [...(m.innerSections || []), newCard];
+        // Clean undefined values
+        const cleanCard = Object.fromEntries(Object.entries(newCard).filter(([_, v]) => v !== undefined)) as Team;
+        const innerSections = [...(m.innerSections || []), cleanCard];
         await setDoc(doc(db, 'matches', matchId), { 
           innerSections,
           team1: innerSections[0] || null,
@@ -638,6 +640,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       }
     } catch (e) {
       console.error('Error adding match card', e);
+      throw e;
     }
   };
 
@@ -645,7 +648,10 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
-        const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cardUpdates } : c);
+        // Firebase does not support undefined values. Remove them.
+        const cleanUpdates = Object.fromEntries(Object.entries(cardUpdates).filter(([_, v]) => v !== undefined));
+        const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cleanUpdates } : c);
+        
         await setDoc(doc(db, 'matches', matchId), { 
           innerSections,
           team1: innerSections[0] || null,
@@ -655,6 +661,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       }
     } catch (e) {
       console.error('Error updating match card', e);
+      throw e;
     }
   };
 
