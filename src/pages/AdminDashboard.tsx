@@ -63,6 +63,173 @@ const AdminDashboard = () => {
   const [isViewingChat, setIsViewingChat] = useState(false);
   const [selectingWinnersMatch, setSelectingWinnersMatch] = useState<AdminMatch | null>(null);
   const [editingMatchData, setEditingMatchData] = useState<AdminMatch | null>(null);
+
+  // Date filtering state for Revenue Analytics
+  const [rangeType, setRangeType] = useState<'today' | 'month' | 'year' | 'all' | 'custom'>('all');
+  const [customStart, setCustomStart] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30); // Default to last 30 days
+    return d.toISOString().split('T')[0];
+  });
+  const [customEnd, setCustomEnd] = useState(() => new Date().toISOString().split('T')[0]);
+  const [breakdownType, setBreakdownType] = useState<'daily' | 'monthly' | 'yearly'>('daily');
+
+  const parseToDate = (val: any): Date | null => {
+    if (!val) return null;
+    if (typeof val.toDate === 'function') {
+      try {
+        return val.toDate();
+      } catch {
+        // Fallback
+      }
+    }
+    if (val.seconds) {
+      return new Date(val.seconds * 1000);
+    }
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const getFilterBounds = () => {
+    const now = new Date();
+    let start = new Date(0); // All time
+    let end = new Date();
+
+    if (rangeType === 'today') {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (rangeType === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (rangeType === 'year') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end = new Date(now.getFullYear() + 1, 0, 0, 23, 59, 59, 999);
+    } else if (rangeType === 'custom') {
+      if (customStart) {
+        const parts = customStart.split('-');
+        start = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+      if (customEnd) {
+        const parts = customEnd.split('-');
+        end = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 23, 59, 59, 999);
+      }
+    }
+    return { start, end };
+  };
+
+  const getPeriodSums = (start: Date, end: Date) => {
+    const filteredPayments = paymentRequests.filter(p => {
+      if (p.status !== 'approved') return false;
+      const d = parseToDate(p.timestamp);
+      return d && d >= start && d <= end;
+    });
+
+    const filteredWithdrawals = withdrawalRequests.filter(w => {
+      if (w.status !== 'completed') return false;
+      const d = parseToDate(w.timestamp);
+      return d && d >= start && d <= end;
+    });
+
+    const filteredWinners = winners.filter(w => {
+      const d = parseToDate(w.time);
+      return d && d >= start && d <= end;
+    });
+
+    const totalPayments = filteredPayments.reduce((sum, p) => sum + (p.isRaw ? p.amount : p.amount * 126), 0);
+    const totalWithdrawals = filteredWithdrawals.reduce((sum, w) => sum + (w.isRaw ? w.amount : w.amount * 126), 0);
+    const totalWinnings = filteredWinners.reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0);
+
+    return { totalPayments, totalWinnings, totalWithdrawals };
+  };
+
+  const getFilteredMetrics = () => {
+    const { start, end } = getFilterBounds();
+    const { totalPayments, totalWinnings, totalWithdrawals } = getPeriodSums(start, end);
+    const revenueVsPrizes = totalPayments - totalWinnings;
+    const revenueVsWithdrawals = totalPayments - totalWithdrawals;
+
+    return {
+      totalPayments,
+      totalWithdrawals,
+      totalWinnings,
+      revenueVsPrizes,
+      revenueVsWithdrawals
+    };
+  };
+
+  const filteredMetrics = getFilteredMetrics();
+
+  const getBreakdowns = () => {
+    const now = new Date();
+    const rows: {
+      period: string;
+      payments: number;
+      winnings: number;
+      withdrawals: number;
+      revVsPrizes: number;
+      revVsWithdrawals: number;
+    }[] = [];
+
+    if (breakdownType === 'daily') {
+      // Last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+        const periodStr = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+
+        const { totalPayments, totalWinnings, totalWithdrawals } = getPeriodSums(start, end);
+        rows.push({
+          period: periodStr,
+          payments: totalPayments,
+          winnings: totalWinnings,
+          withdrawals: totalWithdrawals,
+          revVsPrizes: totalPayments - totalWinnings,
+          revVsWithdrawals: totalPayments - totalWithdrawals
+        });
+      }
+    } else if (breakdownType === 'monthly') {
+      // Last 12 months
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const start = new Date(d.getFullYear(), d.getMonth(), 1);
+        const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+        const periodStr = d.toLocaleDateString([], { month: 'long', year: 'numeric' });
+
+        const { totalPayments, totalWinnings, totalWithdrawals } = getPeriodSums(start, end);
+        rows.push({
+          period: periodStr,
+          payments: totalPayments,
+          winnings: totalWinnings,
+          withdrawals: totalWithdrawals,
+          revVsPrizes: totalPayments - totalWinnings,
+          revVsWithdrawals: totalPayments - totalWithdrawals
+        });
+      }
+    } else if (breakdownType === 'yearly') {
+      // Last 5 years
+      for (let i = 4; i >= 0; i--) {
+        const year = now.getFullYear() - i;
+        const start = new Date(year, 0, 1);
+        const end = new Date(year, 11, 31, 23, 59, 59, 999);
+        const periodStr = `${year}`;
+
+        const { totalPayments, totalWinnings, totalWithdrawals } = getPeriodSums(start, end);
+        rows.push({
+          period: periodStr,
+          payments: totalPayments,
+          winnings: totalWinnings,
+          withdrawals: totalWithdrawals,
+          revVsPrizes: totalPayments - totalWinnings,
+          revVsWithdrawals: totalPayments - totalWithdrawals
+        });
+      }
+    }
+    return rows;
+  };
+
+  const breakdownRows = getBreakdowns();
+
   const [winnersData, setWinnersData] = useState<{ rank: 1|2|3; userId: string; reward: string }[]>([
     { rank: 1, userId: '', reward: '100' },
     { rank: 2, userId: '', reward: '50' },
@@ -408,6 +575,177 @@ const AdminDashboard = () => {
               <Card icon="💸" label="Withdraw" value={stats.pendingWithdrawals} color="#E34360" />
               <Card icon="📈" label="Revenue" value={formatCurrency(stats.totalRevenue)} color="#8B5CF6" />
             </div>
+
+            {/* Revenue & Financial Analytics Section */}
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '28px', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '16px', marginBottom: '24px' }}>
+                <div>
+                  <h3 style={{ fontWeight: 900, fontSize: '1.3rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>📈 Financial Analytics & Revenue</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '4px 0 0' }}>Monitor payments, prize distributions, withdrawals, and platform revenue</p>
+                </div>
+                {/* Date range filter buttons */}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {(['today', 'month', 'year', 'all', 'custom'] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setRangeType(type)}
+                      style={{
+                        padding: '8px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--card-border)',
+                        background: rangeType === type ? 'linear-gradient(90deg,#F96F2E,#E34360)' : 'rgba(255,255,255,0.05)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      {type === 'all' ? 'All Time' : type === 'month' ? 'This Month' : type === 'year' ? 'This Year' : type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Date Picker Inputs */}
+              {rangeType === 'custom' && (
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '16px', border: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: '150px' }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>Start Date</label>
+                    <input
+                      type="date"
+                      value={customStart}
+                      onChange={e => setCustomStart(e.target.value)}
+                      style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '10px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.9rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: '150px' }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>End Date</label>
+                    <input
+                      type="date"
+                      value={customEnd}
+                      onChange={e => setCustomEnd(e.target.value)}
+                      style={{ width: '100%', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '10px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", fontSize: '0.9rem', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Filtered Period Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
+                
+                {/* Total Payments */}
+                <div style={{ background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '20px', padding: '20px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>💳 Total Payments (In)</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#3B82F6' }}>{formatCurrency(filteredMetrics.totalPayments)}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Approved user deposits</div>
+                </div>
+
+                {/* Total Winnings */}
+                <div style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '20px', padding: '20px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>🏆 Total Winnings</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#10B981' }}>{formatCurrency(filteredMetrics.totalWinnings)}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Win prizes + kill rewards</div>
+                </div>
+
+                {/* Total Withdrawals */}
+                <div style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '20px', padding: '20px' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>💸 Completed Withdrawals</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#EF4444' }}>{formatCurrency(filteredMetrics.totalWithdrawals)}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Cash successfully withdrawn</div>
+                </div>
+
+                {/* Net Revenue (vs Prizes) */}
+                <div style={{ 
+                  background: 'linear-gradient(135deg, rgba(249,111,46,0.08) 0%, rgba(227,67,96,0.08) 100%)', 
+                  border: '1px solid rgba(249,111,46,0.25)', 
+                  borderRadius: '20px', 
+                  padding: '20px' 
+                }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>📈 Revenue (vs Prizes)</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#F96F2E' }}>{formatCurrency(filteredMetrics.revenueVsPrizes)}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Payments - Prizes awarded</div>
+                </div>
+
+                {/* Net Revenue (vs Withdrawals) */}
+                <div style={{ 
+                  background: 'linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(168,85,247,0.08) 100%)', 
+                  border: '1px solid rgba(139,92,246,0.25)', 
+                  borderRadius: '20px', 
+                  padding: '20px' 
+                }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>📊 Revenue (vs Withdrawals)</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#8B5CF6' }}>{formatCurrency(filteredMetrics.revenueVsWithdrawals)}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Payments - Cash withdrawn</div>
+                </div>
+
+              </div>
+
+              {/* Financial Breakdown Section */}
+              <div style={{ borderTop: '1px solid var(--divider)', paddingTop: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '16px', marginBottom: '20px' }}>
+                  <div>
+                    <h4 style={{ fontWeight: 800, fontSize: '1.05rem', margin: 0 }}>📊 Financial Period Breakdown</h4>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>Detailed overview by day, month, and year intervals</p>
+                  </div>
+                  {/* Breakdown type toggles */}
+                  <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)', padding: '4px', borderRadius: '10px', border: '1px solid var(--card-border)' }}>
+                    {(['daily', 'monthly', 'yearly'] as const).map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setBreakdownType(type)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: breakdownType === type ? 'rgba(255,255,255,0.08)' : 'transparent',
+                          color: breakdownType === type ? '#F96F2E' : 'var(--text-secondary)',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          textTransform: 'capitalize',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {type === 'daily' ? 'Day' : type === 'monthly' ? 'Month' : 'Year'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Breakdown Table */}
+                <div style={{ overflowX: 'auto', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '16px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--divider)', background: 'rgba(255,255,255,0.02)' }}>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700 }}>Period</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700 }}>💳 Payments</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700 }}>🏆 Winnings</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700 }}>💸 Withdrawals</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700 }}>📈 Rev (vs Winnings)</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700 }}>📊 Rev (vs Withdraw)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {breakdownRows.map((row, idx) => (
+                        <tr key={idx} style={{ borderBottom: idx === breakdownRows.length - 1 ? 'none' : '1px solid var(--divider)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+                          <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--text-primary)' }}>{row.period}</td>
+                          <td style={{ padding: '12px 16px', color: '#3B82F6', fontWeight: 600 }}>{formatCurrency(row.payments)}</td>
+                          <td style={{ padding: '12px 16px', color: '#10B981', fontWeight: 600 }}>{formatCurrency(row.winnings)}</td>
+                          <td style={{ padding: '12px 16px', color: '#EF4444', fontWeight: 600 }}>{formatCurrency(row.withdrawals)}</td>
+                          <td style={{ padding: '12px 16px', color: row.revVsPrizes >= 0 ? '#4ADE80' : '#F87171', fontWeight: 800 }}>{formatCurrency(row.revVsPrizes)}</td>
+                          <td style={{ padding: '12px 16px', color: row.revVsWithdrawals >= 0 ? '#C084FC' : '#F87171', fontWeight: 800 }}>{formatCurrency(row.revVsWithdrawals)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+
             {/* Recent activity */}
             <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '24px' }}>
               <h3 style={{ fontWeight: 800, marginBottom: '20px' }}>📋 Recent Activity</h3>
