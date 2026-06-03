@@ -841,6 +841,22 @@ const AdminDashboard = () => {
                   <input value={editingMatchData.name} onChange={e => setEditingMatchData({...editingMatchData, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Status</label>
+                  <select 
+                    value={editingMatchData.status} 
+                    onChange={e => setEditingMatchData({...editingMatchData, status: e.target.value as 'live' | 'upcoming' | 'finished'})} 
+                    style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Outfit',sans-serif" }}
+                  >
+                    <option value="upcoming">Upcoming</option>
+                    <option value="live">Live</option>
+                    <option value="finished">Finished</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Time</label>
+                  <input value={editingMatchData.time || ''} onChange={e => setEditingMatchData({...editingMatchData, time: e.target.value, scheduledStart: e.target.value})} placeholder="21:00 or 09:00 PM" style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Available Modes (Check to show on card)</label>
                   <div style={{ display: 'flex', gap: '16px', background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
                     {['Solo', 'Duo', 'Squad'].map(mode => (
@@ -854,6 +870,22 @@ const AdminDashboard = () => {
                       </label>
                     ))}
                   </div>
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Prize Pool ($)</label>
+                  <input type="number" value={editingMatchData.prizePool || ''} onChange={e => setEditingMatchData({...editingMatchData, prizePool: e.target.value ? parseFloat(e.target.value) : undefined})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>First Prize ($)</label>
+                  <input type="number" value={editingMatchData.firstPrize || ''} onChange={e => setEditingMatchData({...editingMatchData, firstPrize: e.target.value ? parseFloat(e.target.value) : undefined})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Second Prize ($)</label>
+                  <input type="number" value={editingMatchData.secondPrize || ''} onChange={e => setEditingMatchData({...editingMatchData, secondPrize: e.target.value ? parseFloat(e.target.value) : undefined})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Third Prize ($)</label>
+                  <input type="number" value={editingMatchData.thirdPrize || ''} onChange={e => setEditingMatchData({...editingMatchData, thirdPrize: e.target.value ? parseFloat(e.target.value) : undefined})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
