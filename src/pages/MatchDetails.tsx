@@ -71,7 +71,8 @@ const MatchDetails = () => {
 
   const entryFee = match.bids && match.bids.length > 0 ? parseFloat(match.bids[0].replace(/[^0-9.-]+/g, '')) || 10 : 10;
   const count = match.currentParticipants > 0 ? match.currentParticipants : 12;
-  const totalPrizePool = match.prizePool !== undefined && match.prizePool > 0 ? match.prizePool : count * entryFee * 1.8;
+  const cardPrizeSum = (match.team1?.winPrize || 0) + (match.team2?.winPrize || 0) + (match.team3?.winPrize || 0);
+  const totalPrizePool = cardPrizeSum > 0 ? cardPrizeSum : (match.prizePool !== undefined && match.prizePool > 0 ? match.prizePool : count * entryFee * 1.8);
   
   const firstPrizeValue = match.firstPrize !== undefined && match.firstPrize > 0 ? match.firstPrize : totalPrizePool * 0.5;
   const secondPrizeValue = match.secondPrize !== undefined && match.secondPrize > 0 ? match.secondPrize : totalPrizePool * 0.3;
