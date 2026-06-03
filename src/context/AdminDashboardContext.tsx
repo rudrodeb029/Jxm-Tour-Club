@@ -96,6 +96,7 @@ interface AdminDashboardContextType {
   addMatchCard: (matchId: string, card: Omit<Team, 'id'>) => void;
   updateMatchCard: (matchId: string, cardId: string, cardUpdates: Partial<Team>) => void;
   deleteMatchCard: (matchId: string, cardId: string) => void;
+  removeParticipantFromCard: (matchId: string, cardId: string, userId: string) => void;
   
   // Payments
   paymentRequests: PaymentRequest[];
@@ -674,6 +675,67 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const removeParticipantFromCard = async (matchId: string, cardId: string, userId: string) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (!m) return;
+      const card = (m.innerSections || []).find(c => c.id === cardId);
+      if (!card) return;
+
+      // Remove from card participants
+      const innerSections = (m.innerSections || []).map(c => 
+        c.id === cardId ? { ...c, participantIds: (c.participantIds || []).filter(p => p !== userId) } : c
+      );
+      // Remove from match participants
+      const newParticipants = (m.participantIds || []).filter(p => p !== userId);
+
+      await setDoc(doc(db, 'matches', matchId), { 
+        innerSections,
+        participantIds: newParticipants,
+        currentParticipants: Math.max(0, (m.currentParticipants || 0) - 1),
+        team1: innerSections[0] || null,
+        team2: innerSections[1] || null,
+        team3: innerSections[2] || null
+      }, { merge: true });
+
+      // Refund entry fee to user
+      const entryFee = card.entryFee || 0;
+      if (entryFee > 0) {
+        await runTransaction(db, async (t) => {
+          const userRef = doc(db, 'users', userId);
+          const uDoc = await t.get(userRef);
+          if (uDoc.exists()) {
+            const data = uDoc.data();
+            t.update(userRef, { balance: (data.balance || 0) + entryFee });
+          }
+        });
+
+        // Log refund transaction
+        await addDoc(collection(db, 'transactions'), {
+          userId: userId,
+          type: 'Refund',
+          amount: entryFee,
+          date: new Date().toISOString(),
+          status: 'Completed'
+        });
+      }
+
+      const user = adminUsers.find(u => u.id === userId);
+      if (user) {
+        await logActivity({
+          type: 'withdrawal' as const,
+          userId: userId,
+          userName: user.name,
+          userAvatar: user.avatar || '',
+          amount: entryFee,
+          matchName: `${m.name} (${card.name}) Refund`
+        });
+      }
+    } catch (e) {
+      console.error('Error removing participant from card', e);
+    }
+  };
+
   // Payment operations
   const approvePayment = async (id: string) => {
     try {
@@ -846,6 +908,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       addMatchCard,
       updateMatchCard,
       deleteMatchCard,
+      removeParticipantFromCard,
       activeWinnerCeremony,
       clearWinnerCeremony,
       activities,
