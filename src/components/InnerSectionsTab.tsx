@@ -179,8 +179,7 @@ const InnerSectionsTab = () => {
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Inner Sections (Match Cards)</h2>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
         <button 
           className="btn btn-primary"
           onClick={() => {
