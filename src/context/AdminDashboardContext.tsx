@@ -630,6 +630,16 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
               status: 'Completed'
             });
 
+            // Add to winners global collection for display
+            await addDoc(collection(db, 'winners'), {
+              id: 'w' + Date.now() + Math.random(),
+              name: userObj.name,
+              avatar: userObj.avatar,
+              amount: `${totalKillReward}`,
+              match: `${card.name} - ${m.name} (${kw.kills} Kills)`,
+              time: new Date().toISOString()
+            });
+
             await logActivity({
               type: 'win', // Or you could make a 'kill_prize' type
               userId: kw.userId,
