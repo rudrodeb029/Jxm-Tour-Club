@@ -128,8 +128,9 @@ const InnerSectionsTab = () => {
       try {
         await deleteMatchCard(selectedMatchId, cardId);
         setSuccessMessage('Card deleted successfully!');
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
+        setSuccessMessage('Error deleting card. Check connection or data.');
       } finally {
         setIsProcessing(false);
       }

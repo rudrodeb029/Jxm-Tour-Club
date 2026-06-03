@@ -238,7 +238,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             ...dm,
             ...fbMatch,
             // Keep innerSections from Firebase if it has them, else use mock
-            innerSections: fbMatch.innerSections && fbMatch.innerSections.length > 0 
+            innerSections: fbMatch.innerSections !== undefined 
               ? fbMatch.innerSections 
               : dm.innerSections,
           };
@@ -628,14 +628,13 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
         const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5), participantIds: [] };
-        // Clean undefined values
-        const cleanCard = Object.fromEntries(Object.entries(newCard).filter(([_, v]) => v !== undefined)) as Team;
-        const innerSections = [...(m.innerSections || []), cleanCard];
+        const innerSections = [...(m.innerSections || []), newCard];
+        const cleanInnerSections = JSON.parse(JSON.stringify(innerSections));
         await setDoc(doc(db, 'matches', matchId), { 
-          innerSections,
-          team1: innerSections[0] || null,
-          team2: innerSections[1] || null,
-          team3: innerSections[2] || null
+          innerSections: cleanInnerSections,
+          team1: cleanInnerSections[0] || null,
+          team2: cleanInnerSections[1] || null,
+          team3: cleanInnerSections[2] || null
         }, { merge: true });
       }
     } catch (e) {
@@ -648,15 +647,14 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
-        // Firebase does not support undefined values. Remove them.
-        const cleanUpdates = Object.fromEntries(Object.entries(cardUpdates).filter(([_, v]) => v !== undefined));
-        const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cleanUpdates } : c);
+        const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cardUpdates } : c);
+        const cleanInnerSections = JSON.parse(JSON.stringify(innerSections));
         
         await setDoc(doc(db, 'matches', matchId), { 
-          innerSections,
-          team1: innerSections[0] || null,
-          team2: innerSections[1] || null,
-          team3: innerSections[2] || null
+          innerSections: cleanInnerSections,
+          team1: cleanInnerSections[0] || null,
+          team2: cleanInnerSections[1] || null,
+          team3: cleanInnerSections[2] || null
         }, { merge: true });
       }
     } catch (e) {
@@ -670,15 +668,17 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
         const innerSections = (m.innerSections || []).filter(c => c.id !== cardId);
+        const cleanInnerSections = JSON.parse(JSON.stringify(innerSections));
         await setDoc(doc(db, 'matches', matchId), { 
-          innerSections,
-          team1: innerSections[0] || null,
-          team2: innerSections[1] || null,
-          team3: innerSections[2] || null
+          innerSections: cleanInnerSections,
+          team1: cleanInnerSections[0] || null,
+          team2: cleanInnerSections[1] || null,
+          team3: cleanInnerSections[2] || null
         }, { merge: true });
       }
     } catch (e) {
       console.error('Error deleting match card', e);
+      throw e;
     }
   };
 
