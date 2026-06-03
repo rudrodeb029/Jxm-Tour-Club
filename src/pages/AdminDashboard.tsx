@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import type { AdminMatch } from '../context/AdminDashboardContext';
-import { useChat } from '../context/ChatContext';
-import { useRef } from 'react';
 import InnerSectionsTab from '../components/InnerSectionsTab';
+import { db } from '../firebase';
+import { collection, onSnapshot, query, orderBy, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 
 const AdminDashboard = () => {
@@ -17,7 +17,29 @@ const AdminDashboard = () => {
     adminUsers, updateUserBalance, toggleUserStatus, stats, setMatchWinners,
   } = useAdminDashboard();
   const { formatCurrency } = useCurrency();
-  const { messages, sendMessage } = useChat();
+  
+  interface ActiveChat {
+    userId: string;
+    userName?: string;
+    userAvatar?: string;
+    displayUserId?: string;
+    lastMessage?: string;
+    lastMessageTime?: any;
+    unreadByAdmin?: boolean;
+  }
+
+  interface ChatMessage {
+    id: string;
+    text: string;
+    sender: 'user' | 'support';
+    time: string;
+    userName?: string;
+    avatar?: string;
+  }
+
+  const [activeChats, setActiveChats] = useState<ActiveChat[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [adminReply, setAdminReply] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,6 +68,103 @@ const AdminDashboard = () => {
     { rank: 3, userId: '', reward: '25' },
   ]);
 
+  // Listen to all active chats metadata
+  useEffect(() => {
+    if (localStorage.getItem('adminLoggedIn') !== 'true') return;
+
+    const chatsRef = collection(db, 'chats');
+    const unsubscribe = onSnapshot(chatsRef, (snapshot) => {
+      const chats: ActiveChat[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        chats.push({
+          userId: doc.id,
+          userName: data.userName,
+          userAvatar: data.userAvatar,
+          displayUserId: data.displayUserId,
+          lastMessage: data.lastMessage,
+          lastMessageTime: data.lastMessageTime,
+          unreadByAdmin: data.unreadByAdmin,
+        });
+      });
+      // Sort in JS to handle missing fields gracefully
+      chats.sort((a, b) => {
+        const timeA = a.lastMessageTime?.toDate ? a.lastMessageTime.toDate().getTime() : 0;
+        const timeB = b.lastMessageTime?.toDate ? b.lastMessageTime.toDate().getTime() : 0;
+        return timeB - timeA;
+      });
+      setActiveChats(chats);
+    }, (error) => {
+      console.error("Error listening to chats: ", error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to the selected chat's messages
+  useEffect(() => {
+    if (!selectedChatId) {
+      setChatMessages([]);
+      return;
+    }
+
+    const messagesRef = collection(db, 'chats', selectedChatId, 'messages');
+    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs: ChatMessage[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        let timeString = 'Just now';
+        if (data.timestamp) {
+           const date = data.timestamp.toDate ? data.timestamp.toDate() : new Date();
+           timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        msgs.push({
+          id: doc.id,
+          text: data.text,
+          sender: data.sender,
+          time: timeString,
+          avatar: data.avatar,
+          userName: data.userName
+        });
+      });
+      setChatMessages(msgs);
+    }, (error) => {
+      console.error("Error listening to messages: ", error);
+    });
+
+    return () => unsubscribe();
+  }, [selectedChatId]);
+
+  // Send admin message to selected chat
+  const sendAdminMessage = async (text: string) => {
+    if (!selectedChatId) return;
+
+    try {
+      const messagesRef = collection(db, 'chats', selectedChatId, 'messages');
+      await addDoc(messagesRef, {
+        text,
+        sender: 'support',
+        timestamp: serverTimestamp(),
+        avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
+        userName: 'Support',
+      });
+
+      const chatDocRef = doc(db, 'chats', selectedChatId);
+      await setDoc(chatDocRef, {
+        lastMessage: text,
+        lastMessageTime: serverTimestamp(),
+        unreadByAdmin: false,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
+    } catch (error) {
+      console.error("Error sending admin message: ", error);
+    }
+  };
+
   useEffect(() => {
     if (localStorage.getItem('adminLoggedIn') !== 'true') navigate('/admin');
   }, [navigate]);
@@ -54,7 +173,7 @@ const AdminDashboard = () => {
     if (activeTab === 'chats') {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, activeTab]);
+  }, [chatMessages, activeTab]);
 
   const handleLogout = () => { localStorage.removeItem('adminLoggedIn'); navigate('/admin'); };
 
@@ -653,9 +772,10 @@ const AdminDashboard = () => {
                         <div style={{ fontWeight: 800 }}>{u.totalWins}/{u.totalMatches}</div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <Btn small style={{ flex: 1 }} onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit Balance</Btn>
-                      <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)} style={{ flex: 1 }}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <Btn small style={{ flex: '1 1 45%' }} onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit Balance</Btn>
+                      <Btn small variant="ghost" onClick={() => { setActiveTab('chats'); setSelectedChatId(u.id); setIsViewingChat(true); }} style={{ flex: '1 1 45%' }}>Chat</Btn>
+                      <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)} style={{ flex: '1 1 100%' }}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
                     </div>
                   </div>
                 ))}
@@ -691,6 +811,7 @@ const AdminDashboard = () => {
                         <td style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <Btn small onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit</Btn>
+                            <Btn small variant="ghost" onClick={() => { setActiveTab('chats'); setSelectedChatId(u.id); setIsViewingChat(true); }}>Chat</Btn>
                             <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
                           </div>
                         </td>
@@ -815,31 +936,80 @@ const AdminDashboard = () => {
               border: '1px solid var(--card-border)', 
               borderRadius: '24px', 
               padding: '20px',
-              display: isMobile && isViewingChat ? 'none' : 'block'
+              display: isMobile && isViewingChat ? 'none' : 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              overflowY: 'auto'
             }}>
-              <h3 style={{ fontWeight: 800, marginBottom: '20px', fontSize: '1rem' }}>Active Conversations</h3>
-              <div 
-                onClick={() => isMobile && setIsViewingChat(true)}
-                style={{ 
-                  background: 'linear-gradient(135deg,rgba(249,111,46,0.1),rgba(227,67,96,0.05))', 
-                  padding: '16px', 
-                  borderRadius: '18px', 
-                  border: '1px solid rgba(249,111,46,0.2)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '14px', 
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}
-              >
-                <div style={{ position: 'relative' }}>
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style={{ width: '44px', height: '44px', borderRadius: '14px' }} alt="" />
-                  <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '12px', height: '12px', background: '#10B981', borderRadius: '50%', border: '2px solid #0F111A' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Felix Player</div>
-                  <div style={{ color: '#10B981', fontSize: '0.7rem', fontWeight: 700 }}>ONLINE</div>
-                </div>
+              <h3 style={{ fontWeight: 800, marginBottom: '4px', fontSize: '1rem' }}>Active Conversations</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {activeChats.length === 0 ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '20px' }}>
+                    No active support chats
+                  </div>
+                ) : (
+                  activeChats.map(chat => {
+                    const chatUser = adminUsers.find(u => u.id === chat.userId);
+                    const chatName = chat.userName || chatUser?.name || 'Anonymous';
+                    const chatAvatar = chat.userAvatar || chatUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${chat.userId}`;
+                    const chatDisplayUserId = chat.displayUserId || chatUser?.username || chat.userId.substring(0, 5);
+                    const isSelected = selectedChatId === chat.userId;
+
+                    return (
+                      <div 
+                        key={chat.userId}
+                        onClick={() => {
+                          setSelectedChatId(chat.userId);
+                          if (isMobile) setIsViewingChat(true);
+                        }}
+                        style={{ 
+                          background: isSelected 
+                            ? 'linear-gradient(135deg,rgba(249,111,46,0.15),rgba(227,67,96,0.1))' 
+                            : 'rgba(255, 255, 255, 0.02)', 
+                          padding: '14px', 
+                          borderRadius: '16px', 
+                          border: isSelected 
+                            ? '1px solid rgba(249,111,46,0.3)' 
+                            : '1px solid rgba(255, 255, 255, 0.05)', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '12px', 
+                          cursor: 'pointer',
+                          boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                          transition: 'all 0.2s',
+                          position: 'relative'
+                        }}
+                        className="hover-scale"
+                      >
+                        <div style={{ position: 'relative' }}>
+                          <img src={chatAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px', objectFit: 'cover' }} alt="" />
+                          <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', background: '#10B981', borderRadius: '50%', border: '2px solid #0F111A' }} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
+                            <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{chatName}</div>
+                            {chat.unreadByAdmin && (
+                              <div style={{ width: '8px', height: '8px', background: '#F96F2E', borderRadius: '50%' }} />
+                            )}
+                          </div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>@{chatDisplayUserId}</div>
+                          {chat.lastMessage && (
+                            <div style={{ 
+                              color: isSelected ? 'var(--text-secondary)' : 'var(--text-muted)', 
+                              fontSize: '0.75rem', 
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              marginTop: '4px' 
+                            }}>
+                              {chat.lastMessage}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -854,66 +1024,84 @@ const AdminDashboard = () => {
               overflow: 'hidden',
               boxShadow: (isMobile && isViewingChat) ? 'none' : '0 8px 32px rgba(0,0,0,0.2)'
             }}>
-              <div style={{ padding: '18px 24px', background: 'var(--card-bg)', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {isMobile && (
-                   <button onClick={() => setIsViewingChat(false)} style={{ background: 'none', border: 'none', color: '#F96F2E', fontWeight: 800, marginRight: '8px', fontSize: '1.2rem', cursor: 'pointer' }}>←</button>
-                )}
-                <div style={{ position: 'relative' }}>
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" style={{ width: '32px', height: '32px', borderRadius: '10px' }} alt="" />
-                  <div style={{ position: 'absolute', bottom: '-1px', right: '-1px', width: '8px', height: '8px', background: '#10B981', borderRadius: '50%', border: '1.5px solid #0F111A' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>Felix Player</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 600 }}>UID: 55291</div>
-                </div>
-              </div>
+              {selectedChatId ? (() => {
+                const activeChat = activeChats.find(c => c.userId === selectedChatId);
+                const chatUser = adminUsers.find(u => u.id === selectedChatId);
+                const chatName = activeChat?.userName || chatUser?.name || 'Anonymous';
+                const chatAvatar = activeChat?.userAvatar || chatUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedChatId}`;
+                const chatDisplayUserId = activeChat?.displayUserId || chatUser?.username || selectedChatId.substring(0, 5);
 
-              <div style={{ flex: 1, padding: isMobile ? '16px' : '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {messages.map(msg => (
-                  <div key={msg.id} style={{ 
-                    alignSelf: msg.sender === 'support' ? 'flex-end' : 'flex-start',
-                    maxWidth: isMobile ? '85%' : '70%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: msg.sender === 'support' ? 'flex-end' : 'flex-start'
-                  }}>
-                    <div style={{ 
-                      background: msg.sender === 'support' ? 'linear-gradient(135deg,#F96F2E,#E34360)' : 'rgba(255,255,255,0.06)',
-                      padding: '12px 18px',
-                      borderRadius: msg.sender === 'support' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.9rem',
-                      fontWeight: 500,
-                      border: msg.sender === 'support' ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                      boxShadow: msg.sender === 'support' ? '0 4px 12px rgba(227,67,96,0.2)' : 'none'
-                    }}>
-                      {msg.text}
+                return (
+                  <>
+                    <div style={{ padding: '18px 24px', background: 'var(--card-bg)', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {isMobile && (
+                         <button onClick={() => setIsViewingChat(false)} style={{ background: 'none', border: 'none', color: '#F96F2E', fontWeight: 800, marginRight: '8px', fontSize: '1.2rem', cursor: 'pointer' }}>←</button>
+                      )}
+                      <div style={{ position: 'relative' }}>
+                        <img src={chatAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                        <div style={{ position: 'absolute', bottom: '-1px', right: '-1px', width: '8px', height: '8px', background: '#10B981', borderRadius: '50%', border: '1.5px solid #0F111A' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{chatName}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 600 }}>UID: @{chatDisplayUserId}</div>
+                      </div>
                     </div>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 600 }}>{msg.time} {msg.sender === 'support' ? '• ADMIN' : ''}</span>
-                  </div>
-                ))}
-                <div ref={chatEndRef} />
-              </div>
 
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!adminReply.trim()) return;
-                  sendMessage(adminReply, 'support');
-                  setAdminReply('');
-                }}
-                style={{ padding: '16px', background: 'var(--card-bg)', borderTop: '1px solid var(--divider)', display: 'flex', gap: '10px' }}
-              >
-                <input 
-                  value={adminReply}
-                  onChange={e => setAdminReply(e.target.value)}
-                  placeholder="Type a message..."
-                  style={{ flex: 1, background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '12px 16px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", outline: 'none', fontSize: '0.95rem' }}
-                />
-                <button type="submit" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg,#F96F2E,#E34360)', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(227,67,96,0.3)' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                </button>
-              </form>
+                    <div style={{ flex: 1, padding: isMobile ? '16px' : '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {chatMessages.map(msg => (
+                        <div key={msg.id} style={{ 
+                          alignSelf: msg.sender === 'support' ? 'flex-end' : 'flex-start',
+                          maxWidth: isMobile ? '85%' : '70%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: msg.sender === 'support' ? 'flex-end' : 'flex-start'
+                        }}>
+                          <div style={{ 
+                            background: msg.sender === 'support' ? 'linear-gradient(135deg,#F96F2E,#E34360)' : 'rgba(255,255,255,0.06)',
+                            padding: '12px 18px',
+                            borderRadius: msg.sender === 'support' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.9rem',
+                            fontWeight: 500,
+                            border: msg.sender === 'support' ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                            boxShadow: msg.sender === 'support' ? '0 4px 12px rgba(227,67,96,0.2)' : 'none'
+                          }}>
+                            {msg.text}
+                          </div>
+                          <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 600 }}>{msg.time} {msg.sender === 'support' ? '• ADMIN' : ''}</span>
+                        </div>
+                      ))}
+                      <div ref={chatEndRef} />
+                    </div>
+
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!adminReply.trim()) return;
+                        sendAdminMessage(adminReply);
+                        setAdminReply('');
+                      }}
+                      style={{ padding: '16px', background: 'var(--card-bg)', borderTop: '1px solid var(--divider)', display: 'flex', gap: '10px' }}
+                    >
+                      <input 
+                        value={adminReply}
+                        onChange={e => setAdminReply(e.target.value)}
+                        placeholder="Type a message..."
+                        style={{ flex: 1, background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', padding: '12px 16px', color: 'var(--text-primary)', fontFamily: "'Outfit',sans-serif", outline: 'none', fontSize: '0.95rem' }}
+                      />
+                      <button type="submit" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg,#F96F2E,#E34360)', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(227,67,96,0.3)' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                      </button>
+                    </form>
+                  </>
+                );
+              })() : (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', padding: '40px', gap: '16px' }}>
+                  <div style={{ fontSize: '3rem' }}>💬</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>No Chat Selected</div>
+                  <div style={{ fontSize: '0.85rem', textAlign: 'center', maxWidth: '300px' }}>Select an active conversation from the sidebar or click "Chat" next to a user in the Users list to send a message.</div>
+                </div>
+              )}
             </div>
           </div>
         )}

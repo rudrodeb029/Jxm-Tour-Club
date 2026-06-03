@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 
 interface Message {
   id: string;
@@ -120,6 +120,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userName: sender === 'user' ? (currentUser.displayName || currentUser.email) : 'Support Bot',
       });
 
+      // Update parent chat doc
+      const chatDocRef = doc(db, 'chats', currentUser.uid);
+      await setDoc(chatDocRef, {
+        lastMessage: text,
+        lastMessageTime: serverTimestamp(),
+        userName: currentUser.displayName || currentUser.email || 'Anonymous',
+        userAvatar: currentUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}`,
+        userId: currentUser.uid,
+        displayUserId: currentUser.email?.split('@')[0] || currentUser.uid.substring(0, 5),
+        unreadByAdmin: sender === 'user',
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
       if (sender === 'user') {
         setIsTyping(true);
         setTimeout(async () => {
@@ -132,6 +145,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Support',
             userName: 'Support Bot',
           });
+
+          // Update parent chat doc for bot reply
+          await setDoc(chatDocRef, {
+            lastMessage: replyText,
+            lastMessageTime: serverTimestamp(),
+            unreadByAdmin: false,
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+
         }, 1500);
       }
     } catch (error) {
