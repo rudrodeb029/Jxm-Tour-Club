@@ -3,6 +3,7 @@ import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
+import { isCardLive } from '../utils/timeUtils';
 
 
 // ============ TYPES ============
@@ -920,7 +921,22 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   const stats = {
     totalUsers: adminUsers.length,
     totalBalance: adminUsers.reduce((sum, u) => sum + u.balance, 0),
-    activeMatches: adminMatches.filter(m => m.status === 'live').reduce((total, m) => total + (m.team1 ? 1 : 0) + (m.team2 ? 1 : 0) + (m.team3 ? 1 : 0), 0),
+    activeMatches: adminMatches.reduce((total, m) => {
+      if (m.status === 'finished') return total;
+      let count = 0;
+      if (m.team1 && isCardLive(m.team1)) count++;
+      if (m.team2 && isCardLive(m.team2)) count++;
+      if (m.team3 && isCardLive(m.team3)) count++;
+      
+      // Fallback if match status is explicitly live but it doesn't have startTimes
+      if (count === 0 && m.status === 'live') {
+        const hasStartTimes = (m.team1?.startTime) || (m.team2?.startTime) || (m.team3?.startTime);
+        if (!hasStartTimes) {
+          count = (m.team1 ? 1 : 0) + (m.team2 ? 1 : 0) + (m.team3 ? 1 : 0);
+        }
+      }
+      return total + count;
+    }, 0),
     pendingPayments: paymentRequests.filter(p => p.status === 'pending').length,
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0),

@@ -17,6 +17,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
+import { isMatchLive } from '../utils/timeUtils';
 
 
 import { 
@@ -352,9 +353,9 @@ const Home = () => {
         padding: '0 12px',
         paddingBottom: '24px',
       }}>
-        {localMatches.filter(m => m.status === 'live').length > 0 && (
+        {localMatches.filter(isMatchLive).length > 0 && (
           <>
-            {localMatches.filter(m => m.status === 'live').map((match, index) => (
+            {localMatches.filter(isMatchLive).map((match, index) => (
               <div 
                 key={match.id} 
                 className="animate-slide-up" 
@@ -380,13 +381,13 @@ const Home = () => {
           </>
         )}
 
-        {localMatches.filter(m => m.status !== 'live').length > 0 && (
+        {localMatches.filter(m => !isMatchLive(m)).length > 0 && (
           <>
-            {localMatches.filter(m => m.status !== 'live').map((match, index) => (
+            {localMatches.filter(m => !isMatchLive(m)).map((match, index) => (
               <div 
                 key={match.id} 
                 className="animate-slide-up" 
-                style={{ animationDelay: `${(localMatches.filter(m => m.status === 'live').length + index) * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
+                style={{ animationDelay: `${(localMatches.filter(isMatchLive).length + index) * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
               >
                 <SliderCard 
                   group={match.group}
