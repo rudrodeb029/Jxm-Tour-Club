@@ -5,7 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import type { Team } from '../data/mockData';
 
 const InnerSectionsTab = () => {
-  const { adminMatches, addMatchCard, updateMatchCard, deleteMatchCard, setCardWinners, adminUsers, removeParticipantFromCard } = useAdminDashboard();
+  const { adminMatches, addMatchCard, updateMatchCard, deleteMatchCard, setCardWinners, adminUsers, removeParticipantFromCard, resetMatchCard } = useAdminDashboard();
   const { formatCurrency } = useCurrency();
   
   const [selectedMatchId, setSelectedMatchId] = useState<string>(adminMatches[0]?.id || '');
@@ -154,6 +154,21 @@ const InnerSectionsTab = () => {
       } catch (e: any) {
         console.error(e);
         setSuccessMessage('Error deleting card. Check connection or data.');
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const handleResetCard = async (cardId: string) => {
+    if (window.confirm("Are you sure you want to reset this card? All joined participants will be removed, and stats will be cleared.")) {
+      setIsProcessing(true);
+      try {
+        await resetMatchCard(selectedMatchId, cardId);
+        setSuccessMessage('Card reset successfully!');
+      } catch (e: any) {
+        console.error(e);
+        setSuccessMessage('Error resetting card.');
       } finally {
         setIsProcessing(false);
       }
@@ -345,9 +360,10 @@ const InnerSectionsTab = () => {
                   </button>
                 </div>
 
-                {/* Edit / Delete Buttons */}
+                {/* Edit / Reset / Delete Buttons */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button onClick={() => handleEdit(card)} style={{ flex: 1, padding: '8px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s ease' }}>Edit</button>
+                  <button onClick={() => handleResetCard(card.id)} disabled={isProcessing} style={{ padding: '8px 12px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#f59e0b', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s ease' }}>Reset</button>
                   <button onClick={() => handleDelete(card.id)} disabled={isProcessing} style={{ padding: '8px 16px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.5)', color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s ease' }}>Delete</button>
                 </div>
               </div>

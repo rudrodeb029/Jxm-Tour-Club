@@ -102,6 +102,7 @@ interface AdminDashboardContextType {
   updateMatchCard: (matchId: string, cardId: string, cardUpdates: Partial<Team>) => void;
   deleteMatchCard: (matchId: string, cardId: string) => void;
   removeParticipantFromCard: (matchId: string, cardId: string, userId: string) => void;
+  resetMatchCard: (matchId: string, cardId: string) => Promise<void>;
   
   // Payments
   paymentRequests: PaymentRequest[];
@@ -767,6 +768,54 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const resetMatchCard = async (matchId: string, cardId: string) => {
+    try {
+      const m = adminMatches.find(x => x.id === matchId);
+      if (!m) return;
+      const card = (m.innerSections || []).find(c => c.id === cardId);
+      if (!card) return;
+
+      const cardParticipants = card.participantIds || [];
+
+      // Clear participants and reset card stats
+      const innerSections = (m.innerSections || []).map(c => 
+        c.id === cardId ? { 
+          ...c, 
+          participantIds: [], 
+          kills: 0, 
+          damage: 0, 
+          headshots: 0, 
+          rank: 0,
+        } : c
+      );
+
+      // Remove card participants from the main match list
+      const newParticipants = (m.participantIds || []).filter(p => !cardParticipants.includes(p));
+
+      // Reset match status to 'upcoming' if it was 'finished'
+      let newStatus = m.status;
+      if (m.status === 'finished') {
+        newStatus = 'upcoming';
+      }
+
+      await setDoc(doc(db, 'matches', matchId), { 
+        status: newStatus,
+        innerSections,
+        participantIds: newParticipants,
+        currentParticipants: Math.max(0, newParticipants.length),
+        totalBidsCount: `${Math.max(0, newParticipants.length)} Players joined`,
+        team1: innerSections[0] || null,
+        team2: innerSections[1] || null,
+        team3: innerSections[2] || null,
+        winners: null
+      }, { merge: true });
+
+    } catch (e) {
+      console.error('Error resetting card', e);
+      throw e;
+    }
+  };
+
   // Payment operations
   const approvePayment = async (id: string) => {
     try {
@@ -957,6 +1006,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       updateMatchCard,
       deleteMatchCard,
       removeParticipantFromCard,
+      resetMatchCard,
       activeWinnerCeremony,
       clearWinnerCeremony,
       activities,
