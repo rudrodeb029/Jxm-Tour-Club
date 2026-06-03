@@ -10,7 +10,7 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-const CONVERSION_RATE = 126; // 1 USD = 126 BDT
+const CONVERSION_RATE = 1; // Raw values are now in BDT directly
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [currency, setCurrencyState] = useState<Currency>('BDT');
