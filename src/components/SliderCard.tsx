@@ -56,17 +56,36 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
+  const parseTime = (timeStr: string) => {
+    const clean = timeStr.trim();
+    // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
+    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match12) {
+      let hours = parseInt(match12[1], 10);
+      const minutes = parseInt(match12[2], 10);
+      const ampm = match12[3].toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      return { hours, minutes };
+    }
+    // 24-hour format e.g. "14:20", "21:00"
+    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
+    if (match24) {
+      const hours = parseInt(match24[1], 10);
+      const minutes = parseInt(match24[2], 10);
+      return { hours, minutes };
+    }
+    return { hours: 0, minutes: 0 };
+  };
+
   const getCardStatusAndDisplay = (card?: TeamInfo) => {
     if (!card || !card.startTime) return { status: 'idle', display: '' };
     
     const nowTime = new Date(now);
-    const parts = card.startTime.split(':').map(Number);
-    if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) {
-      return { status: 'idle', display: '' };
-    }
+    const { hours, minutes } = parseTime(card.startTime);
     
     const targetTime = new Date(nowTime);
-    targetTime.setHours(parts[0], parts[1], 0, 0);
+    targetTime.setHours(hours, minutes, 0, 0);
     
     const diff = targetTime.getTime() - nowTime.getTime();
     if (diff > 0) {
@@ -119,10 +138,10 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     
     const updateCountdown = () => {
       const nowTime = new Date();
-      const [hours, minutes] = time.split(':').map(Number);
+      const { hours, minutes } = parseTime(time);
       
       let targetTime = new Date();
-      targetTime.setHours(hours || 0, minutes || 0, 0, 0);
+      targetTime.setHours(hours, minutes, 0, 0);
       
       // If time has already passed today, assume it's for tomorrow
       if (targetTime.getTime() < nowTime.getTime()) {

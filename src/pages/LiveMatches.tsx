@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
@@ -8,14 +8,190 @@ const LiveMatches = () => {
   const navigate = useNavigate();
   const { adminMatches } = useAdminDashboard();
   const { isAdminMode } = useAdmin();
+  const [now, setNow] = useState(Date.now());
 
-  const liveTeams = adminMatches.filter(m => m.status === 'live').flatMap((match) => {
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const liveTeams = adminMatches.filter(m => m.status !== 'finished').flatMap((match) => {
     const teams = [];
-    if (match.team1) teams.push({ ...match.team1, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
-    if (match.team2) teams.push({ ...match.team2, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
-    if (match.team3) teams.push({ ...match.team3, matchId: match.id, matchName: match.name, liveStartedAt: match.liveStartedAt, score: match.score, time: match.time, currentParticipants: match.currentParticipants, maxParticipants: match.maxParticipants });
+    const baseInfo = {
+      matchId: match.id,
+      matchName: match.name,
+      liveStartedAt: match.liveStartedAt,
+      score: match.score,
+      time: match.time,
+      currentParticipants: match.participantIds ? match.participantIds.length : (match.currentParticipants || 0),
+      maxParticipants: match.maxParticipants
+    };
+
+    if (match.team1) teams.push({ 
+      ...match.team1, 
+      ...baseInfo,
+      startTime: match.team1.startTime || match.time,
+      liveDuration: match.team1.liveDuration || 10,
+      participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
+      status: match.status
+    });
+    if (match.team2) teams.push({ 
+      ...match.team2, 
+      ...baseInfo,
+      startTime: match.team2.startTime || match.time,
+      liveDuration: match.team2.liveDuration || 10,
+      participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
+      status: match.status
+    });
+    if (match.team3) teams.push({ 
+      ...match.team3, 
+      ...baseInfo,
+      startTime: match.team3.startTime || match.time,
+      liveDuration: match.team3.liveDuration || 10,
+      participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
+      status: match.status
+    });
     return teams;
   });
+
+  const parseTime = (timeStr: string) => {
+    const clean = timeStr.trim();
+    // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
+    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match12) {
+      let hours = parseInt(match12[1], 10);
+      const minutes = parseInt(match12[2], 10);
+      const ampm = match12[3].toUpperCase();
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+      return { hours, minutes };
+    }
+    // 24-hour format e.g. "14:20", "21:00"
+    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
+    if (match24) {
+      const hours = parseInt(match24[1], 10);
+      const minutes = parseInt(match24[2], 10);
+      return { hours, minutes };
+    }
+    return { hours: 0, minutes: 0 };
+  };
+
+  const getTimeInfo = (startTimeStr?: string, durationMins?: number, liveStartedAt?: number, status?: string) => {
+    const liveDurationMins = durationMins || 10;
+    const liveDurationMs = liveDurationMins * 60 * 1000;
+    const nowTime = new Date(now);
+
+    const isLiveInDb = status === 'live';
+
+    // 1. Calculate time based on liveStartedAt if it is live in DB
+    if (isLiveInDb && liveStartedAt) {
+      const startTimestamp = liveStartedAt;
+      const endTimestamp = startTimestamp + liveDurationMs;
+      const elapsedMs = now - startTimestamp;
+      const remainingMs = endTimestamp - now;
+
+      const elapsedMins = Math.max(0, Math.floor(elapsedMs / 60000));
+      const elapsedSecs = Math.max(0, Math.floor((elapsedMs % 60000) / 1000));
+      const remainingMins = Math.max(0, Math.floor(remainingMs / 60000));
+      const remainingSecs = Math.max(0, Math.floor((remainingMs % 60000) / 1000));
+
+      const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
+      const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
+
+      const endDate = new Date(endTimestamp);
+      const endTimeStr = endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const isOver = now > endTimestamp;
+
+      return {
+        isLive: !isOver,
+        statusText: isOver ? 'ENDED' : 'LIVE',
+        displayTime: `Started: ${new Date(startTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        elapsedStr,
+        remainingStr,
+        endTimeStr: `Ends at: ${endTimeStr}`,
+        isOver
+      };
+    }
+
+    // 2. Otherwise, calculate based on scheduled startTimeStr
+    if (!startTimeStr) {
+      return {
+        isLive: false,
+        statusText: 'UPCOMING',
+        displayTime: 'N/A',
+        elapsedStr: '',
+        remainingStr: '',
+        endTimeStr: '',
+        isOver: false
+      };
+    }
+
+    const { hours, minutes } = parseTime(startTimeStr);
+    const targetTime = new Date(nowTime);
+    targetTime.setHours(hours, minutes, 0, 0);
+
+    const diff = targetTime.getTime() - nowTime.getTime();
+    const end = new Date(targetTime.getTime() + liveDurationMs);
+    const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (diff > 0) {
+      // Upcoming
+      const diffMins = Math.floor(diff / 60000);
+      const diffHrs = Math.floor(diffMins / 60);
+      const remainingMins = diffMins % 60;
+      
+      let startsInStr = '';
+      if (diffHrs > 0) {
+        startsInStr = `Starts in: ${diffHrs}h ${remainingMins}m`;
+      } else {
+        startsInStr = `Starts in: ${diffMins}m`;
+      }
+
+      return {
+        isLive: false,
+        statusText: 'UPCOMING',
+        displayTime: `Starts at: ${startTimeStr}`,
+        elapsedStr: startsInStr,
+        remainingStr: startsInStr,
+        endTimeStr: `Ends at: ${endTimeStr}`,
+        isOver: false
+      };
+    } else if (Math.abs(diff) < liveDurationMs) {
+      // Live (fell back to scheduled time)
+      const elapsedMs = Math.abs(diff);
+      const remainingMs = liveDurationMs - elapsedMs;
+
+      const elapsedMins = Math.floor(elapsedMs / 60000);
+      const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
+      const remainingMins = Math.floor(remainingMs / 60000);
+      const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
+
+      const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
+      const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
+
+      return {
+        isLive: true,
+        statusText: 'LIVE',
+        displayTime: `Starts at: ${startTimeStr}`,
+        elapsedStr,
+        remainingStr,
+        endTimeStr: `Ends at: ${endTimeStr}`,
+        isOver: false
+      };
+    } else {
+      // Ended
+      return {
+        isLive: false,
+        statusText: 'ENDED',
+        displayTime: `Started: ${startTimeStr}`,
+        elapsedStr: 'Match Ended',
+        remainingStr: 'Match Ended',
+        endTimeStr: `Ended at: ${endTimeStr}`,
+        isOver: true
+      };
+    }
+  };
 
   return (
     <div className="page-container" style={{ padding: '20px', minHeight: '100vh', background: 'var(--bg-dark)' }}>
@@ -40,54 +216,128 @@ const LiveMatches = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {liveTeams.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--glass-bg)', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 600 }}>No live matches at the moment.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 600 }}>No live or upcoming matches at the moment.</p>
           </div>
         ) : (
-          liveTeams.map((team, index) => (
-            <div 
-              key={`${team.matchId}-${team.id}`} 
-              className="animate-slide-up"
-              style={{ 
-                animationDelay: `${index * 0.1}s`,
-                opacity: 0,
-                animationFillMode: 'forwards',
-                background: 'linear-gradient(145deg, var(--glass-bg), rgba(30, 41, 59, 0.4))', 
-                padding: '24px', 
-                borderRadius: '24px', 
-                border: '1px solid var(--glass-border)', 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                position: 'relative',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-              }}
-            >
-              {isAdminMode && (
-                <button 
-                  onClick={(e) => { e.stopPropagation(); navigate('/admin/dashboard'); }}
-                  style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
-                >EDIT IN ADMIN</button>
-              )}
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>{team.entryType} MATCH</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '8px', color: 'var(--text-primary)', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{team.matchName}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ background: 'rgba(0,0,0,0.3)', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '1rem' }}>👥</span>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{team.currentParticipants}/{team.maxParticipants} Joined</span>
+          liveTeams.map((team, index) => {
+            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, team.liveStartedAt, team.status);
+            const isMatchLive = timeInfo.statusText === 'LIVE';
+            const isMatchUpcoming = timeInfo.statusText === 'UPCOMING';
+
+            return (
+              <div 
+                key={`${team.matchId}-${team.id}`} 
+                className="animate-slide-up"
+                style={{ 
+                  animationDelay: `${index * 0.1}s`,
+                  opacity: 0,
+                  animationFillMode: 'forwards',
+                  background: 'linear-gradient(145deg, var(--glass-bg), rgba(30, 41, 59, 0.4))', 
+                  padding: '24px', 
+                  borderRadius: '24px', 
+                  border: '1px solid var(--glass-border)', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  position: 'relative',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                  transition: 'transform 0.2s ease, border-color 0.2s ease',
+                }}
+              >
+                {isAdminMode && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); navigate('/admin/dashboard'); }}
+                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--accent-orange)', border: 'none', borderRadius: '8px', padding: '4px 8px', color: 'white', fontSize: '10px', fontWeight: 800, cursor: 'pointer', zIndex: 10 }}
+                  >EDIT IN ADMIN</button>
+                )}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{team.entryType || 'Solo'} MATCH</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: '0 2px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.matchName}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', marginTop: '6px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.06)', padding: '5px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ fontSize: '0.9rem' }}>👥</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{team.participantCount || team.currentParticipants}/{team.maxParticipants} Joined</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', marginLeft: '12px', flexShrink: 0 }}>
+                  <div 
+                    className={isMatchLive ? "live-badge-glow" : ""} 
+                    style={{ 
+                      background: isMatchLive 
+                        ? 'linear-gradient(135deg, #10B981, #059669)' 
+                        : isMatchUpcoming 
+                          ? 'linear-gradient(135deg, #F59E0B, #D97706)' 
+                          : 'rgba(255,255,255,0.1)', 
+                      padding: '5px 14px', 
+                      borderRadius: '20px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 900, 
+                      color: 'white', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      boxShadow: isMatchLive ? '0 4px 15px rgba(16, 185, 129, 0.4)' : 'none' 
+                    }}
+                  >
+                    {isMatchLive ? (
+                      <>
+                        <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
+                        LIVE
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: '0.85rem' }}>🕒</span>
+                        {timeInfo.statusText}
+                      </>
+                    )}
+                  </div>
+                  
+                  {isMatchLive ? (
+                    <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'monospace', letterSpacing: '1px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{team.score || '0 - 0'}</div>
+                  ) : (
+                    <div style={{ height: '8px' }} />
+                  )}
+
+                  <div style={{ 
+                    fontSize: '0.75rem', 
+                    color: isMatchLive ? '#10B981' : isMatchUpcoming ? '#F59E0B' : 'var(--text-secondary)', 
+                    fontWeight: 800, 
+                    background: isMatchLive 
+                      ? 'rgba(16, 185, 129, 0.12)' 
+                      : isMatchUpcoming 
+                        ? 'rgba(245, 158, 11, 0.12)' 
+                        : 'rgba(255, 255, 255, 0.05)', 
+                    border: isMatchLive 
+                      ? '1px solid rgba(16, 185, 129, 0.25)' 
+                      : isMatchUpcoming 
+                        ? '1px solid rgba(245, 158, 11, 0.25)' 
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: '6px 12px', 
+                    borderRadius: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    gap: '2px',
+                    textAlign: 'right'
+                  }}>
+                    {isMatchLive ? (
+                      <>
+                        <div>{timeInfo.elapsedStr}</div>
+                        <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>{timeInfo.endTimeStr}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div>{timeInfo.displayTime}</div>
+                        <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>{timeInfo.elapsedStr}</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                <div className="live-badge-glow" style={{ background: '#10B981', padding: '6px 16px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 900, color: 'white', display: 'inline-flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)' }}>
-                  <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%' }} />
-                  LIVE
-                </div>
-                <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'monospace', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{team.score}</div>
-                <div style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 700, background: 'rgba(16, 185, 129, 0.1)', padding: '4px 10px', borderRadius: '8px' }}>{team.time} Elapsed</div>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
