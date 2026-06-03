@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
+import { Users } from 'lucide-react';
 
 interface TeamInfo {
   name: string; 
@@ -168,48 +169,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* Dynamic Status Badge */}
-      <div style={{
-        position: 'absolute',
-        top: '16px',
-        left: '16px',
-        padding: '6px 12px',
-        borderRadius: '10px',
-        fontSize: '0.75rem',
-        fontWeight: 900,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        zIndex: 10,
-        ...(isLive ? {
-          background: 'rgba(16, 185, 129, 0.15)',
-          color: '#10B981',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-          boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)'
-        } : status === 'upcoming' ? {
-          background: 'rgba(249, 115, 22, 0.15)',
-          color: '#f97316',
-          border: '1px solid rgba(249, 115, 22, 0.3)',
-        } : {
-          background: 'rgba(107, 114, 128, 0.15)',
-          color: '#9ca3af',
-          border: '1px solid rgba(107, 114, 128, 0.3)',
-        })
-      }}>
-        {isLive ? (
-          <>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-            LIVE
-          </>
-        ) : status === 'upcoming' ? (
-          <>
-            <span>🕒</span>
-            {timeLeft || time}
-          </>
-        ) : (
-          'ENDED'
-        )}
-      </div>
+
 
       {isAdminMode && (
         <button 
@@ -457,8 +417,9 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{currentParticipants} Joined</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
+            <Users className="w-4 h-4" />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{currentParticipants} Joined</span>
           </div>
         </div>
         
