@@ -481,7 +481,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             avatar: userObj.avatar,
             amount: `${winner.reward}`,
             match: `${matchGroup} - ${matchName}`,
-            time: new Date().toISOString()
+            time: new Date().toISOString(),
+            type: 'win_prize'
           });
         }
         
@@ -595,7 +596,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             avatar: userObj.avatar,
             amount: `${winPrize}`,
             match: `${card.name} - ${matchName}`,
-            time: new Date().toISOString()
+            time: new Date().toISOString(),
+            type: 'win_prize'
           });
 
           await logActivity({
@@ -639,7 +641,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
               avatar: userObj.avatar,
               amount: `${totalKillReward}`,
               match: `${card.name} - ${m.name} (${kw.kills} Kills)`,
-              time: new Date().toISOString()
+              time: new Date().toISOString(),
+              type: 'kill_reward'
             });
 
             await logActivity({

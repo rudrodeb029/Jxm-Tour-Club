@@ -15,8 +15,9 @@ const AdminDashboard = () => {
     paymentRequests, approvePayment, rejectPayment,
     withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal,
     adminUsers, updateUserBalance, toggleUserStatus, stats, setMatchWinners,
+    winners,
   } = useAdminDashboard();
-  const { formatCurrency } = useCurrency();
+  const { currency, formatCurrency } = useCurrency();
   
   interface ActiveChat {
     userId: string;
@@ -253,6 +254,8 @@ const AdminDashboard = () => {
     { id: 'payments', icon: '💳', label: 'Payments' },
     { id: 'withdrawals', icon: '💸', label: 'Withdrawals' },
     { id: 'users', icon: '👥', label: 'Users' },
+    { id: 'win_prize', icon: '🏆', label: 'Win Prize' },
+    { id: 'kill_rewards', icon: '🎯', label: 'Kill Rewards' },
     { id: 'inner_sections', icon: '🎴', label: 'Inner Sections' },
     { id: 'chats', icon: '💬', label: 'Support' },
   ];
@@ -908,6 +911,144 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'win_prize' && (() => {
+          const winPrizeWinners = winners.filter(w => {
+            if (w.type) return w.type === 'win_prize';
+            return !(w.match && (w.match.includes('Kills') || w.match.includes('kills') || w.match.includes('Kills)')));
+          });
+
+          return (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={{ color: 'var(--text-secondary)' }}>{winPrizeWinners.length} match win prizes awarded</div>
+              </div>
+
+              {isMobile ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {winPrizeWinners.map(w => (
+                    <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <img src={w.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.name} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.name}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '2px' }}>{new Date(w.time).toLocaleString()}</div>
+                        </div>
+                        <span style={{ background: '#10B98122', color: '#10B981', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800 }}>🏆 WINNER</span>
+                      </div>
+                      <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Match / Card</span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.85rem', textAlign: 'right' }}>{w.match}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Prize Amount</span>
+                          <span style={{ fontWeight: 800, color: '#4ADE80', fontSize: '1rem' }}>{formatCurrency(w.amount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--divider)' }}>
+                        {['Winner', 'Match / Card Info', 'Prize Amount', 'Date & Time'].map(h => (
+                          <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {winPrizeWinners.map(w => (
+                        <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img src={w.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                              <div style={{ fontWeight: 700 }}>{w.name}</div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.match}</td>
+                          <td style={{ padding: '16px 20px', fontWeight: 800, color: '#4ADE80' }}>{formatCurrency(w.amount)}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(w.time).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {activeTab === 'kill_rewards' && (() => {
+          const killRewardWinners = winners.filter(w => {
+            if (w.type) return w.type === 'kill_reward';
+            return w.match && (w.match.includes('Kills') || w.match.includes('kills') || w.match.includes('Kills)'));
+          });
+
+          return (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={{ color: 'var(--text-secondary)' }}>{killRewardWinners.length} kill rewards awarded</div>
+              </div>
+
+              {isMobile ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {killRewardWinners.map(w => (
+                    <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <img src={w.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.name} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.name}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '2px' }}>{new Date(w.time).toLocaleString()}</div>
+                        </div>
+                        <span style={{ background: '#38BDF822', color: '#38BDF8', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800 }}>🎯 KILLS</span>
+                      </div>
+                      <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Match details</span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.85rem', textAlign: 'right' }}>{w.match}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Total Reward</span>
+                          <span style={{ fontWeight: 800, color: '#38BDF8', fontSize: '1rem' }}>{formatCurrency(w.amount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--divider)' }}>
+                        {['Player', 'Match details', 'Reward Amount', 'Date & Time'].map(h => (
+                          <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {killRewardWinners.map(w => (
+                        <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img src={w.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                              <div style={{ fontWeight: 700 }}>{w.name}</div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.match}</td>
+                          <td style={{ padding: '16px 20px', fontWeight: 800, color: '#38BDF8' }}>{formatCurrency(w.amount)}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(w.time).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {activeTab === 'inner_sections' && (
           <InnerSectionsTab />
