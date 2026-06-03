@@ -581,7 +581,6 @@ const AdminDashboard = () => {
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '16px', marginBottom: '24px' }}>
                 <div>
                   <h3 style={{ fontWeight: 900, fontSize: '1.3rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>📈 Financial Analytics & Revenue</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '4px 0 0' }}>Monitor payments, prize distributions, withdrawals, and platform revenue</p>
                 </div>
                 {/* Date range filter buttons */}
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -640,21 +639,18 @@ const AdminDashboard = () => {
                 <div style={{ background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: '20px', padding: '20px' }}>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>💳 Total Payments (In)</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#3B82F6' }}>{formatCurrency(filteredMetrics.totalPayments)}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Approved user deposits</div>
                 </div>
 
                 {/* Total Winnings */}
                 <div style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '20px', padding: '20px' }}>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>🏆 Total Winnings</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#10B981' }}>{formatCurrency(filteredMetrics.totalWinnings)}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Win prizes + kill rewards</div>
                 </div>
 
                 {/* Total Withdrawals */}
                 <div style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '20px', padding: '20px' }}>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>💸 Completed Withdrawals</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#EF4444' }}>{formatCurrency(filteredMetrics.totalWithdrawals)}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Cash successfully withdrawn</div>
                 </div>
 
                 {/* Net Revenue (vs Prizes) */}
@@ -666,7 +662,6 @@ const AdminDashboard = () => {
                 }}>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>📈 Revenue (vs Prizes)</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#F96F2E' }}>{formatCurrency(filteredMetrics.revenueVsPrizes)}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Payments - Prizes awarded</div>
                 </div>
 
                 {/* Net Revenue (vs Withdrawals) */}
@@ -678,7 +673,6 @@ const AdminDashboard = () => {
                 }}>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>📊 Revenue (vs Withdrawals)</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#8B5CF6' }}>{formatCurrency(filteredMetrics.revenueVsWithdrawals)}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px' }}>Payments - Cash withdrawn</div>
                 </div>
 
               </div>
@@ -688,7 +682,6 @@ const AdminDashboard = () => {
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '16px', marginBottom: '20px' }}>
                   <div>
                     <h4 style={{ fontWeight: 800, fontSize: '1.05rem', margin: 0 }}>📊 Financial Period Breakdown</h4>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>Detailed overview by day, month, and year intervals</p>
                   </div>
                   {/* Breakdown type toggles */}
                   <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)', padding: '4px', borderRadius: '10px', border: '1px solid var(--card-border)' }}>
