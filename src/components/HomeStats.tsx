@@ -24,16 +24,16 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
     <div style={{ 
       display: 'grid', 
       gridTemplateColumns: 'repeat(3, 1fr)', 
-      gap: '12px', 
+      gap: '10px', 
       padding: '0 16px', 
-      marginBottom: '32px',
+      marginBottom: '24px',
       position: 'relative'
     }}>
       <style>{`
         .stat-card-3d {
           background: var(--nav-bg);
-          border-radius: 20px;
-          padding: 24px 8px 20px;
+          border-radius: 12px;
+          padding: 14px 6px 12px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -44,7 +44,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .stat-card-3d:active {
-          transform: translateY(4px);
+          transform: translateY(3px);
           box-shadow: var(--card-shadow);
         }
         
@@ -52,28 +52,28 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          width: 20px;
-          height: 12px;
+          width: 14px;
+          height: 8px;
           background: var(--text-muted);
-          border-radius: 4px;
+          border-radius: 3px;
           box-shadow: var(--card-shadow);
           z-index: 10;
         }
         .bridge-left {
-          left: -16px;
+          left: -12px;
         }
         .bridge-right {
-          right: -16px;
+          right: -12px;
         }
 
         .stat-value {
-          font-size: 1.8rem;
+          font-size: 1.3rem;
           font-weight: 900;
-          margin-bottom: 2px;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+          margin-bottom: 1px;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         .stat-label {
-          font-size: 0.65rem;
+          font-size: 0.55rem;
           font-weight: 900;
           color: var(--text-secondary);
           text-transform: uppercase;
@@ -85,33 +85,33 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
         /* 3D Physical Icon Box */
         .icon-box-3d {
           position: relative;
-          width: 50px;
-          height: 50px;
+          width: 38px;
+          height: 38px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 16px;
+          margin-bottom: 10px;
           background: var(--card-bg);
-          border-radius: 12px;
+          border-radius: 8px;
           border: 1px solid var(--card-border);
           box-shadow: var(--card-shadow);
         }
         
         @keyframes blink {
-          0%, 100% { opacity: 1; box-shadow: 0 0 10px #10B981; }
+          0%, 100% { opacity: 1; box-shadow: 0 0 8px #10B981; }
           50% { opacity: 0.4; box-shadow: 0 0 2px #10B981; }
         }
         
         .led-indicator {
           position: absolute;
-          top: -4px;
-          right: -4px;
-          width: 12px;
-          height: 12px;
+          top: -3px;
+          right: -3px;
+          width: 9px;
+          height: 9px;
           background: radial-gradient(circle at 30% 30%, #34d399, #047857);
           border-radius: 50%;
-          border: 2px solid var(--modal-bg);
-          box-shadow: 0 0 10px #10B981;
+          border: 1.5px solid var(--modal-bg);
+          box-shadow: 0 0 8px #10B981;
           animation: blink 1.5s infinite ease-in-out;
         }
       `}</style>
@@ -123,7 +123,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
         style={{ cursor: 'pointer' }}
       >
         <div className="icon-box-3d">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 12h4l3-9 5 18 3-9h3"/>
           </svg>
           <div className="led-indicator" />
@@ -142,7 +142,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
         <div className="bridge-pipe bridge-right" />
         
         <div className="icon-box-3d">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
         </div>
@@ -157,8 +157,8 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
         style={{ cursor: 'pointer' }}
       >
         <div className="icon-box-3d">
-          <div style={{ position: 'relative', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.8))' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div style={{ position: 'relative', filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.8))' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <defs>
                 <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#FDE68A" />
