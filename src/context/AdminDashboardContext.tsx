@@ -397,8 +397,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   // Match operations
   const createMatch = async (match: Omit<AdminMatch, 'id' | 'createdAt'>) => {
     try {
+      const cleanMatch = JSON.parse(JSON.stringify(match));
       await addDoc(collection(db, 'matches'), {
-        ...match,
+        ...cleanMatch,
         createdAt: new Date().toISOString().split('T')[0],
       });
     } catch (e) {
@@ -408,7 +409,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const updateMatch = async (id: string, updates: Partial<AdminMatch>) => {
     try {
-      await setDoc(doc(db, 'matches', id), updates, { merge: true });
+      const cleanUpdates = JSON.parse(JSON.stringify(updates));
+      await setDoc(doc(db, 'matches', id), cleanUpdates, { merge: true });
     } catch (e) {
       console.error('Error updating match', e);
     }
