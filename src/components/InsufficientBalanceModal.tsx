@@ -4,7 +4,7 @@ import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, onSnapshot } from 'firebase/firestore';
 import ModalPortal from './ModalPortal';
 
 interface InsufficientBalanceModalProps {
@@ -23,6 +23,19 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   const { formatCurrency, currency } = useCurrency();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
+  const [profileUsername, setProfileUsername] = useState<string>('');
+
+  React.useEffect(() => {
+    if (!currentUser) return;
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setProfileUsername(data.username || '');
+      }
+    });
+    return () => unsubscribe();
+  }, [currentUser]);
 
   // Deposit States
   const [showQuickDeposit, setShowQuickDeposit] = useState(false);
@@ -60,7 +73,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
       try {
         await addDoc(collection(db, 'payments'), {
           userId: currentUser?.uid || 'anonymous',
-          displayUserId: displayUserId,
+          displayUserId: profileUsername || displayUserId,
           amount: amount,
           transactionId: transactionId,
           paymentMethod: gateway.name,

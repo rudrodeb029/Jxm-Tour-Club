@@ -408,13 +408,20 @@ const AdminDashboard = () => {
             {/* Recent activity */}
             <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '24px' }}>
               <h3 style={{ fontWeight: 800, marginBottom: '20px' }}>📋 Recent Activity</h3>
-              {paymentRequests.slice(0, 5).map(p => (
-                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--divider)' }}>
-                  <img src={p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (p.displayUserId || p.userId || 'User')} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName || 'User'}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</div></div>
-                  <StatusBadge status={p.status} />
-                </div>
-              ))}
+              {paymentRequests.slice(0, 5).map(p => {
+                const matchedUser = adminUsers.find(u => u.id === p.userId);
+                const realName = matchedUser?.name || p.userName || 'User';
+                const realUsername = matchedUser?.username || p.displayUserId || p.userId || 'N/A';
+                const realAvatar = matchedUser?.avatar || p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + realUsername;
+
+                return (
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--divider)' }}>
+                    <img src={realAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                    <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{realName}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</div></div>
+                    <StatusBadge status={p.status} />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -532,42 +539,49 @@ const AdminDashboard = () => {
             
             {isMobile ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {paymentRequests.map(p => (
-                  <div key={p.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                      <img src={p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (p.displayUserId || p.userId || 'User')} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{p.userName || 'User'}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {p.displayUserId || p.userId || 'N/A'}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{p.timestamp}</div>
-                      </div>
-                      <StatusBadge status={p.status} />
-                    </div>
-                    
-                    <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
-                        <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
-                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{p.paymentMethod}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>TXN ID</span>
-                        <code style={{ color: '#F96F2E', fontSize: '0.8rem', fontWeight: 800 }}>{p.transactionId}</code>
-                      </div>
-                    </div>
+                {paymentRequests.map(p => {
+                  const matchedUser = adminUsers.find(u => u.id === p.userId);
+                  const realName = matchedUser?.name || p.userName || 'User';
+                  const realUsername = matchedUser?.username || p.displayUserId || p.userId || 'N/A';
+                  const realAvatar = matchedUser?.avatar || p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + realUsername;
 
-                    {p.status === 'pending' && (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <Btn small variant="success" onClick={() => approvePayment(p.id)} style={{ flex: 1 }}>Approve</Btn>
-                        <Btn small variant="danger" onClick={() => rejectPayment(p.id, 'Rejected')} style={{ flex: 1 }}>Reject</Btn>
+                  return (
+                    <div key={p.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <img src={realAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{realName}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {realUsername}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{p.timestamp}</div>
+                        </div>
+                        <StatusBadge status={p.status} />
                       </div>
-                    )}
-                    {p.note && <div style={{ color: '#EF4444', fontSize: '0.8rem', marginTop: '12px', textAlign: 'center', background: 'rgba(239,68,68,0.1)', padding: '8px', borderRadius: '8px' }}>{p.note}</div>}
-                  </div>
-                ))}
+                    
+                      <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
+                          <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{p.paymentMethod}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>TXN ID</span>
+                          <code style={{ color: '#F96F2E', fontSize: '0.8rem', fontWeight: 800 }}>{p.transactionId}</code>
+                        </div>
+                      </div>
+
+                      {p.status === 'pending' && (
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <Btn small variant="success" onClick={() => approvePayment(p.id)} style={{ flex: 1 }}>Approve</Btn>
+                          <Btn small variant="danger" onClick={() => rejectPayment(p.id, 'Rejected')} style={{ flex: 1 }}>Reject</Btn>
+                        </div>
+                      )}
+                      {p.note && <div style={{ color: '#EF4444', fontSize: '0.8rem', marginTop: '12px', textAlign: 'center', background: 'rgba(239,68,68,0.1)', padding: '8px', borderRadius: '8px' }}>{p.note}</div>}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
@@ -580,33 +594,40 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {paymentRequests.map(p => (
-                      <tr key={p.id} style={{ borderBottom: '1px solid var(--divider)' }}>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (p.displayUserId || p.userId || 'User')} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.userName || 'User'}</span>
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {p.displayUserId || p.userId || 'N/A'}</span>
+                    {paymentRequests.map(p => {
+                      const matchedUser = adminUsers.find(u => u.id === p.userId);
+                      const realName = matchedUser?.name || p.userName || 'User';
+                      const realUsername = matchedUser?.username || p.displayUserId || p.userId || 'N/A';
+                      const realAvatar = matchedUser?.avatar || p.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + realUsername;
+
+                      return (
+                        <tr key={p.id} style={{ borderBottom: '1px solid var(--divider)' }}>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img src={realAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{realName}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {realUsername}</span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</td>
-                        <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', color: '#F96F2E' }}>{p.transactionId}</code></td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{p.paymentMethod}</td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.timestamp}</td>
-                        <td style={{ padding: '16px 20px' }}><StatusBadge status={p.status} /></td>
-                        <td style={{ padding: '16px 20px' }}>
-                          {p.status === 'pending' && (
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <Btn small variant="success" onClick={() => approvePayment(p.id)}>Approve</Btn>
-                              <Btn small variant="danger" onClick={() => rejectPayment(p.id, 'Rejected')}>Reject</Btn>
-                            </div>
-                          )}
-                          {p.note && <div style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '4px', maxWidth: '150px' }}>{p.note}</div>}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</td>
+                          <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', color: '#F96F2E' }}>{p.transactionId}</code></td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{p.paymentMethod}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.timestamp}</td>
+                          <td style={{ padding: '16px 20px' }}><StatusBadge status={p.status} /></td>
+                          <td style={{ padding: '16px 20px' }}>
+                            {p.status === 'pending' && (
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <Btn small variant="success" onClick={() => approvePayment(p.id)}>Approve</Btn>
+                                <Btn small variant="danger" onClick={() => rejectPayment(p.id, 'Rejected')}>Reject</Btn>
+                              </div>
+                            )}
+                            {p.note && <div style={{ color: '#EF4444', fontSize: '0.75rem', marginTop: '4px', maxWidth: '150px' }}>{p.note}</div>}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -623,41 +644,48 @@ const AdminDashboard = () => {
 
             {isMobile ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {withdrawalRequests.map(w => (
-                  <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                      <img src={w.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (w.displayUserId || w.userId || 'User')} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.userName || 'User'}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {w.displayUserId || w.userId || 'N/A'}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{w.timestamp}</div>
-                      </div>
-                      <StatusBadge status={w.status} />
-                    </div>
+                {withdrawalRequests.map(w => {
+                  const matchedUser = adminUsers.find(u => u.id === w.userId);
+                  const realName = matchedUser?.name || w.userName || 'User';
+                  const realUsername = matchedUser?.username || w.displayUserId || w.userId || 'N/A';
+                  const realAvatar = matchedUser?.avatar || w.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + realUsername;
 
-                    <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
-                        <span style={{ fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</span>
+                  return (
+                    <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <img src={realAvatar} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{realName}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {realUsername}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{w.timestamp}</div>
+                        </div>
+                        <StatusBadge status={w.status} />
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
-                        <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{w.withdrawMethod}</span>
-                      </div>
-                      <div style={{ borderTop: '1px solid var(--divider)', marginTop: '8px', paddingTop: '8px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Account Details</div>
-                        <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600 }}>{w.accountName}</div>
-                        <code style={{ color: '#F96F2E', fontSize: '0.85rem', fontWeight: 800 }}>{w.accountNumber}</code>
-                      </div>
-                    </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      {w.status === 'pending' && <Btn small variant="primary" onClick={() => processWithdrawal(w.id)} style={{ flex: 1 }}>Process</Btn>}
-                      {w.status === 'processing' && <Btn small variant="success" onClick={() => completeWithdrawal(w.id)} style={{ flex: 1 }}>Complete</Btn>}
-                      {(w.status === 'pending' || w.status === 'processing') && <Btn small variant="danger" onClick={() => rejectWithdrawal(w.id, 'Rejected')} style={{ flex: 1 }}>Reject</Btn>}
+                      <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
+                          <span style={{ fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{w.withdrawMethod}</span>
+                        </div>
+                        <div style={{ borderTop: '1px solid var(--divider)', marginTop: '8px', paddingTop: '8px' }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Account Details</div>
+                          <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 600 }}>{w.accountName}</div>
+                          <code style={{ color: '#F96F2E', fontSize: '0.85rem', fontWeight: 800 }}>{w.accountNumber}</code>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {w.status === 'pending' && <Btn small variant="primary" onClick={() => processWithdrawal(w.id)} style={{ flex: 1 }}>Process</Btn>}
+                        {w.status === 'processing' && <Btn small variant="success" onClick={() => completeWithdrawal(w.id)} style={{ flex: 1 }}>Complete</Btn>}
+                        {(w.status === 'pending' || w.status === 'processing') && <Btn small variant="danger" onClick={() => rejectWithdrawal(w.id, 'Rejected')} style={{ flex: 1 }}>Reject</Btn>}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
@@ -670,31 +698,38 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {withdrawalRequests.map(w => (
-                      <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={w.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (w.displayUserId || w.userId || 'User')} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{w.userName || 'User'}</span>
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {w.displayUserId || w.userId || 'N/A'}</span>
+                    {withdrawalRequests.map(w => {
+                      const matchedUser = adminUsers.find(u => u.id === w.userId);
+                      const realName = matchedUser?.name || w.userName || 'User';
+                      const realUsername = matchedUser?.username || w.displayUserId || w.userId || 'N/A';
+                      const realAvatar = matchedUser?.avatar || w.userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + realUsername;
+
+                      return (
+                        <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img src={realAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{realName}</span>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {realUsername}</span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.withdrawMethod}</td>
-                        <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem' }}>{w.accountNumber}</code></td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</td>
-                        <td style={{ padding: '16px 20px' }}><StatusBadge status={w.status} /></td>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            {w.status === 'pending' && <Btn small variant="primary" onClick={() => processWithdrawal(w.id)}>Process</Btn>}
-                            {w.status === 'processing' && <Btn small variant="success" onClick={() => completeWithdrawal(w.id)}>Complete</Btn>}
-                            {(w.status === 'pending' || w.status === 'processing') && <Btn small variant="danger" onClick={() => rejectWithdrawal(w.id, 'Rejected')}>Reject</Btn>}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.withdrawMethod}</td>
+                          <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem' }}>{w.accountNumber}</code></td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</td>
+                          <td style={{ padding: '16px 20px' }}><StatusBadge status={w.status} /></td>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {w.status === 'pending' && <Btn small variant="primary" onClick={() => processWithdrawal(w.id)}>Process</Btn>}
+                              {w.status === 'processing' && <Btn small variant="success" onClick={() => completeWithdrawal(w.id)}>Complete</Btn>}
+                              {(w.status === 'pending' || w.status === 'processing') && <Btn small variant="danger" onClick={() => rejectWithdrawal(w.id, 'Rejected')}>Reject</Btn>}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
