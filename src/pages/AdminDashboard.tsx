@@ -292,7 +292,7 @@ const AdminDashboard = () => {
               {paymentRequests.slice(0, 5).map(p => (
                 <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--divider)' }}>
                   <img src={p.userAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.amount)} via {p.paymentMethod}</div></div>
+                  <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{p.userName}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</div></div>
                   <StatusBadge status={p.status} />
                 </div>
               ))}
@@ -468,7 +468,7 @@ const AdminDashboard = () => {
                     <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
-                        <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.amount)}</span>
+                        <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
@@ -509,7 +509,7 @@ const AdminDashboard = () => {
                             <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{p.userName}</span>
                           </div>
                         </td>
-                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.amount)}</td>
+                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</td>
                         <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', color: '#F96F2E' }}>{p.transactionId}</code></td>
                         <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{p.paymentMethod}</td>
                         <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.timestamp}</td>
@@ -555,7 +555,7 @@ const AdminDashboard = () => {
                     <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
-                        <span style={{ fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.amount)}</span>
+                        <span style={{ fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Method</span>
@@ -595,7 +595,7 @@ const AdminDashboard = () => {
                             <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{w.userName}</span>
                           </div>
                         </td>
-                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.amount)}</td>
+                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</td>
                         <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.withdrawMethod}</td>
                         <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem' }}>{w.accountNumber}</code></td>
                         <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</td>

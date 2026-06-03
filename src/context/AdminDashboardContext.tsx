@@ -32,6 +32,7 @@ export interface PaymentRequest {
   timestamp: string;
   status: 'pending' | 'approved' | 'rejected';
   note?: string;
+  isRaw?: boolean;
 }
 
 export interface WithdrawalRequest {
@@ -46,6 +47,7 @@ export interface WithdrawalRequest {
   timestamp: string;
   status: 'pending' | 'processing' | 'completed' | 'rejected';
   note?: string;
+  isRaw?: boolean;
 }
 
 export interface Activity {
@@ -756,6 +758,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const p = paymentRequests.find(pr => pr.id === id);
       if (p && p.status === 'pending') {
+        const actualAmount = p.isRaw ? p.amount : p.amount * 126;
         // Update in Firebase
         await updateDoc(doc(db, 'payments', id), { status: 'approved' });
         
@@ -765,7 +768,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           const userDoc = await transaction.get(userRef);
           if (userDoc.exists()) {
             const currentBalance = userDoc.data().balance || 0;
-            transaction.update(userRef, { balance: currentBalance + p.amount });
+            transaction.update(userRef, { balance: currentBalance + actualAmount });
           }
         });
 
@@ -773,7 +776,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         await addDoc(collection(db, 'transactions'), {
           userId: p.userId,
           type: 'Deposit',
-          amount: p.amount,
+          amount: actualAmount,
           date: new Date().toISOString(),
           status: 'Completed'
         });
@@ -784,7 +787,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           userId: p.userId,
           userName: p.userName,
           userAvatar: p.userAvatar,
-          amount: p.amount,
+          amount: actualAmount,
           status: 'approved',
           timestamp: new Date().toISOString()
         });
@@ -818,6 +821,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const w = withdrawalRequests.find(wr => wr.id === id);
       if (w && (w.status === 'pending' || w.status === 'processing')) {
+        const actualAmount = w.isRaw ? w.amount : w.amount * 126;
         await updateDoc(doc(db, 'withdrawals', id), { status: 'completed' });
 
         // Deduct balance from user
@@ -826,7 +830,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           const userDoc = await transaction.get(userRef);
           if (userDoc.exists()) {
             const currentBalance = userDoc.data().balance || 0;
-            transaction.update(userRef, { balance: Math.max(0, currentBalance - w.amount) });
+            transaction.update(userRef, { balance: Math.max(0, currentBalance - actualAmount) });
           }
         });
 
@@ -834,7 +838,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         await addDoc(collection(db, 'transactions'), {
           userId: w.userId,
           type: 'Withdrawal',
-          amount: w.amount,
+          amount: actualAmount,
           date: new Date().toISOString(),
           status: 'Completed'
         });
@@ -844,7 +848,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           userId: w.userId,
           userName: w.userName,
           userAvatar: w.userAvatar,
-          amount: w.amount,
+          amount: actualAmount,
           status: 'completed'
         });
       }

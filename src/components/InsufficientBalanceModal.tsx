@@ -68,7 +68,8 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
           userName: currentUser?.displayName || 'User',
           userAvatar: currentUser?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
           timestamp: new Date().toISOString(),
-          status: 'pending'
+          status: 'pending',
+          isRaw: true
         });
         setDepositSuccess(true);
         setTimeout(() => {

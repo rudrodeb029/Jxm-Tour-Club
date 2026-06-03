@@ -254,7 +254,8 @@ const Wallet = () => {
           accountNumber: method.number,
           accountName: currentUser.displayName || 'User Account',
           timestamp: new Date().toISOString(),
-          status: 'pending'
+          status: 'pending',
+          isRaw: true
         });
         
         setWithdrawAmount('');
@@ -293,7 +294,8 @@ const Wallet = () => {
           userName: currentUser.displayName || 'User',
           userAvatar: currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
           timestamp: new Date().toISOString(),
-          status: 'pending'
+          status: 'pending',
+          isRaw: true
         });
         
         setDepositAmount('');
@@ -774,7 +776,7 @@ const Wallet = () => {
                 .map(p => ({
                   id: p.id,
                   type: 'Deposit' as const,
-                  amount: p.amount,
+                  amount: p.isRaw ? p.amount : p.amount * 126,
                   date: p.timestamp,
                   status: p.status.charAt(0).toUpperCase() + p.status.slice(1) as any
                 }));
@@ -784,7 +786,7 @@ const Wallet = () => {
                 .map(w => ({
                   id: w.id,
                   type: 'Withdraw' as const,
-                  amount: -w.amount,
+                  amount: -(w.isRaw ? w.amount : w.amount * 126),
                   date: w.timestamp,
                   status: w.status.charAt(0).toUpperCase() + w.status.slice(1) as any
                 }));
