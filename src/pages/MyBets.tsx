@@ -41,6 +41,11 @@ const MyBets = () => {
           </div>
         ) : (
           myMatches.map((match) => {
+            const joinedCard = (match.innerSections || []).find(c => c.participantIds?.includes(currentUser?.uid || ''));
+            const realEntryFee = joinedCard ? (joinedCard.entryFee || 0) : (match.entryFee || 0);
+            const realPrize = joinedCard ? (joinedCard.winPrize || 0) : (match.prizePool || 0);
+            const cardMode = joinedCard ? joinedCard.entryType : undefined;
+
             let statusLabel = 'UPCOMING';
             let statusColor = '#F59E0B';
             let statusBg = 'rgba(245, 158, 11, 0.1)';
@@ -71,12 +76,21 @@ const MyBets = () => {
                 statusBg = 'rgba(239, 68, 68, 0.1)';
                 statusBorder = '#EF444433';
                 resultText = 'Defeat';
-                returnText = `-${formatCurrency(match.entryFee)}`;
+                returnText = `-${formatCurrency(realEntryFee)}`;
                 returnColor = '#EF4444';
               }
             } else {
-              returnText = `Up to ${formatCurrency(match.prizePool)}`;
+              returnText = `Up to ${formatCurrency(realPrize)}`;
             }
+
+            const getGroupLabel = (group: string, entryType?: string) => {
+              const base = entryType ? `${entryType} Match` : group;
+              const clean = base.trim();
+              if (/match$/i.test(clean)) {
+                return clean.toUpperCase();
+              }
+              return `${clean} MATCH`.toUpperCase();
+            };
 
             return (
               <div 
@@ -110,14 +124,16 @@ const MyBets = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                  <div style={{ color: 'var(--accent-orange)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>{match.group} MATCH</div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, margin: 0 }}>{match.title}</h3>
+                  <div style={{ color: 'var(--accent-orange)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                    {getGroupLabel(match.group, cardMode)}
+                  </div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, margin: 0 }}>{match.name}</h3>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
                   <div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>ENTRY FEE</span>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 900 }}>{formatCurrency(match.entryFee)}</span>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 900 }}>{formatCurrency(realEntryFee)}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>STATUS</span>
