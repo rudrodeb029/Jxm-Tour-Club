@@ -220,7 +220,7 @@ const Wallet = () => {
   const getUSDAmount = (input: string) => {
     const val = parseFloat(input);
     if (isNaN(val)) return 0;
-    return currency === 'BDT' ? val / 126 : val;
+    return val;
   };
 
   const handleWithdraw = () => {
@@ -316,8 +316,7 @@ const Wallet = () => {
 
 
   const handleQuickSelect = (amountUSD: number) => {
-    const displayVal = currency === 'BDT' ? amountUSD * 126 : amountUSD;
-    setDepositAmount(displayVal.toString());
+    setDepositAmount(amountUSD.toString());
   };
 
   return (
@@ -522,12 +521,11 @@ const Wallet = () => {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.01em' }}>Quick Amount</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '32px' }}>
               {[10, 50, 100, 250, 500, 1000].map((amountUSD) => {
-                const displayVal = currency === 'BDT' ? amountUSD * 126 : amountUSD;
                 return (
                 <button 
                   key={amountUSD}
                   onClick={() => handleQuickSelect(amountUSD)}
-                  className={depositAmount === displayVal.toString() ? 'btn btn-primary' : 'btn btn-outline'}
+                  className={depositAmount === amountUSD.toString() ? 'btn btn-primary' : 'btn btn-outline'}
                   style={{
                     padding: '16px 0',
                     fontSize: '1rem'

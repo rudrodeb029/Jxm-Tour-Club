@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { AlertCircle, Wallet, X, ChevronRight, Check } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 import ModalPortal from './ModalPortal';
 
 interface InsufficientBalanceModalProps {
@@ -17,8 +20,8 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   requiredAmount,
   currentBalance,
 }) => {
-  const { addPaymentRequest } = useAdminDashboard();
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, currency } = useCurrency();
+  const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
 
   // Deposit States
@@ -43,7 +46,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
 
   const shortfall = requiredAmount - currentBalance;
 
-  const handleDepositSubmit = (e: React.FormEvent) => {
+  const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(depositAmount);
     const gateway = gateways.find((g: any) => g.id === selectedGateway);
@@ -54,20 +57,30 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
     }
 
     if (!isNaN(amount) && amount > 0 && gateway) {
-      addPaymentRequest({
-        userId: displayUserId,
-        amount: amount,
-        transactionId: transactionId,
-        paymentMethod: gateway.name,
-        accountNumber: 'Quick Deposit',
-      });
-      setDepositSuccess(true);
-      setTimeout(() => {
-        setDepositSuccess(false);
-        setShowQuickDeposit(false);
-        setTransactionId('');
-        onClose();
-      }, 2000);
+      try {
+        await addDoc(collection(db, 'payments'), {
+          userId: currentUser?.uid || 'anonymous',
+          displayUserId: displayUserId,
+          amount: amount,
+          transactionId: transactionId,
+          paymentMethod: gateway.name,
+          accountNumber: 'Quick Deposit',
+          userName: currentUser?.displayName || 'User',
+          userAvatar: currentUser?.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+          timestamp: new Date().toISOString(),
+          status: 'pending'
+        });
+        setDepositSuccess(true);
+        setTimeout(() => {
+          setDepositSuccess(false);
+          setShowQuickDeposit(false);
+          setTransactionId('');
+          onClose();
+        }, 2000);
+      } catch (error) {
+        console.error("Error submitting quick deposit request:", error);
+        alert("Failed to submit deposit request. Please try again.");
+      }
     }
   };
 
@@ -374,7 +387,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                   {/* Custom Amount Input */}
                   <div style={{ marginBottom: '24px' }}>
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-orange)' }}>$</span>
+                      <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-orange)' }}>{currency === 'BDT' ? '৳' : '$'}</span>
                       <input 
                         type="number" 
                         value={depositAmount}
