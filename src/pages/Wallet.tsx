@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { currentUser as mockUser } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
-import { collection, addDoc, doc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, doc, onSnapshot, runTransaction } from 'firebase/firestore';
 import { ArrowLeft, Plus, History, ArrowDownToLine, ArrowUpFromLine, RefreshCcw, Check, DollarSign } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
@@ -259,6 +259,23 @@ const Wallet = () => {
     
     if (amountUSD > 0 && method && currentUser) {
       try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        
+        // 1. Transaction to safely verify and deduct the balance immediately
+        await runTransaction(db, async (transaction) => {
+          const userDoc = await transaction.get(userRef);
+          if (!userDoc.exists()) {
+            throw new Error("User profile does not exist.");
+          }
+          const currentBalance = userDoc.data().balance || 0;
+          if (currentBalance < amountUSD) {
+            throw new Error("Insufficient balance.");
+          }
+          // Deduct from Firestore balance
+          transaction.update(userRef, { balance: currentBalance - amountUSD });
+        });
+
+        // 2. Add withdrawal request document
         await addDoc(collection(db, 'withdrawals'), {
           userId: currentUser.uid,
           displayUserId: profileUsername || displayUserId,
@@ -279,11 +296,11 @@ const Wallet = () => {
         setSuccessConfig({
           isOpen: true,
           title: "Withdrawal Requested!",
-          message: "Your withdrawal request has been submitted. It will be processed after admin approval."
+          message: "Your withdrawal request has been submitted. Your balance has been updated and the request will be processed by the admin."
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error adding withdrawal request:", error);
-        alert("Failed to submit withdrawal request.");
+        alert(error.message || "Failed to submit withdrawal request.");
       }
     }
   };

@@ -902,16 +902,6 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         const actualAmount = w.isRaw ? w.amount : w.amount * 126;
         await updateDoc(doc(db, 'withdrawals', id), { status: 'completed' });
 
-        // Deduct balance from user
-        await runTransaction(db, async (transaction) => {
-          const userRef = doc(db, 'users', w.userId);
-          const userDoc = await transaction.get(userRef);
-          if (userDoc.exists()) {
-            const currentBalance = userDoc.data().balance || 0;
-            transaction.update(userRef, { balance: Math.max(0, currentBalance - actualAmount) });
-          }
-        });
-
         // Add transaction record
         await addDoc(collection(db, 'transactions'), {
           userId: w.userId,
@@ -937,7 +927,21 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const rejectWithdrawal = async (id: string, note: string) => {
     try {
-      await updateDoc(doc(db, 'withdrawals', id), { status: 'rejected', note });
+      const w = withdrawalRequests.find(wr => wr.id === id);
+      if (w && (w.status === 'pending' || w.status === 'processing')) {
+        const actualAmount = w.isRaw ? w.amount : w.amount * 126;
+        await updateDoc(doc(db, 'withdrawals', id), { status: 'rejected', note });
+
+        // Refund balance to user since it was deducted immediately when requested
+        await runTransaction(db, async (transaction) => {
+          const userRef = doc(db, 'users', w.userId);
+          const userDoc = await transaction.get(userRef);
+          if (userDoc.exists()) {
+            const currentBalance = userDoc.data().balance || 0;
+            transaction.update(userRef, { balance: currentBalance + actualAmount });
+          }
+        });
+      }
     } catch (e) {
       console.error('Error rejecting withdrawal', e);
     }
