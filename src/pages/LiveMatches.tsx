@@ -27,7 +27,7 @@ const parseTime = (timeStr: string) => {
 };
 
 const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number) => {
-  const liveDurationMins = durationMins || 10;
+  const liveDurationMins = durationMins || 60;
   const liveDurationMs = liveDurationMins * 60 * 1000;
   const nowTime = new Date(now);
 
@@ -138,7 +138,7 @@ const LiveMatches = () => {
         ...match.team1, 
         ...baseInfo,
         startTime: match.team1.startTime || match.time,
-        liveDuration: match.team1.liveDuration || 10,
+        liveDuration: match.team1.liveDuration || 60,
         participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
         status: match.status
       });
@@ -146,7 +146,7 @@ const LiveMatches = () => {
         ...match.team2, 
         ...baseInfo,
         startTime: match.team2.startTime || match.time,
-        liveDuration: match.team2.liveDuration || 10,
+        liveDuration: match.team2.liveDuration || 60,
         participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
         status: match.status
       });
@@ -154,7 +154,7 @@ const LiveMatches = () => {
         ...match.team3, 
         ...baseInfo,
         startTime: match.team3.startTime || match.time,
-        liveDuration: match.team3.liveDuration || 10,
+        liveDuration: match.team3.liveDuration || 60,
         participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
         status: match.status
       });
