@@ -18,8 +18,9 @@ import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
 import { isMatchLive } from '../utils/timeUtils';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useCurrency } from '../context/CurrencyContext';
 
 
 import { 
@@ -113,6 +114,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const { balance, deductBalance, addBalance } = useBalance();
+  const { formatCurrency } = useCurrency();
   const [selectedBetAmount, setSelectedBetAmount] = useState<number>(10);
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [insufficientRequiredAmount, setInsufficientRequiredAmount] = useState(0);
@@ -208,25 +210,37 @@ const Home = () => {
   const isAnyHomeModalOpen = selectedMatch !== null || isMenuOpen || isAddBalanceOpen || isInsufficientBalanceOpen || editingStat !== null || editingMatch !== null || editingWinner !== null || editingParticipant !== null || successConfig.isOpen;
   useLockBodyScroll(isAnyHomeModalOpen);
 
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
-    if (!isNaN(amount) && amount > 0) {
+    if (!isNaN(amount) && amount > 0 && currentUser) {
       if (!transactionId.trim()) {
         alert("Please enter a valid Transaction ID.");
         return;
       }
-      addPaymentRequest({
-        userId: displayUserId,
-        amount: amount,
-        transactionId: transactionId,
-        paymentMethod: 'Quick Add',
-        accountNumber: 'User Account',
-      });
-      setDepositAmount('');
-      setTransactionId('');
-      setShowAddConfirm(false);
-      setIsAddBalanceOpen(false);
-      triggerSuccess("Deposit Request Sent!", `$${amount} deposit request has been sent for admin approval.`);
+      try {
+        await addDoc(collection(db, 'payments'), {
+          userId: currentUser.uid,
+          displayUserId: currentUser.email || displayUserId,
+          amount: amount,
+          transactionId: transactionId.trim(),
+          paymentMethod: 'Quick Add',
+          accountNumber: 'User Account',
+          userName: currentUser.displayName || 'User',
+          userAvatar: userAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+          timestamp: new Date().toISOString(),
+          status: 'pending',
+          isRaw: true
+        });
+
+        setDepositAmount('');
+        setTransactionId('');
+        setShowAddConfirm(false);
+        setIsAddBalanceOpen(false);
+        triggerSuccess("Deposit Request Sent!", `৳${amount} deposit request has been sent for admin approval.`);
+      } catch (error) {
+        console.error("Error adding payment request in Home:", error);
+        alert("Failed to submit deposit request. Please try again.");
+      }
     }
   };
 
@@ -325,7 +339,7 @@ const Home = () => {
             <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}>
               <Plus size={14} color="white" strokeWidth={3} />
             </div>
-            ${balance.toFixed(2)}
+            {formatCurrency(balance)}
           </button>
           
           <button 
@@ -643,7 +657,7 @@ const Home = () => {
                       }}
 
                     >
-                      ${amount}
+                      ৳{amount}
                     </button>
                   ))}
                 </div>
@@ -652,7 +666,7 @@ const Home = () => {
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Custom Amount</label>
                   <div style={{ position: 'relative' }}>
 
-                    <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-orange)' }}>$</span>
+                    <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-orange)' }}>৳</span>
                     <input 
                       type="number"
                       value={depositAmount}
@@ -707,7 +721,7 @@ const Home = () => {
                 </div>
                 <h4 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>Confirm Deposit</h4>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1rem', lineHeight: 1.6 }}>
-                  You are adding <span style={{ color: '#10B981', fontWeight: 900, fontSize: '1.2rem' }}>${parseFloat(depositAmount).toLocaleString()}</span> to your secure wallet.
+                  You are adding <span style={{ color: '#10B981', fontWeight: 900, fontSize: '1.2rem' }}>৳{parseFloat(depositAmount).toLocaleString()}</span> to your secure wallet.
                 </p>
 
                 <div style={{ marginBottom: '24px', textAlign: 'left' }}>

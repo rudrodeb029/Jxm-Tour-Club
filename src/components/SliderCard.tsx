@@ -79,7 +79,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   };
 
   const getCardStatusAndDisplay = (card?: TeamInfo) => {
-    if (!card || !card.startTime) return { status: 'idle', display: '' };
+    if (!card) return { status: 'idle', display: '' };
+    
+    // Default display is the entry fee formatted with the Taka/USD symbol
+    const defaultDisplay = card.entryFee !== undefined ? formatCurrency(card.entryFee) : '';
+    
+    if (!card.startTime) return { status: 'idle', display: defaultDisplay };
     
     const nowTime = new Date(now);
     const { hours, minutes } = parseTime(card.startTime);
@@ -106,7 +111,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       if (Math.abs(diff) < durationMs) {
         return { status: 'live', display: 'LIVE' };
       } else {
-        return { status: 'finished', display: '' };
+        return { status: 'finished', display: defaultDisplay };
       }
     }
   };
