@@ -26,15 +26,17 @@ import { AdminDashboardProvider } from './context/AdminDashboardContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { AuthProvider } from './context/AuthContext';
 
+import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 const RootNavigator = () => {
   const { currentUser, loading } = useAuth();
+  const [animationDone, setAnimationDone] = useState(false);
   const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
 
-  if (loading) {
-    return <Splash />;
+  if (loading || !animationDone) {
+    return <Splash onComplete={() => setAnimationDone(true)} />;
   }
 
   if (currentUser) {
