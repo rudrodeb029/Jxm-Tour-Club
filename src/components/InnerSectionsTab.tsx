@@ -26,7 +26,7 @@ const InnerSectionsTab = () => {
   const defaultEmptyCard: Partial<Team> = {
     name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match',
     entryFee: '' as any, winPrize: '' as any, perKill: '' as any, map: '', version: '', startTime: '',
-    liveDuration: '' as any, gameId: '', gamePassword: '', roomDetailsRevealTime: '' as any, rules: [],
+    liveDuration: '' as any, gameId: '', gamePassword: '', roomDetailsRevealTime: '' as any, maxParticipants: '' as any, rules: [],
     percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
   };
 
@@ -466,6 +466,13 @@ const InnerSectionsTab = () => {
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Reveal Details Before (mins)</label>
                   <input type="number" value={cardForm.roomDetailsRevealTime ?? ''} onChange={e => setCardForm({...cardForm, roomDetailsRevealTime: e.target.value === '' ? undefined : Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. 15" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Max Players Limit</label>
+                  <input type="number" value={cardForm.maxParticipants ?? ''} onChange={e => setCardForm({...cardForm, maxParticipants: e.target.value === '' ? undefined : Number(e.target.value)})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} placeholder="e.g. 48" />
                 </div>
               </div>
 

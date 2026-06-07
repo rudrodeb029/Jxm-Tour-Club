@@ -103,6 +103,8 @@ const CardDetails = () => {
 
   const hasJoined = currentUser ? (card.participantIds || []).includes(currentUser.uid) : false;
   const participantCount = card.participantIds ? card.participantIds.length : 0;
+  const maxCardParticipants = card.maxParticipants || match.maxParticipants || 48;
+  const isFull = participantCount >= maxCardParticipants;
 
   // Card status
   const getCardStatus = () => {
@@ -151,6 +153,10 @@ const CardDetails = () => {
   };
 
   const handleJoinMatch = () => {
+    if (isFull) {
+      alert("This card is already full!");
+      return;
+    }
     if (deductBalance(dynamicEntryFee)) {
       updateMatch(match.id, {
         currentParticipants: match.currentParticipants + 1,
@@ -366,7 +372,7 @@ const CardDetails = () => {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.6rem', color: '#9CA3AF', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Ended</div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#9CA3AF' }}>{participantCount} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#9CA3AF' }}>{participantCount}/{maxCardParticipants} Joined</div>
               </div>
             ) : cardStatus === 'live' ? (
               <div style={{
@@ -378,7 +384,7 @@ const CardDetails = () => {
                 textAlign: 'center'
               }}>
                 <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Live</div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#EF4444' }}>{participantCount} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#EF4444' }}>{participantCount}/{maxCardParticipants} Joined</div>
               </div>
             ) : hasJoined ? (
               <button
@@ -400,8 +406,23 @@ const CardDetails = () => {
                 <div style={{ fontSize: '0.6rem', color: '#10B981', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}>
                   ✅ JOINED
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#10B981' }}>{participantCount} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#10B981' }}>{participantCount}/{maxCardParticipants} Joined</div>
               </button>
+            ) : isFull ? (
+              <div style={{
+                flex: 1,
+                background: 'linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(100, 116, 139, 0.05))',
+                border: '1px solid rgba(148, 163, 184, 0.2)',
+                borderRadius: '14px',
+                padding: '12px 8px',
+                textAlign: 'center',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.6)'
+              }}>
+                <div style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}>
+                  🔒 FULL
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#94A3B8' }}>{participantCount}/{maxCardParticipants} Joined</div>
+              </div>
             ) : (
               <button
                 onClick={() => setIsBetModalOpen(true)}
@@ -424,7 +445,7 @@ const CardDetails = () => {
                 <div style={{ fontSize: '0.6rem', color: 'white', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
                   ⚔️ JOIN NOW
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: 'white' }}>{participantCount} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: 'white' }}>{participantCount}/{maxCardParticipants} Joined</div>
               </button>
             )}
           </div>

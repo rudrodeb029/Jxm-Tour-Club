@@ -22,6 +22,7 @@ export interface Team {
   gameId?: string;
   gamePassword?: string;
   roomDetailsRevealTime?: number;
+  maxParticipants?: number;
   participantIds?: string[];
 }
 
