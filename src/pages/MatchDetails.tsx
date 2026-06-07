@@ -166,57 +166,6 @@ const MatchDetails = () => {
                 zIndex: 0
               }} />
 
-              {/* Dynamic Status Badge */}
-              {(() => {
-                let cardStatus = match.status;
-                let cardTimeLeft = match.time;
-                
-                if (card.startTime && match.status !== 'finished') {
-                  const nowTime = new Date(now);
-                  const { hours, minutes, seconds } = parseTime(card.startTime);
-                  
-                  let targetTime = new Date(now);
-                  targetTime.setHours(hours, minutes, seconds, 0);
-                  
-                  const diff = targetTime.getTime() - nowTime.getTime();
-                  if (diff <= 0) {
-                    const durationMs = (card.liveDuration || 60) * 60 * 1000;
-                    if (Math.abs(diff) >= durationMs) {
-                      cardStatus = 'finished';
-                    } else {
-                      cardStatus = 'live';
-                    }
-                  } else {
-                    cardStatus = 'upcoming';
-                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                  }
-                }
-                
-                return (
-                  <>
-                    {cardStatus === 'live' && (
-                      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                        LIVE
-                      </div>
-                    )}
-                    {cardStatus === 'upcoming' && (
-                      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid #f59e0b', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px', fontVariantNumeric: 'tabular-nums' }}>
-                        <span>🕒</span>
-                        {cardTimeLeft}
-                      </div>
-                    )}
-                    {cardStatus === 'finished' && (
-                      <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2, background: 'rgba(107, 114, 128, 0.2)', color: '#9ca3af', border: '1px solid #9ca3af', padding: '4px 8px', borderRadius: '12px', fontSize: '0.65rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        ENDED
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
               {/* Glowing Logo Container */}
               <div style={{ 
                 width: '88px', 
@@ -245,8 +194,60 @@ const MatchDetails = () => {
                 />
               </div>
               
-              <div style={{ zIndex: 1 }}>
+              <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{card.name}</h3>
+                
+                {/* Dynamic Status Badge (Positioned below the Title) */}
+                {(() => {
+                  let cardStatus = match.status;
+                  let cardTimeLeft = match.time;
+                  
+                  if (card.startTime && match.status !== 'finished') {
+                    const nowTime = new Date(now);
+                    const { hours, minutes, seconds } = parseTime(card.startTime);
+                    
+                    let targetTime = new Date(now);
+                    targetTime.setHours(hours, minutes, seconds, 0);
+                    
+                    const diff = targetTime.getTime() - nowTime.getTime();
+                    if (diff <= 0) {
+                      const durationMs = (card.liveDuration || 60) * 60 * 1000;
+                      if (Math.abs(diff) >= durationMs) {
+                        cardStatus = 'finished';
+                      } else {
+                        cardStatus = 'live';
+                      }
+                    } else {
+                      cardStatus = 'upcoming';
+                      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                      const s = Math.floor((diff % (1000 * 60)) / 1000);
+                      cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    }
+                  }
+                  
+                  return (
+                    <>
+                      {cardStatus === 'live' && (
+                        <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                          LIVE
+                        </div>
+                      )}
+                      {cardStatus === 'upcoming' && (
+                        <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>
+                          <span>🕒</span>
+                          {cardTimeLeft}
+                        </div>
+                      )}
+                      {cardStatus === 'finished' && (
+                        <div style={{ background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          ENDED
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
