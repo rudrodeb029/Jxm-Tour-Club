@@ -1171,182 +1171,196 @@ const Home = () => {
               </div>
 
               {/* Today's Matches Feed */}
-              
-              {/* 1. Live Matches list (Compact 3D Styled Cards) */}
-              {liveCards.length > 0 && (
-                <div style={{ marginBottom: '16px', textAlign: 'left' }}>
-                  <span style={{ 
-                    fontSize: '0.68rem', 
-                    color: '#EF4444', 
-                    fontWeight: 900, 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.08em',
+              {(liveCards.length > 0 || upcomingCards.length > 0) && (
+                <div 
+                  className="custom-scrollbar"
+                  style={{
+                    maxHeight: '240px',
+                    overflowY: 'auto',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    marginBottom: '6px',
-                    textShadow: 'var(--text-shadow-3d-danger)'
-                  }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-                    LIVE MATCHES NOW
-                  </span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {liveCards.map((card) => {
-                      const entryFee = card.entryFee || 0;
-                      const prizePool = card.winPrize || 0;
-                      const entryType = card.entryType || 'Solo';
-                      const gameMap = card.map || 'Bermuda';
-                      return (
-                        <div 
-                          key={card.id}
-                          onClick={() => {
-                            setShowAnnouncement(false);
-                            navigate(`/match/${card.matchId}/card/${card.id}`);
-                          }}
-                          className="announcement-match-card"
-                          style={{
-                            padding: '10px 12px',
-                            borderRadius: '12px',
-                            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.04))',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            borderBottom: '3px solid #EF4444',
-                            boxShadow: '0 3px 0 rgba(0, 0, 0, 0.3)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '6px'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={card.logo} style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(239,68,68,0.25)' }} alt="" />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {card.name}
+                    flexDirection: 'column',
+                    gap: '16px',
+                    marginBottom: '16px',
+                    paddingRight: '6px'
+                  }}
+                >
+                  {/* 1. Live Matches list (Compact 3D Styled Cards) */}
+                  {liveCards.length > 0 && (
+                    <div style={{ textAlign: 'left' }}>
+                      <span style={{ 
+                        fontSize: '0.68rem', 
+                        color: '#EF4444', 
+                        fontWeight: 900, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.08em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        marginBottom: '6px',
+                        textShadow: 'var(--text-shadow-3d-danger)'
+                      }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+                        LIVE MATCHES NOW
+                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {liveCards.map((card) => {
+                          const entryFee = card.entryFee || 0;
+                          const prizePool = card.winPrize || 0;
+                          const entryType = card.entryType || 'Solo';
+                          const gameMap = card.map || 'Bermuda';
+                          return (
+                            <div 
+                              key={card.id}
+                              onClick={() => {
+                                setShowAnnouncement(false);
+                                navigate(`/match/${card.matchId}/card/${card.id}`);
+                              }}
+                              className="announcement-match-card"
+                              style={{
+                                padding: '10px 12px',
+                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.04))',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                borderBottom: '3px solid #EF4444',
+                                boxShadow: '0 3px 0 rgba(0, 0, 0, 0.3)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '6px'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <img src={card.logo} style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(239,68,68,0.25)' }} alt="" />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {card.name}
+                                  </div>
+                                  <div style={{ fontSize: '0.65rem', color: '#EF4444', marginTop: '1px', fontWeight: 700 }}>
+                                    {card.matchName}
+                                  </div>
+                                </div>
+                                <span style={{
+                                  background: '#EF444422',
+                                  color: '#EF4444',
+                                  fontSize: '0.58rem',
+                                  fontWeight: 900,
+                                  padding: '2px 8px',
+                                  borderRadius: '8px',
+                                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                                  letterSpacing: '0.04em'
+                                }}>LIVE</span>
                               </div>
-                              <div style={{ fontSize: '0.65rem', color: '#EF4444', marginTop: '1px', fontWeight: 700 }}>
-                                {card.matchName}
+                              
+                              {/* Metadata badge row */}
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                <span className="announcement-meta-badge meta-badge-purple" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  🎮 {entryType}
+                                </span>
+                                <span className="announcement-meta-badge meta-badge-blue" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  🗺️ {gameMap}
+                                </span>
+                                <span className="announcement-meta-badge meta-badge-emerald" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  🏆 ৳{prizePool}
+                                </span>
+                                <span className="announcement-meta-badge meta-badge-amber" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  ৳{entryFee}
+                                </span>
                               </div>
                             </div>
-                            <span style={{
-                              background: '#EF444422',
-                              color: '#EF4444',
-                              fontSize: '0.58rem',
-                              fontWeight: 900,
-                              padding: '2px 8px',
-                              borderRadius: '8px',
-                              border: '1px solid rgba(239, 68, 68, 0.25)',
-                              letterSpacing: '0.04em'
-                            }}>LIVE</span>
-                          </div>
-                          
-                          {/* Metadata badge row */}
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                            <span className="announcement-meta-badge meta-badge-purple" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              🎮 {entryType}
-                            </span>
-                            <span className="announcement-meta-badge meta-badge-blue" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              🗺️ {gameMap}
-                            </span>
-                            <span className="announcement-meta-badge meta-badge-emerald" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              🏆 ৳{prizePool}
-                            </span>
-                            <span className="announcement-meta-badge meta-badge-amber" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              ৳{entryFee}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
-              {/* 2. Upcoming Matches list (Compact 3D Styled Cards) */}
-              {upcomingCards.length > 0 && (
-                <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-                  <span style={{ 
-                    fontSize: '0.68rem', 
-                    color: '#F59E0B', 
-                    fontWeight: 900, 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.08em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    marginBottom: '6px',
-                    textShadow: 'var(--text-shadow-3d-accent)'
-                  }}>
-                    <span style={{ fontSize: '0.75rem' }}>🕒</span>
-                    TODAY'S UPCOMING MATCHES
-                  </span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '160px', overflowY: 'auto' }} className="custom-scrollbar">
-                    {upcomingCards.map((card) => {
-                      const entryFee = card.entryFee || 0;
-                      const prizePool = card.winPrize || 0;
-                      const entryType = card.entryType || 'Solo';
-                      const gameMap = card.map || 'Bermuda';
-                      return (
-                        <div 
-                          key={card.id}
-                          onClick={() => {
-                            setShowAnnouncement(false);
-                            navigate(`/match/${card.matchId}/card/${card.id}`);
-                          }}
-                          className="announcement-match-card"
-                          style={{
-                            padding: '10px 12px',
-                            borderRadius: '12px',
-                            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03))',
-                            border: '1px solid rgba(245, 158, 11, 0.15)',
-                            borderBottom: '3px solid #F59E0B',
-                            boxShadow: '0 3px 0 rgba(0, 0, 0, 0.3)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '6px'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={card.logo} style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(245,158,11,0.15)' }} alt="" />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {card.name}
+                  {/* 2. Upcoming Matches list (Compact 3D Styled Cards) */}
+                  {upcomingCards.length > 0 && (
+                    <div style={{ textAlign: 'left' }}>
+                      <span style={{ 
+                        fontSize: '0.68rem', 
+                        color: '#F59E0B', 
+                        fontWeight: 900, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.08em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        marginBottom: '6px',
+                        textShadow: 'var(--text-shadow-3d-accent)'
+                      }}>
+                        <span style={{ fontSize: '0.75rem' }}>🕒</span>
+                        TODAY'S UPCOMING MATCHES
+                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {upcomingCards.map((card) => {
+                          const entryFee = card.entryFee || 0;
+                          const prizePool = card.winPrize || 0;
+                          const entryType = card.entryType || 'Solo';
+                          const gameMap = card.map || 'Bermuda';
+                          return (
+                            <div 
+                              key={card.id}
+                              onClick={() => {
+                                setShowAnnouncement(false);
+                                navigate(`/match/${card.matchId}/card/${card.id}`);
+                              }}
+                              className="announcement-match-card"
+                              style={{
+                                padding: '10px 12px',
+                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03))',
+                                border: '1px solid rgba(245, 158, 11, 0.15)',
+                                borderBottom: '3px solid #F59E0B',
+                                boxShadow: '0 3px 0 rgba(0, 0, 0, 0.3)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '6px'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <img src={card.logo} style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(245,158,11,0.15)' }} alt="" />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {card.name}
+                                  </div>
+                                  <div style={{ fontSize: '0.65rem', color: '#F59E0B', marginTop: '1px', fontWeight: 700 }}>
+                                    {card.matchName}
+                                  </div>
+                                </div>
+                                <span style={{ 
+                                  fontSize: '0.7rem', 
+                                  color: '#fff', 
+                                  fontWeight: 900, 
+                                  fontVariantNumeric: 'tabular-nums',
+                                  background: 'rgba(255, 255, 255, 0.06)',
+                                  padding: '3px 6px',
+                                  borderRadius: '6px',
+                                  border: '1px solid rgba(255,255,255,0.06)'
+                                }}>
+                                  {formatTime(card.startTime)}
+                                </span>
                               </div>
-                              <div style={{ fontSize: '0.65rem', color: '#F59E0B', marginTop: '1px', fontWeight: 700 }}>
-                                {card.matchName}
+
+                              {/* Metadata badge row */}
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                <span className="announcement-meta-badge meta-badge-purple" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  🎮 {entryType}
+                                </span>
+                                <span className="announcement-meta-badge meta-badge-blue" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  🗺️ {gameMap}
+                                </span>
+                                <span className="announcement-meta-badge meta-badge-emerald" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  🏆 ৳{prizePool}
+                                </span>
+                                <span className="announcement-meta-badge meta-badge-amber" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
+                                  ৳{entryFee}
+                                </span>
                               </div>
                             </div>
-                            <span style={{ 
-                              fontSize: '0.7rem', 
-                              color: '#fff', 
-                              fontWeight: 900, 
-                              fontVariantNumeric: 'tabular-nums',
-                              background: 'rgba(255, 255, 255, 0.06)',
-                              padding: '3px 6px',
-                              borderRadius: '6px',
-                              border: '1px solid rgba(255,255,255,0.06)'
-                            }}>
-                              {formatTime(card.startTime)}
-                            </span>
-                          </div>
-
-                          {/* Metadata badge row */}
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                            <span className="announcement-meta-badge meta-badge-purple" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              🎮 {entryType}
-                            </span>
-                            <span className="announcement-meta-badge meta-badge-blue" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              🗺️ {gameMap}
-                            </span>
-                            <span className="announcement-meta-badge meta-badge-emerald" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              🏆 ৳{prizePool}
-                            </span>
-                            <span className="announcement-meta-badge meta-badge-amber" style={{ fontSize: '0.58rem', padding: '1px 5px' }}>
-                              ৳{entryFee}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
