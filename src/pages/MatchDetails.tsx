@@ -187,9 +187,7 @@ const MatchDetails = () => {
             <div 
               key={card.id}
               onClick={() => {
-                if (match.status !== 'finished') {
-                  setSelectedTeam(card.id);
-                }
+                navigate(`/match/${match.id}/card/${card.id}`);
               }}
               className="hover-scale"
               style={{
@@ -201,7 +199,7 @@ const MatchDetails = () => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '16px',
-                cursor: match.status === 'finished' ? 'default' : 'pointer',
+                cursor: 'pointer',
                 boxShadow: selectedTeam === card.id 
                   ? `0 15px 35px ${card.color}33, 0 0 15px ${card.color}22` 
                   : 'var(--card-shadow)',

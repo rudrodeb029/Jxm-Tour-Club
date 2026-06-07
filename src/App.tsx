@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Wallet from './pages/Wallet';
 import MyBets from './pages/MyBets';
 import MatchDetails from './pages/MatchDetails';
+import CardDetails from './pages/CardDetails';
 import Profile from './pages/Profile';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
@@ -52,7 +53,7 @@ const RootNavigator = () => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
+  const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || (location.pathname.startsWith('/match/') && !location.pathname.includes('/card/'));
 
   return (
     <>
@@ -65,6 +66,7 @@ const AnimatedRoutes = () => {
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/my-bets" element={<MyBets />} />
           <Route path="/match/:id" element={<MatchDetails />} />
+          <Route path="/match/:matchId/card/:cardId" element={<CardDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
