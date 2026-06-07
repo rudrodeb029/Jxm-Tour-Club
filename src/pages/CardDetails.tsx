@@ -48,10 +48,19 @@ const CardDetails = () => {
 
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const [isBetModalOpen, setIsBetModalOpen] = useState(false);
+  const [userGameId, setUserGameId] = useState('');
+  const [userGameIdError, setUserGameIdError] = useState(false);
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
   const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (!isBetModalOpen) {
+      setUserGameId('');
+      setUserGameIdError(false);
+    }
+  }, [isBetModalOpen]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -136,6 +145,11 @@ const CardDetails = () => {
   };
 
   const handleJoinMatch = () => {
+    if (!userGameId.trim()) {
+      setUserGameIdError(true);
+      return;
+    }
+    setUserGameIdError(false);
     if (isFull) {
       alert("This card is already full!");
       return;
@@ -145,7 +159,7 @@ const CardDetails = () => {
         currentParticipants: match.currentParticipants + 1,
         totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
-      addParticipantToMatch(match.id, currentUser?.uid || displayUserId, cardId);
+      addParticipantToMatch(match.id, currentUser?.uid || displayUserId, cardId, userGameId.trim());
       setShowJoinSuccess(true);
     } else {
       setIsInsufficientBalanceOpen(true);
@@ -1061,17 +1075,51 @@ const CardDetails = () => {
                     <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>{card.name} • {dynamicEntryType}</p>
                   </div>
 
-                  {/* Entry Fee Display */}
+                  {/* Entry Fee Display & Game ID Input side-by-side */}
                   <div style={{
                     background: 'rgba(249, 111, 46, 0.08)',
                     border: '1px solid rgba(249, 111, 46, 0.2)',
                     borderRadius: '16px',
                     padding: '18px',
-                    textAlign: 'center',
-                    marginBottom: '24px'
+                    marginBottom: '24px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1.2fr',
+                    gap: '16px',
+                    alignItems: 'center',
+                    textAlign: 'left'
                   }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>Entry Fee</div>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{formatCurrency(dynamicEntryFee)}</div>
+                    {/* Left side: Entry Fee */}
+                    <div style={{ borderRight: '1px solid rgba(249, 111, 46, 0.2)', paddingRight: '16px' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>Entry Fee</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{formatCurrency(dynamicEntryFee)}</div>
+                    </div>
+
+                    {/* Right side: Game ID Input */}
+                    <div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                        Game ID <span style={{ color: '#ef4444' }}>*</span>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Enter Game ID" 
+                        value={userGameId} 
+                        onChange={e => {
+                          setUserGameId(e.target.value);
+                          if (e.target.value.trim()) setUserGameIdError(false);
+                        }} 
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          background: 'rgba(0, 0, 0, 0.4)',
+                          border: userGameIdError ? '1.5px solid #ef4444' : '1px solid rgba(249, 111, 46, 0.4)',
+                          color: '#fff',
+                          fontSize: '0.85rem',
+                          outline: 'none',
+                          fontWeight: 700
+                        }} 
+                      />
+                    </div>
                   </div>
 
                   {/* Balance Info */}

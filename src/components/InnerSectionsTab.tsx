@@ -518,7 +518,7 @@ const InnerSectionsTab = () => {
                     const user = adminUsers.find(u => u.id === pid);
                     return (
                       <option key={pid} value={pid} style={{ background: '#1E293B', color: '#F8FAFC' }}>
-                        {user ? `${user.name} (${user.username})` : pid}
+                        {user ? `${user.name} (${user.username})${selectedCardForWinners.participantGameIds?.[pid] ? ` [ID: ${selectedCardForWinners.participantGameIds[pid]}]` : ''}` : pid}
                       </option>
                     );
                   })}
@@ -575,6 +575,11 @@ const InnerSectionsTab = () => {
                         <div style={{ fontSize: '0.85rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {user?.name || kw.userId}
                         </div>
+                        {selectedCardForWinners.participantGameIds?.[kw.userId] && (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--accent-orange)', fontWeight: 800 }}>
+                            ID: {selectedCardForWinners.participantGameIds[kw.userId]}
+                          </div>
+                        )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <input 
@@ -702,8 +707,11 @@ const InnerSectionsTab = () => {
                           <div style={{ fontSize: '0.9rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {user?.name || 'Unknown User'}
                           </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            {user?.username || pid}
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span>{user?.username || pid}</span>
+                            {freshCard.participantGameIds?.[pid] && (
+                              <span style={{ color: 'var(--accent-orange)', fontWeight: 800 }}>Game ID: {freshCard.participantGameIds[pid]}</span>
+                            )}
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

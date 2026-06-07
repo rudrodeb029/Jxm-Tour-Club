@@ -44,10 +44,19 @@ const MatchDetails = () => {
 
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const [isBetModalOpen, setIsBetModalOpen] = useState(false);
+  const [userGameId, setUserGameId] = useState('');
+  const [userGameIdError, setUserGameIdError] = useState(false);
   const [selectedBetAmount, setSelectedBetAmount] = useState<number>(entryFee);
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!isBetModalOpen) {
+      setUserGameId('');
+      setUserGameIdError(false);
+    }
+  }, [isBetModalOpen]);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const cards = match?.innerSections || [];
@@ -80,12 +89,17 @@ const MatchDetails = () => {
       alert("Please select a team to bet on!");
       return;
     }
+    if (!userGameId.trim()) {
+      setUserGameIdError(true);
+      return;
+    }
+    setUserGameIdError(false);
     if (deductBalance(dynamicEntryFee)) {
       updateMatch(match.id, { 
         currentParticipants: match.currentParticipants + 1,
         totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
-      addParticipantToMatch(match.id, currentUser?.uid || displayUserId, selectedTeam);
+      addParticipantToMatch(match.id, currentUser?.uid || displayUserId, selectedTeam, userGameId.trim());
       setShowJoinSuccess(true);
     } else {
       setSelectedBetAmount(dynamicEntryFee);
@@ -380,24 +394,50 @@ const MatchDetails = () => {
                   </div>
                 </div>
 
-                <div style={{ marginBottom: '24px' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '10px' }}>Entry Fee</p>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div
-                      style={{ 
-                        flex: 1, 
-                        padding: '14px', 
-                        borderRadius: '16px', 
-                        border: '2px solid var(--accent-orange)',
-                        background: 'rgba(249, 111, 46, 0.1)', 
-                        color: 'var(--text-primary)', 
-                        fontWeight: 800, 
-                        fontSize: '1.1rem',
-                        textAlign: 'center'
-                      }}
-                    >
-                      {formatCurrency(dynamicEntryFee)}
+                {/* Entry Fee Display & Game ID Input side-by-side */}
+                <div style={{
+                  background: 'rgba(249, 111, 46, 0.08)',
+                  border: '1px solid rgba(249, 111, 46, 0.2)',
+                  borderRadius: '16px',
+                  padding: '18px',
+                  marginBottom: '24px',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1.2fr',
+                  gap: '16px',
+                  alignItems: 'center',
+                  textAlign: 'left'
+                }}>
+                  {/* Left side: Entry Fee */}
+                  <div style={{ borderRight: '1px solid rgba(249, 111, 46, 0.2)', paddingRight: '16px' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>Entry Fee</div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{formatCurrency(dynamicEntryFee)}</div>
+                  </div>
+
+                  {/* Right side: Game ID Input */}
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                      Game ID <span style={{ color: '#ef4444' }}>*</span>
                     </div>
+                    <input 
+                      type="text" 
+                      placeholder="Enter Game ID" 
+                      value={userGameId} 
+                      onChange={e => {
+                        setUserGameId(e.target.value);
+                        if (e.target.value.trim()) setUserGameIdError(false);
+                      }} 
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        background: 'rgba(0, 0, 0, 0.4)',
+                        border: userGameIdError ? '1.5px solid #ef4444' : '1px solid rgba(249, 111, 46, 0.4)',
+                        color: '#fff',
+                        fontSize: '0.85rem',
+                        outline: 'none',
+                        fontWeight: 700
+                      }} 
+                    />
                   </div>
                 </div>
 

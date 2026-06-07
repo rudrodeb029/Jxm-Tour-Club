@@ -96,7 +96,7 @@ interface AdminDashboardContextType {
   deleteMatch: (id: string) => void;
   toggleMatchStatus: (id: string, status: 'live' | 'upcoming' | 'finished') => void;
   setMatchWinners: (matchId: string, winners: MatchWinner[]) => void;
-  addParticipantToMatch: (matchId: string, userId: string, cardId?: string) => void;
+  addParticipantToMatch: (matchId: string, userId: string, cardId?: string, gameId?: string) => void;
   setCardWinners: (matchId: string, cardId: string, winnerId: string | null, killWinners: {userId: string, kills: number}[], customPerKill?: number) => void;
   addMatchCard: (matchId: string, card: Omit<Team, 'id'>) => void;
   updateMatchCard: (matchId: string, cardId: string, cardUpdates: Partial<Team>) => void;
@@ -493,23 +493,36 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   };
 
   
-  const addParticipantToMatch = async (matchId: string, userId: string, cardId?: string) => {
+  const addParticipantToMatch = async (matchId: string, userId: string, cardId?: string, gameId?: string) => {
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
         // Update general match participants
         const newParticipants = [...(m.participantIds || []), userId];
+        const newParticipantGameIds = {
+          ...(m.participantGameIds || {}),
+          [userId]: gameId || ''
+        };
         
         // Update specific card participants if cardId is provided
         let innerSections = m.innerSections || [];
         if (cardId) {
-          innerSections = innerSections.map(c => 
-            c.id === cardId ? { ...c, participantIds: [...(c.participantIds || []), userId] } : c
-          );
+          innerSections = innerSections.map(c => {
+            if (c.id === cardId) {
+              const participantIds = [...(c.participantIds || []), userId];
+              const participantGameIds = {
+                ...(c.participantGameIds || {}),
+                [userId]: gameId || ''
+              };
+              return { ...c, participantIds, participantGameIds };
+            }
+            return c;
+          });
         }
 
         await setDoc(doc(db, 'matches', matchId), { 
           participantIds: newParticipants,
+          participantGameIds: newParticipantGameIds,
           innerSections,
           team1: innerSections[0] || null,
           team2: innerSections[1] || null,

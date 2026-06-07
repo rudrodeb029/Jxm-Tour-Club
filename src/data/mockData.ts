@@ -24,6 +24,7 @@ export interface Team {
   roomDetailsRevealTime?: number;
   maxParticipants?: number;
   participantIds?: string[];
+  participantGameIds?: { [userId: string]: string };
 }
 
 export interface User {
@@ -66,6 +67,7 @@ export interface Match {
   gamePassword?: string;
   entryType?: string;
   entryFee?: number;
+  participantGameIds?: { [userId: string]: string };
 }
 
 
