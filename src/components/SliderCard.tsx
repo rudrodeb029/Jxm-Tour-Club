@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
 import { Users } from 'lucide-react';
-import { parseTime, formatTime } from '../utils/timeUtils';
+import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
 
 interface TeamInfo {
   name: string; 
@@ -73,34 +73,34 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     
     if (!card.startTime) return { status: 'idle', display: defaultDisplay };
     
-    const nowTime = new Date(now);
-    const { hours, minutes, seconds } = parseTime(card.startTime);
+    const cardStatus = getCardStatusFromUtil(card, status);
     
-    const targetTime = new Date(nowTime);
-    targetTime.setHours(hours, minutes, seconds, 0);
-    
-    const diff = targetTime.getTime() - nowTime.getTime();
-    if (diff > 0) {
-      // Upcoming match: Check if details are revealed
+    if (cardStatus === 'upcoming') {
+      const nowTime = new Date(now);
+      const { hours, minutes, seconds } = parseTime(card.startTime);
+      let targetTime = new Date(nowTime);
+      targetTime.setHours(hours, minutes, seconds, 0);
+      let diff = targetTime.getTime() - nowTime.getTime();
+      if (diff <= 0) {
+        targetTime.setDate(targetTime.getDate() + 1);
+        diff = targetTime.getTime() - nowTime.getTime();
+      }
+      
+      // Check if details are revealed
       const revealWindowMs = (card.roomDetailsRevealTime || 0) * 60 * 1000;
       if (revealWindowMs > 0 && diff <= revealWindowMs) {
         return { status: 'revealed', display: 'REVEALED' };
       }
       
-      // Otherwise show countdown (HH:MM:SS)
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((diff % (1000 * 60)) / 1000);
       const timeLeftStr = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       return { status: 'upcoming', display: timeLeftStr };
+    } else if (cardStatus === 'live') {
+      return { status: 'live', display: 'LIVE' };
     } else {
-      // Passed target time: Check if still live or finished
-      const durationMs = (card.liveDuration || 60) * 60 * 1000;
-      if (Math.abs(diff) < durationMs) {
-        return { status: 'live', display: 'LIVE' };
-      } else {
-        return { status: 'finished', display: defaultDisplay };
-      }
+      return { status: 'finished', display: defaultDisplay };
     }
   };
 

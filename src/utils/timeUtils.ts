@@ -39,27 +39,46 @@ export const to24hTime = (timeStr: string | undefined) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
-export const isCardLive = (card?: { startTime?: string; liveDuration?: number }) => {
-  if (!card || !card.startTime) return false;
+export const getCardStatus = (
+  card: { startTime?: string; liveDuration?: number } | undefined,
+  matchStatus: string | undefined
+): 'live' | 'upcoming' | 'finished' | 'idle' => {
+  if (!card) return 'idle';
+  const mStatus = matchStatus || 'upcoming';
+  if (mStatus === 'finished') return 'finished';
+  if (mStatus === 'upcoming') return 'upcoming';
+  if (!card.startTime) return mStatus === 'live' ? 'live' : 'idle';
+
   try {
     const nowTime = new Date();
     const { hours, minutes, seconds } = parseTime(card.startTime);
-    const targetTime = new Date(nowTime);
+    let targetTime = new Date(nowTime);
     targetTime.setHours(hours, minutes, seconds, 0);
-    const diff = targetTime.getTime() - nowTime.getTime();
-    if (diff <= 0) {
+
+    let diff = targetTime.getTime() - nowTime.getTime();
+
+    if (mStatus === 'live') {
+      if (diff > 0) return 'upcoming';
       const durationMs = (card.liveDuration || 60) * 60 * 1000;
-      return Math.abs(diff) < durationMs;
+      if (Math.abs(diff) >= durationMs) return 'finished';
+      return 'live';
     }
   } catch (e) {
-    console.error("Error parsing card status", e);
+    console.error("Error computing card status", e);
   }
-  return false;
+
+  return 'upcoming';
+};
+
+export const isCardLive = (card?: { startTime?: string; liveDuration?: number }, matchStatus?: string) => {
+  if (!card || !card.startTime) return false;
+  return getCardStatus(card, matchStatus || 'live') === 'live';
 };
 
 export const isMatchLive = (match: any) => {
   if (match.status !== 'live') return false;
   const hasStartTimes = (match.team1?.startTime) || (match.team2?.startTime) || (match.team3?.startTime);
   if (!hasStartTimes) return true;
-  return isCardLive(match.team1) || isCardLive(match.team2) || isCardLive(match.team3);
+  return isCardLive(match.team1, match.status) || isCardLive(match.team2, match.status) || isCardLive(match.team3, match.status);
 };
+

@@ -3,7 +3,7 @@ import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { Trophy, Users, X, AlertTriangle, CheckCircle, Clock, Zap, UserMinus } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import type { Team } from '../data/mockData';
-import { parseTime, formatTime, to24hTime } from '../utils/timeUtils';
+import { parseTime, formatTime, to24hTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
 
 const InnerSectionsTab = () => {
   const { adminMatches, addMatchCard, updateMatchCard, deleteMatchCard, setCardWinners, adminUsers, removeParticipantFromCard, resetMatchCard } = useAdminDashboard();
@@ -53,25 +53,25 @@ const InnerSectionsTab = () => {
   // Helper: compute card status from startTime/liveDuration
   const getCardStatus = (card: Team): { status: 'live' | 'upcoming' | 'finished' | 'idle', timeLeft?: string } => {
     if (!card.startTime) return { status: 'idle' };
-    const nowTime = new Date(now);
-    const { hours, minutes, seconds } = parseTime(card.startTime);
+    const status = getCardStatusFromUtil(card, selectedMatch?.status || 'upcoming');
     
-    const targetTime = new Date(now);
-    targetTime.setHours(hours, minutes, seconds, 0);
-    
-    const diff = targetTime.getTime() - nowTime.getTime();
-    if (diff > 0) {
+    if (status === 'upcoming') {
+      const nowTime = new Date(now);
+      const { hours, minutes, seconds } = parseTime(card.startTime);
+      let targetTime = new Date(now);
+      targetTime.setHours(hours, minutes, seconds, 0);
+      let diff = targetTime.getTime() - nowTime.getTime();
+      if (diff <= 0) {
+        targetTime.setDate(targetTime.getDate() + 1);
+        diff = targetTime.getTime() - nowTime.getTime();
+      }
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((diff % (1000 * 60)) / 1000);
       return { status: 'upcoming', timeLeft: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` };
-    } else {
-      const durationMs = (card.liveDuration || 60) * 60 * 1000;
-      if (Math.abs(diff) >= durationMs) {
-        return { status: 'finished' };
-      }
-      return { status: 'live' };
     }
+    
+    return { status };
   };
 
   const handleSaveCard = async () => {

@@ -17,7 +17,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
-import { isMatchLive, parseTime, formatTime } from '../utils/timeUtils';
+import { isMatchLive, parseTime, formatTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
 import { doc, getDoc, collection, addDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useCurrency } from '../context/CurrencyContext';
@@ -281,39 +281,12 @@ const Home = () => {
     }));
   });
 
-  const nowTimeForFilter = new Date();
-  
   const liveCards = activeCards.filter(c => {
-    if (c.matchStatus === 'finished') return false;
-    if (c.matchStatus === 'live') return true;
-    if (!c.startTime) return false;
-    
-    try {
-      const { hours, minutes, seconds } = parseTime(c.startTime);
-      const targetTime = new Date();
-      targetTime.setHours(hours, minutes, seconds, 0);
-      const diff = targetTime.getTime() - nowTimeForFilter.getTime();
-      if (diff > 0) return false;
-      const durationMs = (c.liveDuration || 60) * 60 * 1000;
-      return Math.abs(diff) < durationMs;
-    } catch (e) {
-      return false;
-    }
+    return getCardStatusFromUtil(c, c.matchStatus) === 'live';
   });
 
   const upcomingCards = activeCards.filter(c => {
-    if (c.matchStatus === 'finished') return false;
-    if (c.matchStatus === 'live') return false;
-    if (!c.startTime) return true;
-    
-    try {
-      const { hours, minutes, seconds } = parseTime(c.startTime);
-      const targetTime = new Date();
-      targetTime.setHours(hours, minutes, seconds, 0);
-      return targetTime.getTime() > nowTimeForFilter.getTime();
-    } catch (e) {
-      return true;
-    }
+    return getCardStatusFromUtil(c, c.matchStatus) === 'upcoming';
   });
 
   return (

@@ -9,7 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
-import { parseTime, formatTime } from '../utils/timeUtils';
+import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
 
 
 
@@ -199,31 +199,25 @@ const MatchDetails = () => {
                 
                 {/* Dynamic Status Badge (Positioned below the Title) */}
                 {(() => {
-                  let cardStatus = match.status;
+                  let cardStatus = getCardStatusFromUtil(card, match.status);
                   let cardTimeLeft = match.time;
                   
-                  if (card.startTime && match.status !== 'finished') {
+                  if (card.startTime && cardStatus === 'upcoming') {
                     const nowTime = new Date(now);
                     const { hours, minutes, seconds } = parseTime(card.startTime);
                     
                     let targetTime = new Date(now);
                     targetTime.setHours(hours, minutes, seconds, 0);
                     
-                    const diff = targetTime.getTime() - nowTime.getTime();
+                    let diff = targetTime.getTime() - nowTime.getTime();
                     if (diff <= 0) {
-                      const durationMs = (card.liveDuration || 60) * 60 * 1000;
-                      if (Math.abs(diff) >= durationMs) {
-                        cardStatus = 'finished';
-                      } else {
-                        cardStatus = 'live';
-                      }
-                    } else {
-                      cardStatus = 'upcoming';
-                      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                      const s = Math.floor((diff % (1000 * 60)) / 1000);
-                      cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                      targetTime.setDate(targetTime.getDate() + 1);
+                      diff = targetTime.getTime() - nowTime.getTime();
                     }
+                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                   }
                   
                   return (
