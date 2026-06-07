@@ -304,26 +304,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                {soloCount > 0 && (
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: '16px', height: '16px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.5)', border: '1px solid #fef08a',
-                    fontSize: '0.5rem', fontWeight: 900, color: '#fef08a',
-                    lineHeight: 1, flexShrink: 0
-                  }}>{soloCount}</span>
-                )}
                 👤 {team1?.entryType || 'SOLO'}
               </div>
               <div style={{ 
-                fontSize: '1.05rem', 
+                fontSize: '0.95rem', 
                 fontWeight: 900, 
-                color: status1.status === 'live' 
-                  ? '#EF4444' 
-                  : status1.status === 'revealed' 
-                    ? '#10B981' 
-                    : '#FBBF24',
-                fontFamily: 'monospace',
+                color: '#fef08a',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -331,8 +317,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.5rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {status1.status === 'live' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                {status1.display}
+                {soloCount} Match{soloCount !== 1 ? 'es' : ''}
               </div>
             </div>
           </div>
@@ -353,26 +338,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                {duoCount > 0 && (
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: '16px', height: '16px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.5)', border: '1px solid #f1f5f9',
-                    fontSize: '0.5rem', fontWeight: 900, color: '#f1f5f9',
-                    lineHeight: 1, flexShrink: 0
-                  }}>{duoCount}</span>
-                )}
                 👥 {team2?.entryType || 'DUO'}
               </div>
               <div style={{ 
-                fontSize: '1.05rem', 
+                fontSize: '0.95rem', 
                 fontWeight: 900, 
-                color: status2.status === 'live' 
-                  ? '#EF4444' 
-                  : status2.status === 'revealed' 
-                    ? '#10B981' 
-                    : '#FBBF24',
-                fontFamily: 'monospace',
+                color: '#f1f5f9',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -380,8 +351,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.5rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {status2.status === 'live' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                {status2.display}
+                {duoCount} Match{duoCount !== 1 ? 'es' : ''}
               </div>
             </div>
           </div>
@@ -402,26 +372,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                {squadCount > 0 && (
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: '16px', height: '16px', borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.5)', border: '1px solid #fcd34d',
-                    fontSize: '0.5rem', fontWeight: 900, color: '#fcd34d',
-                    lineHeight: 1, flexShrink: 0
-                  }}>{squadCount}</span>
-                )}
                 🛡️ {team3?.entryType || 'SQUAD'}
               </div>
               <div style={{ 
-                fontSize: '1.05rem', 
+                fontSize: '0.95rem', 
                 fontWeight: 900, 
-                color: status3.status === 'live' 
-                  ? '#EF4444' 
-                  : status3.status === 'revealed' 
-                    ? '#10B981' 
-                    : '#FBBF24',
-                fontFamily: 'monospace',
+                color: '#fcd34d',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -429,8 +385,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.5rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {status3.status === 'live' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                {status3.display}
+                {squadCount} Match{squadCount !== 1 ? 'es' : ''}
               </div>
             </div>
           </div>
@@ -485,21 +440,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
             <Users className="w-4 h-4" />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{currentParticipants} Joined</span>
-            {totalMatchCount > 0 && (
-              <span style={{
-                fontSize: '0.6rem',
-                fontWeight: 900,
-                color: '#4ADE80',
-                background: 'rgba(74, 222, 128, 0.1)',
-                border: '1px solid rgba(74, 222, 128, 0.25)',
-                padding: '2px 8px',
-                borderRadius: '10px',
-                letterSpacing: '0.03em'
-              }}>
-                {totalMatchCount} Match{totalMatchCount !== 1 ? 'es' : ''}
-              </span>
-            )}
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4ADE80' }}>{totalMatchCount} Match{totalMatchCount !== 1 ? 'es' : ''}</span>
           </div>
         </div>
         
