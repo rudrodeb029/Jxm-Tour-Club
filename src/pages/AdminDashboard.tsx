@@ -2033,8 +2033,9 @@ const AdminDashboard = () => {
                     zIndex: 2,
                     background: 'rgba(30, 41, 59, 0.7)',
                     border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderBottom: '4px solid #1e293b',
                     borderRadius: '24px',
-                    padding: '20px 16px',
+                    padding: '16px 14px',
                     width: '100%',
                     boxSizing: 'border-box',
                     display: 'flex',
@@ -2043,98 +2044,87 @@ const AdminDashboard = () => {
                     margin: 'auto 0'
                   }}>
                     
-                    {/* Header Graphic */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '16px' }}>
-                      <div style={{
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '18px',
-                        background: 'linear-gradient(135deg, rgba(249, 111, 46, 0.15), rgba(227, 67, 96, 0.15))',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.6rem',
-                        marginBottom: '10px',
-                        border: '1.5px solid rgba(249, 111, 46, 0.3)',
-                        boxShadow: '0 4px 15px rgba(249, 111, 46, 0.1)'
-                      }}>
-                        📢
-                      </div>
-                      <h4 style={{ fontSize: '1rem', fontWeight: 900, margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                    {/* Header Graphic (Megaphone-free compact design) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '12px' }}>
+                      <span className="announcement-badge" style={{ fontSize: '0.55rem', padding: '2px 6px', marginBottom: '4px' }}>
+                        ✨ OFFICIAL BROADCAST
+                      </span>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 900, margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.03em', textShadow: 'var(--text-shadow-3d-accent)' }}>
                         {announcementTitle || '📢 JXM ANNOUNCEMENT'}
                       </h4>
                     </div>
-
+ 
                     {/* Announcement Text */}
                     <div style={{
-                      maxHeight: '120px',
+                      maxHeight: '80px',
                       overflowY: 'auto',
-                      background: 'rgba(0, 0, 0, 0.2)',
-                      padding: '12px 14px',
-                      borderRadius: '14px',
-                      border: '1px solid rgba(255, 255, 255, 0.04)',
-                      fontSize: '0.8rem',
+                      background: 'rgba(4, 6, 12, 0.55)',
+                      borderLeft: '4px solid #F96F2E',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      fontSize: '0.78rem',
                       color: '#E2E8F0',
-                      lineHeight: 1.5,
-                      marginBottom: '16px',
+                      lineHeight: 1.4,
+                      marginBottom: '12px',
                       whiteSpace: 'pre-line',
                       textAlign: 'left'
                     }} className="custom-scrollbar">
                       {announcementText || 'Your announcement message will appear here. Edit the text on the left to customize it.'}
                     </div>
-
+ 
                     {/* Live Matches Demo */}
                     <div style={{ marginBottom: '8px', textAlign: 'left' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span style={{ fontSize: '0.62rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', textShadow: 'var(--text-shadow-3d-danger)' }}>
                         🔴 Live Matches
                       </span>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        padding: '10px 12px',
-                        background: 'rgba(239, 68, 68, 0.08)',
+                        padding: '8px 10px',
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.04))',
                         border: '1px solid rgba(239, 68, 68, 0.2)',
-                        borderRadius: '12px',
+                        borderBottom: '3px solid #EF4444',
+                        borderRadius: '10px',
                         marginTop: '4px'
                       }}>
-                        <span style={{ fontSize: '0.9rem' }}>🎮</span>
+                        <span style={{ fontSize: '0.8rem' }}>🎮</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 800, fontSize: '0.75rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.72rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             Inferno Squad (Squad)
                           </div>
                         </div>
                         <span style={{
                           background: '#EF444420',
                           color: '#EF4444',
-                          fontSize: '0.55rem',
+                          fontSize: '0.5rem',
                           fontWeight: 900,
-                          padding: '3px 6px',
-                          borderRadius: '6px',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          padding: '2px 5px',
+                          borderRadius: '4px',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
                           letterSpacing: '0.05em'
-                        }}>LIVE NOW</span>
+                        }}>LIVE</span>
                       </div>
                     </div>
-
+ 
                     {/* Upcoming Matches Demo */}
-                    <div style={{ marginBottom: '18px', textAlign: 'left' }}>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <div style={{ marginBottom: '14px', textAlign: 'left' }}>
+                      <span style={{ fontSize: '0.62rem', color: '#F59E0B', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', textShadow: 'var(--text-shadow-3d-accent)' }}>
                         🕒 Today's Upcoming
                       </span>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
-                        padding: '10px 12px',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        borderRadius: '12px',
+                        padding: '8px 10px',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03))',
+                        border: '1px solid rgba(245, 158, 11, 0.15)',
+                        borderBottom: '3px solid #F59E0B',
+                        borderRadius: '10px',
                         marginTop: '4px'
                       }}>
-                        <span style={{ fontSize: '0.9rem' }}>⚔️</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 800, fontSize: '0.75rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.72rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             Cyber Elites (Duo)
                           </div>
                         </div>
