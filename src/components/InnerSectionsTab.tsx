@@ -3,6 +3,7 @@ import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { Trophy, Users, X, AlertTriangle, CheckCircle, Clock, Zap, UserMinus } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import type { Team } from '../data/mockData';
+import { parseTime, formatTime, to24hTime } from '../utils/timeUtils';
 
 const InnerSectionsTab = () => {
   const { adminMatches, addMatchCard, updateMatchCard, deleteMatchCard, setCardWinners, adminUsers, removeParticipantFromCard, resetMatchCard } = useAdminDashboard();
@@ -49,36 +50,14 @@ const InnerSectionsTab = () => {
   const selectedMatch = adminMatches.find(m => m.id === selectedMatchId);
   const cards: Team[] = selectedMatch?.innerSections || [];
 
-  const parseTime = (timeStr: string) => {
-    const clean = timeStr.trim();
-    // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
-    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (match12) {
-      let hours = parseInt(match12[1], 10);
-      const minutes = parseInt(match12[2], 10);
-      const ampm = match12[3].toUpperCase();
-      if (ampm === 'PM' && hours < 12) hours += 12;
-      if (ampm === 'AM' && hours === 12) hours = 0;
-      return { hours, minutes };
-    }
-    // 24-hour format e.g. "14:20", "21:00"
-    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
-    if (match24) {
-      const hours = parseInt(match24[1], 10);
-      const minutes = parseInt(match24[2], 10);
-      return { hours, minutes };
-    }
-    return { hours: 0, minutes: 0 };
-  };
-
   // Helper: compute card status from startTime/liveDuration
   const getCardStatus = (card: Team): { status: 'live' | 'upcoming' | 'finished' | 'idle', timeLeft?: string } => {
     if (!card.startTime) return { status: 'idle' };
     const nowTime = new Date(now);
-    const { hours, minutes } = parseTime(card.startTime);
+    const { hours, minutes, seconds } = parseTime(card.startTime);
     
     const targetTime = new Date(now);
-    targetTime.setHours(hours, minutes, 0, 0);
+    targetTime.setHours(hours, minutes, seconds, 0);
     
     const diff = targetTime.getTime() - nowTime.getTime();
     if (diff > 0) {
@@ -281,7 +260,7 @@ const InnerSectionsTab = () => {
                     })
                   }}>
                     {cardStatus.status === 'live' && <><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span> LIVE</>}
-                    {cardStatus.status === 'upcoming' && <><Clock className="w-3 h-3" /> {cardStatus.timeLeft}</>}
+                    {cardStatus.status === 'upcoming' && <><Clock className="w-3 h-3" /> START IN {cardStatus.timeLeft}</>}
                     {cardStatus.status === 'finished' && 'ENDED'}
                   </div>
                 )}
@@ -313,7 +292,7 @@ const InnerSectionsTab = () => {
                 {/* Extra Info Row */}
                 {(card.startTime || card.map) && (
                   <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {card.startTime && <span>⏰ {card.startTime}</span>}
+                    {card.startTime && <span>⏰ {formatTime(card.startTime)}</span>}
                     {card.map && <span>🗺️ {card.map}</span>}
                     {card.version && <span>📱 {card.version}</span>}
                     {(card.perKill || 0) > 0 && <span>💀 {formatCurrency(card.perKill || 0)}/kill</span>}
@@ -447,7 +426,7 @@ const InnerSectionsTab = () => {
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Start Time</label>
-                  <input type="time" value={cardForm.startTime || ''} onChange={e => setCardForm({...cardForm, startTime: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                  <input type="time" step="1" value={to24hTime(cardForm.startTime) || ''} onChange={e => setCardForm({...cardForm, startTime: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Live Duration (mins)</label>

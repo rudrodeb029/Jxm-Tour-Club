@@ -9,6 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
+import { parseTime, formatTime } from '../utils/timeUtils';
 
 
 
@@ -21,27 +22,7 @@ const MatchDetails = () => {
   const { currentUser } = useAuth();
 
 
-  const parseTime = (timeStr: string) => {
-    const clean = timeStr.trim();
-    // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
-    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (match12) {
-      let hours = parseInt(match12[1], 10);
-      const minutes = parseInt(match12[2], 10);
-      const ampm = match12[3].toUpperCase();
-      if (ampm === 'PM' && hours < 12) hours += 12;
-      if (ampm === 'AM' && hours === 12) hours = 0;
-      return { hours, minutes };
-    }
-    // 24-hour format e.g. "14:20", "21:00"
-    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
-    if (match24) {
-      const hours = parseInt(match24[1], 10);
-      const minutes = parseInt(match24[2], 10);
-      return { hours, minutes };
-    }
-    return { hours: 0, minutes: 0 };
-  };
+
 
 
   
@@ -178,10 +159,10 @@ const MatchDetails = () => {
                 
                 if (card.startTime && match.status !== 'finished') {
                   const nowTime = new Date(now);
-                  const { hours, minutes } = parseTime(card.startTime);
+                  const { hours, minutes, seconds } = parseTime(card.startTime);
                   
                   let targetTime = new Date(now);
-                  targetTime.setHours(hours, minutes, 0, 0);
+                  targetTime.setHours(hours, minutes, seconds, 0);
                   
                   const diff = targetTime.getTime() - nowTime.getTime();
                   if (diff <= 0) {
@@ -196,7 +177,7 @@ const MatchDetails = () => {
                     const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    cardTimeLeft = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                   }
                 }
                 

@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
 import { Users } from 'lucide-react';
+import { parseTime, formatTime } from '../utils/timeUtils';
 
 interface TeamInfo {
   name: string; 
@@ -64,28 +65,6 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
-  const parseTime = (timeStr: string) => {
-    const clean = timeStr.trim();
-    // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
-    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (match12) {
-      let hours = parseInt(match12[1], 10);
-      const minutes = parseInt(match12[2], 10);
-      const ampm = match12[3].toUpperCase();
-      if (ampm === 'PM' && hours < 12) hours += 12;
-      if (ampm === 'AM' && hours === 12) hours = 0;
-      return { hours, minutes };
-    }
-    // 24-hour format e.g. "14:20", "21:00"
-    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
-    if (match24) {
-      const hours = parseInt(match24[1], 10);
-      const minutes = parseInt(match24[2], 10);
-      return { hours, minutes };
-    }
-    return { hours: 0, minutes: 0 };
-  };
-
   const getCardStatusAndDisplay = (card?: TeamInfo) => {
     if (!card) return { status: 'idle', display: '' };
     
@@ -95,10 +74,10 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     if (!card.startTime) return { status: 'idle', display: defaultDisplay };
     
     const nowTime = new Date(now);
-    const { hours, minutes } = parseTime(card.startTime);
+    const { hours, minutes, seconds } = parseTime(card.startTime);
     
     const targetTime = new Date(nowTime);
-    targetTime.setHours(hours, minutes, 0, 0);
+    targetTime.setHours(hours, minutes, seconds, 0);
     
     const diff = targetTime.getTime() - nowTime.getTime();
     if (diff > 0) {
@@ -108,10 +87,11 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         return { status: 'revealed', display: 'REVEALED' };
       }
       
-      // Otherwise show countdown (HH:MM)
+      // Otherwise show countdown (HH:MM:SS)
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const timeLeftStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      const timeLeftStr = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       return { status: 'upcoming', display: timeLeftStr };
     } else {
       // Passed target time: Check if still live or finished
@@ -143,42 +123,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const secondPrizeValue = Math.round((secondPrize !== undefined && secondPrize > 0 ? secondPrize : totalPrizePool * 0.3) * 100) / 100;
   const thirdPrizeValue = Math.round((thirdPrize !== undefined && thirdPrize > 0 ? thirdPrize : totalPrizePool * 0.2) * 100) / 100;
 
-  // Countdown timer logic
-  const [timeLeft, setTimeLeft] = useState('');
-  
-  useEffect(() => {
-    if (status !== 'upcoming' || !time) return;
-    
-    const updateCountdown = () => {
-      const nowTime = new Date();
-      const { hours, minutes } = parseTime(time);
-      
-      let targetTime = new Date();
-      targetTime.setHours(hours, minutes, 0, 0);
-      
-      // If time has already passed today, assume it's for tomorrow
-      if (targetTime.getTime() < nowTime.getTime()) {
-        targetTime.setDate(targetTime.getDate() + 1);
-      }
-      
-      const diff = targetTime.getTime() - nowTime.getTime();
-      
-      if (diff <= 0) {
-        setTimeLeft('STARTING SOON');
-        return;
-      }
-      
-      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-    };
-    
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
-  }, [status, time]);
+
 
   const status1 = getCardStatusAndDisplay(team1);
   const status2 = getCardStatusAndDisplay(team2);

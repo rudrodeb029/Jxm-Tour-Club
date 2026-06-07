@@ -9,6 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
+import { parseTime, formatTime } from '../utils/timeUtils';
 
 
 const CardDetails = () => {
@@ -25,25 +26,7 @@ const CardDetails = () => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const parseTime = (timeStr: string) => {
-    const clean = timeStr.trim();
-    const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (match12) {
-      let hours = parseInt(match12[1], 10);
-      const minutes = parseInt(match12[2], 10);
-      const ampm = match12[3].toUpperCase();
-      if (ampm === 'PM' && hours < 12) hours += 12;
-      if (ampm === 'AM' && hours === 12) hours = 0;
-      return { hours, minutes };
-    }
-    const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
-    if (match24) {
-      const hours = parseInt(match24[1], 10);
-      const minutes = parseInt(match24[2], 10);
-      return { hours, minutes };
-    }
-    return { hours: 0, minutes: 0 };
-  };
+
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,9 +94,9 @@ const CardDetails = () => {
     if (match.status === 'finished') return 'finished';
     if (!card.startTime) return match.status;
     const nowTime = new Date(now);
-    const { hours, minutes } = parseTime(card.startTime);
+    const { hours, minutes, seconds } = parseTime(card.startTime);
     let targetTime = new Date(now);
-    targetTime.setHours(hours, minutes, 0, 0);
+    targetTime.setHours(hours, minutes, seconds, 0);
     const diff = targetTime.getTime() - nowTime.getTime();
     if (diff > 0) return 'upcoming';
     const durationMs = (card.liveDuration || 60) * 60 * 1000;
@@ -126,9 +109,9 @@ const CardDetails = () => {
   const getTimeLeft = () => {
     if (!card.startTime || cardStatus !== 'upcoming') return '';
     const nowTime = new Date(now);
-    const { hours, minutes } = parseTime(card.startTime);
+    const { hours, minutes, seconds } = parseTime(card.startTime);
     let targetTime = new Date(now);
-    targetTime.setHours(hours, minutes, 0, 0);
+    targetTime.setHours(hours, minutes, seconds, 0);
     const diff = targetTime.getTime() - nowTime.getTime();
     if (diff <= 0) return 'STARTING SOON';
     const h = Math.floor(diff / (1000 * 60 * 60));
@@ -143,9 +126,9 @@ const CardDetails = () => {
     const targetTimeString = card.startTime || match.time;
     if (targetTimeString) {
       const nowTime = new Date();
-      const { hours, minutes } = parseTime(targetTimeString);
+      const { hours, minutes, seconds } = parseTime(targetTimeString);
       let targetTime = new Date();
-      targetTime.setHours(hours, minutes, 0, 0);
+      targetTime.setHours(hours, minutes, seconds, 0);
       const diffMinutes = (targetTime.getTime() - nowTime.getTime()) / (1000 * 60);
       if (diffMinutes <= dynamicRevealTime && diffMinutes >= -120) return true;
     }
@@ -515,7 +498,8 @@ const CardDetails = () => {
         {/* DETAILS TAB */}
         {activeTab === 'details' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {[
+             {[
+              { label: 'STARTS AT', value: formatTime(card.startTime) || 'N/A', icon: <Clock size={16} />, gradient: 'linear-gradient(135deg, #115e59, #134e4a)', border: '#2dd4bf', textColor: '#2dd4bf' },
               { label: 'WIN PRIZE', value: formatCurrency(dynamicPrizePool), icon: <Trophy size={16} />, gradient: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', textColor: '#fde047' },
               { label: 'ENTRY TYPE', value: dynamicEntryType, icon: <Users size={16} />, gradient: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', textColor: '#fef08a' },
               { label: 'ENTRY FEE', value: formatCurrency(dynamicEntryFee), icon: <Coins size={16} />, gradient: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', textColor: '#f1f5f9' },

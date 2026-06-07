@@ -3,7 +3,7 @@ import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
-import { isCardLive } from '../utils/timeUtils';
+import { isCardLive, parseTime } from '../utils/timeUtils';
 
 
 // ============ TYPES ============
@@ -334,27 +334,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const updatedMatches = adminMatches.map(m => {
         if (m.status === 'upcoming') {
           try {
-            const trimmedTime = m.time.trim();
-            const match12 = trimmedTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-            const match24 = trimmedTime.match(/(\d{1,2}):(\d{2})/);
-            
-            let targetH = 0, targetM = 0;
-            
-            if (match12) {
-              let [_, hours, mins, ampm] = match12;
-              targetH = parseInt(hours);
-              targetM = parseInt(mins);
-              if (ampm.toUpperCase() === 'PM' && targetH < 12) targetH += 12;
-              if (ampm.toUpperCase() === 'AM' && targetH === 12) targetH = 0;
-            } else if (match24) {
-              targetH = parseInt(match24[1]);
-              targetM = parseInt(match24[2]);
-            } else {
-              return m;
-            }
-            
+            const { hours: targetH, minutes: targetM, seconds: targetS } = parseTime(m.time);
             const target = new Date();
-            target.setHours(targetH, targetM, 0, 0);
+            target.setHours(targetH, targetM, targetS, 0);
             
             // Auto-start if time reached (with a 30-minute window safety)
             if (target.getTime() <= now && target.getTime() > now - 30 * 60 * 1000) {

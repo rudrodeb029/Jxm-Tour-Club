@@ -3,28 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAdmin } from '../context/AdminContext';
-
-const parseTime = (timeStr: string) => {
-  const clean = timeStr.trim();
-  // 12-hour format e.g. "02:30 PM", "2:30 PM", "12:00 AM"
-  const match12 = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (match12) {
-    let hours = parseInt(match12[1], 10);
-    const minutes = parseInt(match12[2], 10);
-    const ampm = match12[3].toUpperCase();
-    if (ampm === 'PM' && hours < 12) hours += 12;
-    if (ampm === 'AM' && hours === 12) hours = 0;
-    return { hours, minutes };
-  }
-  // 24-hour format e.g. "14:20", "21:00"
-  const match24 = clean.match(/^(\d{1,2}):(\d{2})$/);
-  if (match24) {
-    const hours = parseInt(match24[1], 10);
-    const minutes = parseInt(match24[2], 10);
-    return { hours, minutes };
-  }
-  return { hours: 0, minutes: 0 };
-};
+import { parseTime, formatTime } from '../utils/timeUtils';
 
 const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number) => {
   const liveDurationMins = durationMins || 60;
@@ -43,13 +22,13 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     };
   }
 
-  const { hours, minutes } = parseTime(startTimeStr);
+  const { hours, minutes, seconds } = parseTime(startTimeStr);
   const targetTime = new Date(nowTime);
-  targetTime.setHours(hours, minutes, 0, 0);
+  targetTime.setHours(hours, minutes, seconds, 0);
 
   const diff = targetTime.getTime() - nowTime.getTime();
   const end = new Date(targetTime.getTime() + liveDurationMs);
-  const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
   if (diff > 0) {
     // Upcoming
@@ -67,7 +46,7 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     return {
       isLive: false,
       statusText: 'UPCOMING',
-      displayTime: `Starts at: ${startTimeStr}`,
+      displayTime: `Starts at: ${formatTime(startTimeStr)}`,
       elapsedStr: startsInStr,
       remainingStr: startsInStr,
       endTimeStr: `Ends at: ${endTimeStr}`,
@@ -89,7 +68,7 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     return {
       isLive: true,
       statusText: 'LIVE',
-      displayTime: `Starts at: ${startTimeStr}`,
+      displayTime: `Starts at: ${formatTime(startTimeStr)}`,
       elapsedStr,
       remainingStr,
       endTimeStr: `Ends at: ${endTimeStr}`,
@@ -100,7 +79,7 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     return {
       isLive: false,
       statusText: 'ENDED',
-      displayTime: `Started: ${startTimeStr}`,
+      displayTime: `Started: ${formatTime(startTimeStr)}`,
       elapsedStr: 'Match Ended',
       remainingStr: 'Match Ended',
       endTimeStr: `Ended at: ${endTimeStr}`,
