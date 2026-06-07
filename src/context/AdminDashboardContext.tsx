@@ -994,9 +994,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     activeMatches: adminMatches.reduce((total, m) => {
       if (m.status === 'finished') return total;
       let count = 0;
-      if (m.team1 && isCardLive(m.team1)) count++;
-      if (m.team2 && isCardLive(m.team2)) count++;
-      if (m.team3 && isCardLive(m.team3)) count++;
+      if (m.team1 && isCardLive(m.team1, m.status)) count++;
+      if (m.team2 && isCardLive(m.team2, m.status)) count++;
+      if (m.team3 && isCardLive(m.team3, m.status)) count++;
       
       // Fallback if match status is explicitly live but it doesn't have startTimes
       if (count === 0 && m.status === 'live') {

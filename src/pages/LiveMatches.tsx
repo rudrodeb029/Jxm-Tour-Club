@@ -5,7 +5,7 @@ import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAdmin } from '../context/AdminContext';
 import { parseTime, formatTime } from '../utils/timeUtils';
 
-const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number) => {
+const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number, matchStatus?: string) => {
   const liveDurationMins = durationMins || 60;
   const liveDurationMs = liveDurationMins * 60 * 1000;
   const nowTime = new Date(now);
@@ -26,7 +26,12 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
   const targetTime = new Date(nowTime);
   targetTime.setHours(hours, minutes, seconds, 0);
 
-  const diff = targetTime.getTime() - nowTime.getTime();
+  let diff = targetTime.getTime() - nowTime.getTime();
+  if (matchStatus === 'upcoming' && diff <= 0) {
+    targetTime.setDate(targetTime.getDate() + 1);
+    diff = targetTime.getTime() - nowTime.getTime();
+  }
+
   const end = new Date(targetTime.getTime() + liveDurationMs);
   const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
@@ -140,7 +145,7 @@ const LiveMatches = () => {
       return teams;
     })
     .filter(team => {
-      const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now);
+      const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status);
       return timeInfo.statusText !== 'ENDED';
     });
 
@@ -171,7 +176,7 @@ const LiveMatches = () => {
           </div>
         ) : (
           liveTeams.map((team, index) => {
-            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now);
+            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status);
             const isMatchLive = timeInfo.statusText === 'LIVE';
             const isMatchUpcoming = timeInfo.statusText === 'UPCOMING';
 
