@@ -355,17 +355,78 @@ const CardDetails = () => {
               <div style={{ fontSize: '0.6rem', color: '#F97316', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Entry Fee</div>
               <div style={{ fontSize: '1rem', fontWeight: 900, color: '#F97316' }}>{formatCurrency(dynamicEntryFee)}</div>
             </div>
-            <div style={{
-              flex: 1,
-              background: 'linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(59, 130, 246, 0.05))',
-              border: '1px solid rgba(96, 165, 250, 0.2)',
-              borderRadius: '14px',
-              padding: '12px 8px',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '0.6rem', color: '#60A5FA', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Joined</div>
-              <div style={{ fontSize: '1rem', fontWeight: 900, color: '#60A5FA' }}>{participantCount}</div>
-            </div>
+            {/* Joined / Action Pill */}
+            {cardStatus === 'finished' ? (
+              <div style={{
+                flex: 1,
+                background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.1), rgba(107, 114, 128, 0.05))',
+                border: '1px solid rgba(156, 163, 175, 0.2)',
+                borderRadius: '14px',
+                padding: '12px 8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.6rem', color: '#9CA3AF', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Ended</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#9CA3AF' }}>{participantCount} Joined</div>
+              </div>
+            ) : cardStatus === 'live' ? (
+              <div style={{
+                flex: 1,
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05))',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '14px',
+                padding: '12px 8px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Live</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#EF4444' }}>{participantCount} Joined</div>
+              </div>
+            ) : hasJoined ? (
+              <button
+                onClick={() => setActiveTab('gameId')}
+                className="hover-scale"
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1))',
+                  border: '1px solid rgba(16, 185, 129, 0.4)',
+                  borderRadius: '14px',
+                  padding: '12px 8px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  color: 'inherit',
+                  fontFamily: 'inherit',
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.15)'
+                }}
+              >
+                <div style={{ fontSize: '0.6rem', color: '#10B981', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}>
+                  ✅ JOINED
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#10B981' }}>{participantCount} Joined</div>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsBetModalOpen(true)}
+                className="hover-scale"
+                style={{
+                  flex: 1,
+                  background: 'linear-gradient(180deg, #F97316 0%, #c2410c 100%)',
+                  border: '1px solid #fdba74',
+                  borderRadius: '14px',
+                  padding: '12px 8px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  fontFamily: 'inherit',
+                  boxShadow: '0 4px 12px rgba(249, 115, 22, 0.4)',
+                  transition: 'all 0.2s ease',
+                  borderTop: '1px solid #fdba74'
+                }}
+              >
+                <div style={{ fontSize: '0.6rem', color: 'white', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
+                  ⚔️ JOIN NOW
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: 'white' }}>{participantCount} Joined</div>
+              </button>
+            )}
           </div>
         </div>
 
@@ -428,7 +489,7 @@ const CardDetails = () => {
       </div>
 
       {/* ===== TAB CONTENTS ===== */}
-      <div style={{ padding: '0 12px', paddingBottom: '120px' }}>
+      <div style={{ padding: '0 12px', paddingBottom: '40px' }}>
 
         {/* DETAILS TAB */}
         {activeTab === 'details' && (
@@ -908,86 +969,7 @@ const CardDetails = () => {
         )}
       </div>
 
-      {/* ===== FIXED BOTTOM JOIN BAR ===== */}
-      {cardStatus !== 'finished' && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
-          maxWidth: '480px',
-          padding: '12px 16px',
-          paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
-          background: 'linear-gradient(180deg, transparent 0%, rgba(5, 11, 20, 0.95) 20%, #050b14 100%)',
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Entry Fee</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>{formatCurrency(dynamicEntryFee)}</div>
-          </div>
-          {hasJoined ? (
-            <div style={{
-              flex: 2,
-              padding: '14px 20px',
-              borderRadius: '14px',
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              color: '#10B981',
-              fontWeight: 900,
-              fontSize: '0.9rem',
-              textAlign: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              letterSpacing: '0.05em'
-            }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3">
-                <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              JOINED
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsBetModalOpen(true)}
-              style={{
-                flex: 2,
-                padding: '14px 20px',
-                borderRadius: '14px',
-                background: 'linear-gradient(180deg, #F97316 0%, #c2410c 100%)',
-                border: 'none',
-                borderTop: '1px solid #fdba74',
-                color: 'white',
-                fontWeight: 900,
-                fontSize: '0.95rem',
-                cursor: 'pointer',
-                boxShadow: '0 4px 0 #7c2d12, 0 8px 15px rgba(0,0,0,0.5)',
-                textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                letterSpacing: '0.05em',
-                transition: 'all 0.1s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform = 'translateY(4px)';
-                e.currentTarget.style.boxShadow = '0 0 0 #7c2d12, 0 4px 8px rgba(0,0,0,0.5)';
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 0 #7c2d12, 0 8px 15px rgba(0,0,0,0.5)';
-              }}
-            >
-              ⚔️ JOIN MATCH
-            </button>
-          )}
-        </div>
-      )}
+
 
       {/* ===== SUCCESS MODAL ===== */}
       <SuccessModal
