@@ -48,6 +48,10 @@ service cloud.firestore {
     match /winners/{winnerId} {
       allow read, write: if true;
     }
+
+    match /announcements/{announcementId} {
+      allow read, write: if true;
+    }
     
     match /{document=**} {
       allow read, write: if false;
