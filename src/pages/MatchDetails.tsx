@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
-import { ArrowLeft, Users, Trophy, Target, Sword, Clock, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Users, Trophy } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from '../components/AnimatedCounter';
-import { useChat } from '../context/ChatContext';
 import { useBalance } from '../context/BalanceContext';
 import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
@@ -20,7 +19,6 @@ const MatchDetails = () => {
   const { balance, deductBalance } = useBalance();
   const { formatCurrency } = useCurrency();
   const { currentUser } = useAuth();
-  const { messages, sendMessage } = useChat();
 
 
   const parseTime = (timeStr: string) => {
@@ -45,22 +43,7 @@ const MatchDetails = () => {
     return { hours: 0, minutes: 0 };
   };
 
-  const [activeTab, setActiveTab] = useState<'details' | 'rule' | 'gameId' | 'support'>('details');
-  const [inputMessage, setInputMessage] = useState('');
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim()) return;
-    sendMessage(inputMessage, 'user');
-    setInputMessage('');
-  };
-
-  useEffect(() => {
-    if (activeTab === 'support') {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, activeTab]);
   
   const match = adminMatches.find(m => m.id === id) || adminMatches[0];
   const participants = (match.participantIds || []).map(pid => 
@@ -103,40 +86,7 @@ const MatchDetails = () => {
   // Logic to determine if room ID should be visible is moved down
 
   const currentTeam = cards.find(c => c.id === selectedTeam) || cards[0];
-  const dynamicEntryType = currentTeam?.entryType || 'Solo';
   const dynamicEntryFee = currentTeam?.entryFee || entryFee;
-  const dynamicPrizePool = currentTeam?.winPrize || totalPrizePool;
-  const dynamicFirstPrize = firstPrizeValue;
-  const dynamicSecondPrize = secondPrizeValue;
-  const dynamicThirdPrize = thirdPrizeValue;
-  
-  const dynamicPerKill = currentTeam?.perKill || match.perKillReward || 0;
-  const dynamicMap = currentTeam?.map || match.map || 'Bermuda';
-  const dynamicVersion = currentTeam?.version || match.version || 'MOBILE';
-  const dynamicRules = currentTeam?.rules || match.rules || [];
-  const dynamicGameId = currentTeam?.gameId || match.gameId || '';
-  const dynamicGamePassword = currentTeam?.gamePassword || match.gamePassword || '';
-  const dynamicRevealTime = currentTeam?.roomDetailsRevealTime || 15;
-
-  const isRoomIdVisible = () => {
-    if (!hasJoined) return false;
-    if (match.status === 'live' || match.status === 'finished') return true;
-    
-    const targetTimeString = currentTeam?.startTime || match.time;
-    if (targetTimeString) {
-      const nowTime = new Date();
-      const { hours, minutes } = parseTime(targetTimeString);
-      let targetTime = new Date();
-      targetTime.setHours(hours, minutes, 0, 0);
-      
-      const diffMinutes = (targetTime.getTime() - nowTime.getTime()) / (1000 * 60);
-      
-      if (diffMinutes <= dynamicRevealTime && diffMinutes >= -120) {
-        return true;
-      }
-    }
-    return false;
-  };
 
   useEffect(() => {
     if (entryFee) {
@@ -337,260 +287,7 @@ const MatchDetails = () => {
         </div>
       </div>
 
-      {/* 4 Button Row (Tabs) */}
-      <div style={{ padding: '0 12px', marginBottom: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-          {[
-            { id: 'details', label: 'Details' },
-            { id: 'rule', label: 'Rule' },
-            { id: 'gameId', label: 'Game Id' },
-            { id: 'support', label: 'Support' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              className={activeTab === tab.id ? 'btn btn-primary' : 'btn btn-outline'}
-              onClick={() => setActiveTab(tab.id as any)}
-              style={{
-                padding: '10px 0',
-                color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)',
-                fontSize: '0.7rem'
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Tab Contents */}
-      {activeTab === 'details' && (
-        <div style={{ padding: '0 12px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {[
-            { label: 'WIN PRIZE', value: formatCurrency(dynamicPrizePool), color: 'var(--accent-orange)' },
-            { label: 'ENTRY TYPE', value: dynamicEntryType, color: 'var(--text-primary)' },
-            { label: 'ENTRY FEE', value: formatCurrency(dynamicEntryFee), color: 'var(--text-primary)' },
-            { label: 'PER KILL', value: formatCurrency(dynamicPerKill), color: '#4ADE80' },
-            { label: 'MAP', value: dynamicMap, color: 'var(--text-primary)' },
-            { label: 'VERSION', value: dynamicVersion, color: 'var(--text-primary)' }
-          ].map((item, idx, arr) => {
-            const styles = [
-              { bg: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', text: '#fde047' }, // Teal / Gold
-              { bg: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', text: '#fef08a' }, // Gold
-              { bg: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', text: '#f1f5f9' }, // Silver
-              { bg: 'linear-gradient(135deg, #92400e, #5c2705)', border: '#fbbf24', text: '#fcd34d' }, // Bronze
-              { bg: 'linear-gradient(135deg, #1e3a8a, #172554)', border: '#93c5fd', text: '#93c5fd' }, // Blue
-              { bg: 'linear-gradient(135deg, #831843, #4c0519)', border: '#f9a8d4', text: '#f9a8d4' }, // Pink
-            ];
-            const currentStyle = styles[idx % styles.length];
-
-            return (
-              <div key={item.label} className="hover-scale" style={{ 
-                background: currentStyle.bg, 
-                border: `1px solid ${currentStyle.border}`, 
-                borderRadius: '12px',
-                boxShadow: 'var(--card-shadow)',
-                margin: '0 4px'
-              }}>
-                <div style={{ 
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                  padding: '14px 20px'
-                }}>
-                  <span style={{ fontSize: '0.85rem', color: currentStyle.text, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textShadow: 'var(--text-shadow-sm)' }}>{item.label}</span>
-                  <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-md)' }}>{item.value}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      )}
-
-      {activeTab === 'rule' && (
-        <div style={{ padding: '0 12px', marginBottom: '24px' }}>
-          <div className="glass-panel" style={{ padding: '20px', borderRadius: '20px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}>
-            <h4 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '12px', color: 'var(--text-primary)' }}>Match Rules</h4>
-            <ul style={{ paddingLeft: '16px', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.6, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {(dynamicRules && dynamicRules.length > 0) ? dynamicRules.map((rule, idx) => (
-                <li key={idx}>{rule}</li>
-              )) : (
-                <>
-                  <li>Players must use mobile devices only. Emulators are strictly prohibited.</li>
-                  <li>Teaming up with opponents is not allowed and will result in a ban.</li>
-                  <li>Any form of hacking or cheating will lead to permanent account suspension.</li>
-                  <li>Room ID and Password will be shared {dynamicRevealTime} minutes before the match starts.</li>
-                </>
-              )}
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'gameId' && (
-        <div style={{ padding: '0 12px', marginBottom: '24px' }}>
-          <div className="glass-panel" style={{ padding: '20px', borderRadius: '20px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-            <h4 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '12px', color: 'var(--text-primary)' }}>Game Room ID</h4>
-            {!hasJoined ? (
-              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                You must join this match to get access to the Room ID and Password.
-              </div>
-            ) : !isRoomIdVisible() ? (
-              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                Room ID and Password will be revealed {dynamicRevealTime} minutes before the match begins.
-              </div>
-            ) : (
-              <div style={{ padding: '16px', background: 'var(--input-bg)', borderRadius: '12px' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Room ID</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{dynamicGameId || 'Pending...'}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '12px', marginBottom: '4px', textTransform: 'uppercase', fontWeight: 700 }}>Password</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 900, letterSpacing: '2px', userSelect: 'all' }}>{dynamicGamePassword || 'Pending...'}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'support' && (
-        <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="glass-panel" style={{ 
-            padding: '20px', 
-            borderRadius: '24px', 
-            background: 'var(--glass-bg)', 
-            border: '1px solid var(--glass-border)', 
-            boxShadow: 'var(--card-shadow)',
-            display: 'flex',
-            flexDirection: 'column',
-            height: '420px',
-            overflow: 'hidden'
-          }}>
-            <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '12px', marginBottom: '16px' }}>
-              <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Match Discussion</h4>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Discuss strategies and gameplay live</p>
-            </div>
-
-            {/* Messages Area */}
-            <div style={{ 
-              flex: 1, 
-              overflowY: 'auto', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '12px',
-              marginBottom: '16px',
-              paddingRight: '4px'
-            }} className="custom-scrollbar">
-              {messages.map((msg) => {
-                const isUser = msg.sender === 'user';
-                return (
-                  <div 
-                    key={msg.id} 
-                    className="animate-message-in"
-                    style={{ 
-                      alignSelf: isUser ? 'flex-end' : 'flex-start',
-                      maxWidth: '80%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: isUser ? 'flex-end' : 'flex-start'
-                    }}
-                  >
-                    {!isUser && (
-                      <span style={{ fontSize: '0.7rem', color: 'var(--accent-orange)', marginBottom: '2px', fontWeight: 700 }}>
-                        {msg.userName || 'Support Bot'}
-                      </span>
-                    )}
-                    <div style={{ 
-                      background: isUser ? 'var(--accent-gradient)' : 'var(--card-inner-bg)',
-                      padding: '10px 14px',
-                      borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                      color: isUser ? '#fff' : 'var(--text-primary)',
-                      fontSize: '0.85rem',
-                      fontWeight: 500,
-                      border: isUser ? 'none' : '1px solid var(--glass-border)',
-                      boxShadow: isUser ? '0 4px 12px rgba(227, 67, 96, 0.15)' : 'none'
-                    }}>
-                      {msg.text}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                      <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{msg.time}</span>
-                      {isUser && (
-                        <span style={{ 
-                          fontSize: '0.6rem', 
-                          color: msg.status === 'sending' ? 'var(--text-muted)' : '#10B981', 
-                          fontWeight: 800,
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}>
-                          {msg.status === 'sending' ? (
-                            <span style={{ 
-                              display: 'inline-block',
-                              width: '4px',
-                              height: '4px',
-                              borderRadius: '50%',
-                              background: 'var(--text-secondary)',
-                              animation: 'pulse 1s infinite'
-                            }} />
-                          ) : (
-                            '✓✓'
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <form 
-              onSubmit={handleSendMessage}
-              style={{ 
-                display: 'flex', 
-                gap: '10px',
-                borderTop: '1px solid var(--glass-border)',
-                paddingTop: '12px'
-              }}
-            >
-              <input 
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Type your message..."
-                style={{
-                  flex: 1,
-                  background: 'var(--card-inner-bg)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '12px',
-                  padding: '10px 14px',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.85rem',
-                  outline: 'none'
-                }}
-              />
-              <button 
-                type="submit"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
-                  background: 'var(--accent-gradient)',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(227, 67, 96, 0.2)'
-                }}
-                className="hover-scale"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
 
 
