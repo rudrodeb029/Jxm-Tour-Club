@@ -17,8 +17,8 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
-import { isMatchLive } from '../utils/timeUtils';
-import { doc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { isMatchLive, parseTime, formatTime } from '../utils/timeUtils';
+import { doc, getDoc, collection, addDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useCurrency } from '../context/CurrencyContext';
 
@@ -48,6 +48,32 @@ const Home = () => {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [transactionId, setTransactionId] = useState('');
+  const [announcement, setAnnouncement] = useState<{ text: string; title?: string } | null>(null);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+
+  // Listen to global announcement from Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'announcements', 'global'), (docSnap) => {
+      if (docSnap.exists()) {
+        setAnnouncement(docSnap.data() as any);
+      }
+    }, (error) => {
+      console.error("Error fetching announcement:", error);
+    });
+    return () => unsub();
+  }, []);
+
+  // Show announcement popup once per session when the app loads
+  useEffect(() => {
+    const hasShown = sessionStorage.getItem('announcementShown');
+    if (!hasShown) {
+      const timer = setTimeout(() => {
+        setShowAnnouncement(true);
+        sessionStorage.setItem('announcementShown', 'true');
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   
   const { 
@@ -243,6 +269,52 @@ const Home = () => {
       }
     }
   };
+
+  // Extract and filter cards for the global announcement popup
+  const activeCards = (localMatches || []).flatMap(m => {
+    const sections = m.innerSections || [];
+    return sections.map(c => ({
+      ...c,
+      matchId: m.id,
+      matchName: m.name,
+      matchStatus: m.status
+    }));
+  });
+
+  const nowTimeForFilter = new Date();
+  
+  const liveCards = activeCards.filter(c => {
+    if (c.matchStatus === 'finished') return false;
+    if (c.matchStatus === 'live') return true;
+    if (!c.startTime) return false;
+    
+    try {
+      const { hours, minutes, seconds } = parseTime(c.startTime);
+      const targetTime = new Date();
+      targetTime.setHours(hours, minutes, seconds, 0);
+      const diff = targetTime.getTime() - nowTimeForFilter.getTime();
+      if (diff > 0) return false;
+      const durationMs = (c.liveDuration || 60) * 60 * 1000;
+      return Math.abs(diff) < durationMs;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const upcomingCards = activeCards.filter(c => {
+    if (c.matchStatus === 'finished') return false;
+    if (c.matchStatus === 'live') return false;
+    if (!c.startTime) return true;
+    
+    try {
+      const { hours, minutes, seconds } = parseTime(c.startTime);
+      const targetTime = new Date();
+      targetTime.setHours(hours, minutes, seconds, 0);
+      return targetTime.getTime() > nowTimeForFilter.getTime();
+    } catch (e) {
+      return true;
+    }
+  });
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)', transition: 'all 0.3s ease' }}>
@@ -1061,6 +1133,241 @@ const Home = () => {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           RESET DATA
         </button>
+      )}
+
+      {/* Global Announcement Popup Modal */}
+      {showAnnouncement && announcement && (
+        <ModalPortal>
+          <div 
+            className="animate-fade-in"
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(16px)',
+              zIndex: 2000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px'
+            }}
+            onClick={() => setShowAnnouncement(false)}
+          >
+            <div 
+              className="animate-scale-up"
+              style={{
+                background: 'rgba(30, 41, 59, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                width: '100%',
+                maxWidth: '420px',
+                borderRadius: '32px',
+                padding: '32px 24px',
+                color: 'var(--text-primary)',
+                boxShadow: '0 30px 60px rgba(0, 0, 0, 0.8)',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                boxSizing: 'border-box'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Backlight glow */}
+              <div style={{
+                position: 'absolute',
+                top: '-80px',
+                right: '-80px',
+                width: '240px',
+                height: '240px',
+                background: 'radial-gradient(circle, rgba(249, 111, 46, 0.15) 0%, transparent 70%)',
+                filter: 'blur(50px)',
+                pointerEvents: 'none'
+              }} />
+
+              {/* Title & Megaphone Icon */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, rgba(249, 111, 46, 0.15), rgba(227, 67, 96, 0.15))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.8rem',
+                  marginBottom: '14px',
+                  border: '1.5px solid rgba(249, 111, 46, 0.3)',
+                  boxShadow: '0 4px 20px rgba(249, 111, 46, 0.15)',
+                  animation: 'pulse 2s infinite'
+                }}>
+                  📢
+                </div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                  {announcement.title || '📢 JXM CLUB ANNOUNCEMENT'}
+                </h3>
+              </div>
+
+              {/* Custom text body */}
+              <div 
+                style={{
+                  maxHeight: '160px',
+                  overflowY: 'auto',
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  padding: '16px 18px',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  fontSize: '0.85rem',
+                  color: '#CBD5E1',
+                  lineHeight: 1.6,
+                  marginBottom: '20px',
+                  whiteSpace: 'pre-line',
+                  textAlign: 'left'
+                }}
+                className="custom-scrollbar"
+              >
+                {announcement.text || 'Welcome to JXM Tour Club! Watch out here for global match notices and club announcements.'}
+              </div>
+
+              {/* Today's Matches Feed */}
+              
+              {/* 1. Live Matches list */}
+              {liveCards.length > 0 && (
+                <div style={{ marginBottom: '14px', textAlign: 'left' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    🔴 LIVE MATCHES NOW
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                    {liveCards.map((card) => (
+                      <div 
+                        key={card.id}
+                        onClick={() => {
+                          setShowAnnouncement(false);
+                          navigate(`/match/${card.matchId}/card/${card.id}`);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '12px 14px',
+                          background: 'rgba(239, 68, 68, 0.08)',
+                          border: '1px solid rgba(239, 68, 68, 0.2)',
+                          borderRadius: '14px',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s',
+                        }}
+                        className="hover-scale"
+                      >
+                        <img src={card.logo} style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover' }} alt="" />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.8rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {card.name}
+                          </div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                            {card.matchName}
+                          </div>
+                        </div>
+                        <span style={{
+                          background: '#EF444420',
+                          color: '#EF4444',
+                          fontSize: '0.6rem',
+                          fontWeight: 900,
+                          padding: '4px 8px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          letterSpacing: '0.05em',
+                        }}>LIVE NOW</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 2. Upcoming Matches list */}
+              {upcomingCards.length > 0 && (
+                <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    🕒 TODAY'S UPCOMING MATCHES
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px', maxHeight: '180px', overflowY: 'auto' }} className="custom-scrollbar">
+                    {upcomingCards.map((card) => (
+                      <div 
+                        key={card.id}
+                        onClick={() => {
+                          setShowAnnouncement(false);
+                          navigate(`/match/${card.matchId}/card/${card.id}`);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '12px 14px',
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '14px',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s',
+                        }}
+                        className="hover-scale"
+                      >
+                        <img src={card.logo} style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover' }} alt="" />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.8rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {card.name}
+                          </div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '1px' }}>
+                            {card.matchName}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
+                          {formatTime(card.startTime)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No matches fallback */}
+              {liveCards.length === 0 && upcomingCards.length === 0 && (
+                <div style={{
+                  padding: '16px',
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  border: '1px dashed rgba(255, 255, 255, 0.08)',
+                  borderRadius: '16px',
+                  textAlign: 'center',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-muted)',
+                  marginBottom: '24px'
+                }}>
+                  📅 No matches scheduled for today.
+                </div>
+              )}
+
+              {/* Enter Lobby Button */}
+              <button 
+                onClick={() => setShowAnnouncement(false)}
+                style={{
+                  background: 'linear-gradient(90deg, #F96F2E, #E34360)',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '14px',
+                  color: 'white',
+                  fontFamily: "'Outfit',sans-serif",
+                  fontWeight: 900,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.05em',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(227, 67, 96, 0.3)',
+                  transition: 'all 0.2s'
+                }}
+                className="hover-scale"
+              >
+                Enter Lobby
+              </button>
+
+            </div>
+          </div>
+        </ModalPortal>
       )}
     </div>
   );

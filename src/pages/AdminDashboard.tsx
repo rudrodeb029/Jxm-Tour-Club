@@ -5,7 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import type { AdminMatch } from '../context/AdminDashboardContext';
 import InnerSectionsTab from '../components/InnerSectionsTab';
 import { db } from '../firebase';
-import { collection, onSnapshot, query, orderBy, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, addDoc, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 
 const AdminDashboard = () => {
@@ -236,6 +236,29 @@ const AdminDashboard = () => {
     { rank: 3, userId: '', reward: '25' },
   ]);
   const [leaderboardSearch, setLeaderboardSearch] = useState('');
+  const [announcementTitle, setAnnouncementTitle] = useState('📢 JXM CLUB ANNOUNCEMENT');
+  const [announcementText, setAnnouncementText] = useState('');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccess, setPublishSuccess] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'announcements') {
+      const loadAnnouncement = async () => {
+        try {
+          const docRef = doc(db, 'announcements', 'global');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setAnnouncementTitle(data.title || '📢 JXM CLUB ANNOUNCEMENT');
+            setAnnouncementText(data.text || '');
+          }
+        } catch (e) {
+          console.error("Error loading announcement:", e);
+        }
+      };
+      loadAnnouncement();
+    }
+  }, [activeTab]);
 
   // Listen to all active chats metadata
   useEffect(() => {
@@ -426,6 +449,7 @@ const AdminDashboard = () => {
     { id: 'kill_rewards', icon: '🎯', label: 'Kill Rewards' },
     { id: 'inner_sections', icon: '🎴', label: 'Inner Sections' },
     { id: 'chats', icon: '💬', label: 'Support' },
+    { id: 'announcements', icon: '📢', label: 'Announcements' },
   ];
 
   return (
@@ -1847,6 +1871,299 @@ const AdminDashboard = () => {
                   <div style={{ fontSize: '0.85rem', textAlign: 'center', maxWidth: '300px' }}>Select an active conversation from the sidebar or click "Chat" next to a user in the Users list to send a message.</div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'announcements' && (
+          <div>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '24px', alignItems: 'stretch' }}>
+              
+              {/* Editor Column */}
+              <div style={{ flex: 1.2, background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px' }}>
+                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📢 Edit Global Announcement
+                </h3>
+
+                {publishSuccess && (
+                  <div style={{
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid #10B981',
+                    color: '#10B981',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>✅ Announcement published successfully!</span>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                      Announcement Title
+                    </label>
+                    <input 
+                      type="text"
+                      value={announcementTitle}
+                      onChange={(e) => setAnnouncementTitle(e.target.value)}
+                      placeholder="e.g. 📢 JXM ANNOUNCEMENT"
+                      style={{
+                        width: '100%',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--card-border)',
+                        borderRadius: '14px',
+                        padding: '12px 16px',
+                        color: 'var(--text-primary)',
+                        fontFamily: "'Outfit',sans-serif",
+                        outline: 'none',
+                        fontSize: '0.9rem',
+                        fontWeight: 700
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                      Announcement Message (Markdown/Text)
+                    </label>
+                    <textarea 
+                      value={announcementText}
+                      onChange={(e) => setAnnouncementText(e.target.value)}
+                      placeholder="Type the announcement details here..."
+                      rows={8}
+                      style={{
+                        width: '100%',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--card-border)',
+                        borderRadius: '14px',
+                        padding: '12px 16px',
+                        color: 'var(--text-primary)',
+                        fontFamily: "'Outfit',sans-serif",
+                        outline: 'none',
+                        fontSize: '0.9rem',
+                        resize: 'vertical',
+                        lineHeight: 1.5
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    disabled={isPublishing}
+                    onClick={async () => {
+                      setIsPublishing(true);
+                      try {
+                        const docRef = doc(db, 'announcements', 'global');
+                        await setDoc(docRef, {
+                          title: announcementTitle,
+                          text: announcementText,
+                          updatedAt: new Date().toISOString()
+                        });
+                        setPublishSuccess(true);
+                        setTimeout(() => setPublishSuccess(false), 3000);
+                      } catch (e) {
+                        console.error("Error publishing announcement:", e);
+                        alert("Failed to publish announcement");
+                      } finally {
+                        setIsPublishing(false);
+                      }
+                    }}
+                    style={{
+                      background: 'linear-gradient(90deg, #F96F2E, #E34360)',
+                      border: 'none',
+                      borderRadius: '14px',
+                      padding: '14px 20px',
+                      color: 'var(--text-primary)',
+                      fontFamily: "'Outfit',sans-serif",
+                      fontWeight: 800,
+                      fontSize: '0.9rem',
+                      cursor: isPublishing ? 'not-allowed' : 'pointer',
+                      opacity: isPublishing ? 0.7 : 1,
+                      boxShadow: '0 4px 12px rgba(227,67,96,0.3)',
+                      transition: 'all 0.2s',
+                      marginTop: '8px'
+                    }}
+                  >
+                    {isPublishing ? 'Publishing...' : '📢 Publish Announcement'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Column */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h4 style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '16px', paddingLeft: '4px' }}>
+                  👀 Live Preview (Mobile Size)
+                </h4>
+                
+                {/* Mobile Preview Frame */}
+                <div style={{
+                  background: '#0F111A',
+                  border: '4px solid var(--card-border)',
+                  borderRadius: '36px',
+                  padding: '24px 16px',
+                  width: '100%',
+                  maxWidth: '360px',
+                  height: '520px',
+                  margin: '0 auto',
+                  position: 'relative',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                  boxSizing: 'border-box'
+                }} className="custom-scrollbar">
+                  
+                  {/* Backdrop Mimic */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.7)',
+                    backdropFilter: 'blur(10px)',
+                    zIndex: 1
+                  }} />
+
+                  {/* Modal Mimic */}
+                  <div style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    background: 'rgba(30, 41, 59, 0.7)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '24px',
+                    padding: '20px 16px',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                    margin: 'auto 0'
+                  }}>
+                    
+                    {/* Header Graphic */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '16px' }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '18px',
+                        background: 'linear-gradient(135deg, rgba(249, 111, 46, 0.15), rgba(227, 67, 96, 0.15))',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.6rem',
+                        marginBottom: '10px',
+                        border: '1.5px solid rgba(249, 111, 46, 0.3)',
+                        boxShadow: '0 4px 15px rgba(249, 111, 46, 0.1)'
+                      }}>
+                        📢
+                      </div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 900, margin: 0, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                        {announcementTitle || '📢 JXM ANNOUNCEMENT'}
+                      </h4>
+                    </div>
+
+                    {/* Announcement Text */}
+                    <div style={{
+                      maxHeight: '120px',
+                      overflowY: 'auto',
+                      background: 'rgba(0, 0, 0, 0.2)',
+                      padding: '12px 14px',
+                      borderRadius: '14px',
+                      border: '1px solid rgba(255, 255, 255, 0.04)',
+                      fontSize: '0.8rem',
+                      color: '#E2E8F0',
+                      lineHeight: 1.5,
+                      marginBottom: '16px',
+                      whiteSpace: 'pre-line',
+                      textAlign: 'left'
+                    }} className="custom-scrollbar">
+                      {announcementText || 'Your announcement message will appear here. Edit the text on the left to customize it.'}
+                    </div>
+
+                    {/* Live Matches Demo */}
+                    <div style={{ marginBottom: '8px', textAlign: 'left' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        🔴 Live Matches
+                      </span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 12px',
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                        borderRadius: '12px',
+                        marginTop: '4px'
+                      }}>
+                        <span style={{ fontSize: '0.9rem' }}>🎮</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.75rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            Inferno Squad (Squad)
+                          </div>
+                        </div>
+                        <span style={{
+                          background: '#EF444420',
+                          color: '#EF4444',
+                          fontSize: '0.55rem',
+                          fontWeight: 900,
+                          padding: '3px 6px',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          letterSpacing: '0.05em'
+                        }}>LIVE NOW</span>
+                      </div>
+                    </div>
+
+                    {/* Upcoming Matches Demo */}
+                    <div style={{ marginBottom: '18px', textAlign: 'left' }}>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        🕒 Today's Upcoming
+                      </span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '10px 12px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        borderRadius: '12px',
+                        marginTop: '4px'
+                      }}>
+                        <span style={{ fontSize: '0.9rem' }}>⚔️</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.75rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            Cyber Elites (Duo)
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '0.65rem', color: '#f59e0b', fontWeight: 800 }}>
+                          09:42:00 PM
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button style={{
+                      background: 'linear-gradient(90deg, #F96F2E, #E34360)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '10px',
+                      color: 'white',
+                      fontFamily: "'Outfit',sans-serif",
+                      fontWeight: 800,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}>
+                      Enter Lobby
+                    </button>
+
+                  </div>
+
+                </div>
+              </div>
+
             </div>
           </div>
         )}
