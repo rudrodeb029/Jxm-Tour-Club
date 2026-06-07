@@ -17,6 +17,13 @@ interface TeamInfo {
   roomDetailsRevealTime?: number;
 }
 
+interface InnerSectionCard {
+  id: string;
+  name: string;
+  entryType?: string;
+  [key: string]: any;
+}
+
 interface SliderCardProps {
   group: string;
   players: string;
@@ -46,9 +53,10 @@ interface SliderCardProps {
   map?: string;
   image?: string;
   availableModes?: string[];
+  innerSections?: InnerSectionCard[];
 }
 
-const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image, availableModes }: SliderCardProps) => {
+const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image, availableModes, innerSections }: SliderCardProps) => {
   const { t } = useLanguage();
   const { formatCurrency } = useCurrency();
   const isLive = status === 'live';
@@ -176,6 +184,13 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const status2 = getCardStatusAndDisplay(team2);
   const status3 = getCardStatusAndDisplay(team3);
 
+  // Count available matches per entry type from innerSections
+  const allCards = innerSections || [];
+  const soloCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'solo').length;
+  const duoCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'duo').length;
+  const squadCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'squad').length;
+  const totalMatchCount = allCards.length;
+
   return (
     <div 
       onClick={!isFull ? onClick : undefined}
@@ -288,7 +303,16 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             minWidth: 0
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                {soloCount > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '16px', height: '16px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', border: '1px solid #fef08a',
+                    fontSize: '0.5rem', fontWeight: 900, color: '#fef08a',
+                    lineHeight: 1, flexShrink: 0
+                  }}>{soloCount}</span>
+                )}
                 👤 {team1?.entryType || 'SOLO'}
               </div>
               <div style={{ 
@@ -328,7 +352,16 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             minWidth: 0
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                {duoCount > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '16px', height: '16px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', border: '1px solid #f1f5f9',
+                    fontSize: '0.5rem', fontWeight: 900, color: '#f1f5f9',
+                    lineHeight: 1, flexShrink: 0
+                  }}>{duoCount}</span>
+                )}
                 👥 {team2?.entryType || 'DUO'}
               </div>
               <div style={{ 
@@ -368,7 +401,16 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             minWidth: 0
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                {squadCount > 0 && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '16px', height: '16px', borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', border: '1px solid #fcd34d',
+                    fontSize: '0.5rem', fontWeight: 900, color: '#fcd34d',
+                    lineHeight: 1, flexShrink: 0
+                  }}>{squadCount}</span>
+                )}
                 🛡️ {team3?.entryType || 'SQUAD'}
               </div>
               <div style={{ 
@@ -444,6 +486,20 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
             <Users className="w-4 h-4" />
             <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{currentParticipants} Joined</span>
+            {totalMatchCount > 0 && (
+              <span style={{
+                fontSize: '0.6rem',
+                fontWeight: 900,
+                color: '#4ADE80',
+                background: 'rgba(74, 222, 128, 0.1)',
+                border: '1px solid rgba(74, 222, 128, 0.25)',
+                padding: '2px 8px',
+                borderRadius: '10px',
+                letterSpacing: '0.03em'
+              }}>
+                {totalMatchCount} Match{totalMatchCount !== 1 ? 'es' : ''}
+              </span>
+            )}
           </div>
         </div>
         
