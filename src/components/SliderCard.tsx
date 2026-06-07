@@ -307,14 +307,14 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 👤 {team1?.entryType || 'SOLO'}
               </div>
               <div style={{ 
-                fontSize: '0.95rem', 
-                fontWeight: 900, 
+                fontSize: '0.75rem', 
+                fontWeight: 800, 
                 color: '#fef08a',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
-                minHeight: '1.5rem',
+                minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
                 {soloCount} Match{soloCount !== 1 ? 'es' : ''}
@@ -341,14 +341,14 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 👥 {team2?.entryType || 'DUO'}
               </div>
               <div style={{ 
-                fontSize: '0.95rem', 
-                fontWeight: 900, 
+                fontSize: '0.75rem', 
+                fontWeight: 800, 
                 color: '#f1f5f9',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
-                minHeight: '1.5rem',
+                minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
                 {duoCount} Match{duoCount !== 1 ? 'es' : ''}
@@ -375,14 +375,14 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 🛡️ {team3?.entryType || 'SQUAD'}
               </div>
               <div style={{ 
-                fontSize: '0.95rem', 
-                fontWeight: 900, 
+                fontSize: '0.75rem', 
+                fontWeight: 800, 
                 color: '#fcd34d',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '4px',
-                minHeight: '1.5rem',
+                minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
                 {squadCount} Match{squadCount !== 1 ? 'es' : ''}
