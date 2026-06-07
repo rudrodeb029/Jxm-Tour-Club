@@ -263,12 +263,10 @@ const MatchDetails = () => {
               {match.status !== 'finished' && (
                 <button
                   type="button"
-                  className={selectedTeam === card.id ? 'btn btn-primary' : 'btn btn-outline'}
+                  className="btn btn-primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedTeam(card.id);
-                    setShowJoinSuccess(false);
-                    setIsBetModalOpen(true);
+                    navigate(`/match/${match.id}/card/${card.id}`);
                   }}
                   style={{
                     marginTop: '12px'
