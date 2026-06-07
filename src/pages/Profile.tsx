@@ -457,7 +457,7 @@ const Profile = () => {
               width: 'calc(100% - 8px)',
               margin: '0 4px',
               padding: 0,
-              borderRadius: '8px', 
+              borderRadius: '14px', 
               border: `1px solid ${currentStyle.border}`, 
               background: currentStyle.bg, 
               color: currentStyle.text, 
@@ -466,16 +466,14 @@ const Profile = () => {
               cursor: 'pointer', 
               textAlign: 'left',
               transition: 'all 0.2s ease',
-              boxShadow: 'var(--card-shadow)',
-              transform: 'skewX(-8deg)'
+              boxShadow: 'var(--card-shadow)'
             }}
           >
             <div style={{
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
-              padding: '16px 20px',
-              transform: 'skewX(8deg)'
+              padding: '14px 20px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <div style={{ 
