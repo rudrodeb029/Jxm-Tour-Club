@@ -235,6 +235,7 @@ const AdminDashboard = () => {
     { rank: 2, userId: '', reward: '50' },
     { rank: 3, userId: '', reward: '25' },
   ]);
+  const [leaderboardSearch, setLeaderboardSearch] = useState('');
 
   // Listen to all active chats metadata
   useEffect(() => {
@@ -421,7 +422,7 @@ const AdminDashboard = () => {
     { id: 'payments', icon: '💳', label: 'Payments' },
     { id: 'withdrawals', icon: '💸', label: 'Withdrawals' },
     { id: 'users', icon: '👥', label: 'Users' },
-    { id: 'win_prize', icon: '🏆', label: 'Win Prize' },
+    { id: 'win_prize', icon: '🏆', label: 'Leaderboards' },
     { id: 'kill_rewards', icon: '🎯', label: 'Kill Rewards' },
     { id: 'inner_sections', icon: '🎴', label: 'Inner Sections' },
     { id: 'chats', icon: '💬', label: 'Support' },
@@ -1256,66 +1257,332 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'win_prize' && (() => {
-          const winPrizeWinners = winners.filter(w => {
-            if (w.type) return w.type === 'win_prize';
-            return !(w.match && (w.match.includes('Kills') || w.match.includes('kills') || w.match.includes('Kills)')));
+          const sortedUsers = [...adminUsers].sort((a, b) => {
+            const winsA = a.totalWins || 0;
+            const winsB = b.totalWins || 0;
+            if (winsB !== winsA) return winsB - winsA;
+            const earningsA = a.totalEarnings || 0;
+            const earningsB = b.totalEarnings || 0;
+            return earningsB - earningsA;
           });
+
+          const filteredUsers = sortedUsers.filter(u => 
+            u.name.toLowerCase().includes(leaderboardSearch.toLowerCase()) ||
+            u.username.toLowerCase().includes(leaderboardSearch.toLowerCase())
+          );
+
+          const topThree = sortedUsers.slice(0, 3);
 
           return (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div style={{ color: 'var(--text-secondary)' }}>{winPrizeWinners.length} match win prizes awarded</div>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: isMobile ? 'column' : 'row', 
+                justifyContent: 'space-between', 
+                alignItems: isMobile ? 'stretch' : 'center', 
+                gap: '16px',
+                marginBottom: '24px' 
+              }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>
+                  Rankings based on Total Wins and Earnings
+                </div>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>🔍</span>
+                    <input 
+                      type="text" 
+                      placeholder="Search users..." 
+                      value={leaderboardSearch}
+                      onChange={(e) => setLeaderboardSearch(e.target.value)}
+                      style={{
+                        padding: '10px 16px 10px 36px',
+                        borderRadius: '12px',
+                        border: '1px solid var(--card-border)',
+                        background: 'var(--input-bg)',
+                        color: 'var(--text-primary)',
+                        fontFamily: "'Outfit',sans-serif",
+                        fontSize: '0.85rem',
+                        width: isMobile ? '100%' : '240px',
+                        outline: 'none',
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#F96F2E'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--card-border)'}
+                    />
+                  </div>
+                </div>
               </div>
 
+              {!leaderboardSearch && sortedUsers.length > 0 && (
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', 
+                  gap: '20px', 
+                  marginBottom: '32px' 
+                }}>
+                  {(() => {
+                    const podiumOrder = isMobile ? topThree : [
+                      topThree[1],
+                      topThree[0],
+                      topThree[2]
+                    ].filter(Boolean);
+
+                    return podiumOrder.map((user) => {
+                      if (!user) return null;
+                      const globalRank = sortedUsers.findIndex(u => u.id === user.id) + 1;
+                      
+                      let accentColor = '#9CA3AF';
+                      let badge = '🥈 2nd Place';
+                      let scale = 'scale(0.95)';
+                      let glow = '0 10px 25px rgba(156, 163, 175, 0.08)';
+
+                      if (globalRank === 1) {
+                        accentColor = '#F59E0B';
+                        badge = '👑 1st Place';
+                        scale = isMobile ? 'scale(1)' : 'scale(1.03)';
+                        glow = '0 15px 35px rgba(245, 158, 11, 0.15)';
+                      } else if (globalRank === 3) {
+                        accentColor = '#D97706';
+                        badge = '🥉 3rd Place';
+                        scale = 'scale(0.92)';
+                        glow = '0 8px 20px rgba(217, 119, 6, 0.05)';
+                      }
+
+                      return (
+                        <div 
+                          key={user.id} 
+                          style={{ 
+                            background: 'var(--card-bg)', 
+                            border: `1.5px solid ${accentColor}33`, 
+                            borderRadius: '24px', 
+                            padding: '24px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            textAlign: 'center',
+                            boxShadow: glow,
+                            transform: isMobile ? 'none' : scale,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            transition: 'all 0.3s ease-in-out'
+                          }}
+                        >
+                          <div style={{
+                            background: accentColor + '20',
+                            color: accentColor,
+                            fontWeight: 800,
+                            fontSize: '0.8rem',
+                            padding: '6px 14px',
+                            borderRadius: '50px',
+                            marginBottom: '16px',
+                            border: `1px solid ${accentColor}40`,
+                            letterSpacing: '0.05em'
+                          }}>
+                            {badge}
+                          </div>
+
+                          <div style={{ position: 'relative', marginBottom: '14px' }}>
+                            <img 
+                              src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name} 
+                              style={{ 
+                                width: globalRank === 1 ? '84px' : '72px', 
+                                height: globalRank === 1 ? '72px' : '84px', // height matches width
+                                borderRadius: '24px',
+                                border: `3px solid ${accentColor}`,
+                                padding: '3px',
+                                background: 'var(--input-bg)'
+                              }} 
+                              alt={user.name} 
+                            />
+                            {globalRank === 1 && (
+                              <div style={{ 
+                                position: 'absolute', 
+                                top: '-14px', 
+                                left: '50%', 
+                                transform: 'translateX(-50%) rotate(-10deg)', 
+                                fontSize: '1.4rem' 
+                              }}>👑</div>
+                            )}
+                          </div>
+
+                          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            {user.name}
+                          </div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '16px' }}>
+                            {user.username}
+                          </div>
+
+                          <div style={{ 
+                            background: 'rgba(255,255,255,0.02)', 
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            padding: '12px 16px', 
+                            borderRadius: '16px', 
+                            width: '100%',
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '12px'
+                          }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Wins</span>
+                              <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+                                {user.totalWins}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Earnings</span>
+                              <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#4ADE80', marginTop: '2px' }}>
+                                {formatCurrency(user.totalEarnings || 0)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+
               {isMobile ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {winPrizeWinners.map(w => (
-                    <div key={w.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <img src={w.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.name} style={{ width: '40px', height: '40px', borderRadius: '12px' }} alt="" />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.name}</div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '2px' }}>{new Date(w.time).toLocaleString()}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {filteredUsers.map((user) => {
+                    const originalIdx = sortedUsers.findIndex(u => u.id === user.id);
+                    const rank = originalIdx + 1;
+                    const winRate = user.totalMatches > 0 ? Math.round(((user.totalWins || 0) / user.totalMatches) * 100) : 0;
+
+                    return (
+                      <div 
+                        key={user.id} 
+                        style={{ 
+                          background: 'var(--card-bg)', 
+                          border: '1px solid var(--card-border)', 
+                          borderRadius: '20px', 
+                          padding: '16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}
+                      >
+                        <div style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          borderRadius: '10px', 
+                          background: rank === 1 ? '#F59E0B20' : rank === 2 ? '#9CA3AF20' : rank === 3 ? '#D9770620' : 'rgba(255,255,255,0.04)',
+                          color: rank === 1 ? '#F59E0B' : rank === 2 ? '#9CA3AF' : rank === 3 ? '#D97706' : 'var(--text-muted)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.85rem'
+                        }}>
+                          {rank}
                         </div>
-                        <span style={{ background: '#10B98122', color: '#10B981', padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800 }}>🏆 WINNER</span>
+
+                        <img 
+                          src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name} 
+                          style={{ width: '40px', height: '40px', borderRadius: '12px' }} 
+                          alt="" 
+                        />
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {user.name}
+                          </div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1px' }}>
+                            {user.username}
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontWeight: 900, color: '#4ADE80', fontSize: '0.95rem' }}>
+                            {formatCurrency(user.totalEarnings || 0)}
+                          </div>
+                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, marginTop: '2px' }}>
+                            {user.totalWins} Wins ({winRate}%)
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Match / Card</span>
-                          <span style={{ color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.85rem', textAlign: 'right' }}>{w.match}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Prize Amount</span>
-                          <span style={{ fontWeight: 800, color: '#4ADE80', fontSize: '1rem' }}>{formatCurrency(w.amount)}</span>
-                        </div>
-                      </div>
+                    );
+                  })}
+                  {filteredUsers.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                      No users found matching search query.
                     </div>
-                  ))}
+                  )}
                 </div>
               ) : (
                 <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--divider)' }}>
-                        {['Winner', 'Match / Card Info', 'Prize Amount', 'Date & Time'].map(h => (
+                        {['Rank', 'User', 'Matches Played', 'Total Wins', 'Win Rate', 'Total Earnings'].map(h => (
                           <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {winPrizeWinners.map(w => (
-                        <tr key={w.id} style={{ borderBottom: '1px solid var(--divider)' }}>
-                          <td style={{ padding: '16px 20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <img src={w.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + w.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                              <div style={{ fontWeight: 700 }}>{w.name}</div>
-                            </div>
+                      {filteredUsers.map((user) => {
+                        const originalIdx = sortedUsers.findIndex(u => u.id === user.id);
+                        const rank = originalIdx + 1;
+                        const winRate = user.totalMatches > 0 ? Math.round(((user.totalWins || 0) / user.totalMatches) * 100) : 0;
+
+                        return (
+                          <tr 
+                            key={user.id} 
+                            style={{ 
+                              borderBottom: '1px solid var(--divider)',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                          >
+                            <td style={{ padding: '16px 20px' }}>
+                              <div style={{ 
+                                width: '28px', 
+                                height: '28px', 
+                                borderRadius: '8px', 
+                                background: rank === 1 ? '#F59E0B20' : rank === 2 ? '#9CA3AF20' : rank === 3 ? '#D9770620' : 'transparent',
+                                color: rank === 1 ? '#F59E0B' : rank === 2 ? '#9CA3AF' : rank === 3 ? '#D97706' : 'var(--text-muted)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 800,
+                                fontSize: '0.8rem'
+                              }}>
+                                {rank}
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 20px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                                <div>
+                                  <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{user.name}</div>
+                                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1px' }}>{user.username}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.totalMatches}</td>
+                            <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.totalWins}</td>
+                            <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>{winRate}%</span>
+                                <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${winRate}%`, height: '100%', background: winRate > 60 ? '#10B981' : winRate > 30 ? '#F59E0B' : '#EF4444' }} />
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 20px', fontWeight: 800, color: '#4ADE80', fontSize: '0.95rem' }}>
+                              {formatCurrency(user.totalEarnings || 0)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {filteredUsers.length === 0 && (
+                        <tr>
+                          <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            No users found matching search query.
                           </td>
-                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.match}</td>
-                          <td style={{ padding: '16px 20px', fontWeight: 800, color: '#4ADE80' }}>{formatCurrency(w.amount)}</td>
-                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{new Date(w.time).toLocaleString()}</td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>

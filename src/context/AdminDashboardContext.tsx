@@ -19,6 +19,7 @@ export interface AdminUser {
   totalMatches: number;
   totalWins: number;
   status: 'active' | 'suspended';
+  totalEarnings?: number;
 }
 
 export interface PaymentRequest {
@@ -202,7 +203,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           phone: data.phone || 'N/A',
           totalMatches: data.totalMatches || 0,
           totalWins: data.totalWins || 0,
-          status: data.status || 'active'
+          status: data.status || 'active',
+          totalEarnings: data.totalEarnings || 0
         };
       });
       setAdminUsers(firebaseUsers);
@@ -449,7 +451,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             const data = uDoc.data();
             t.update(userRef, { 
               totalWins: (data.totalWins || 0) + 1,
-              balance: (data.balance || 0) + winner.reward
+              balance: (data.balance || 0) + winner.reward,
+              totalEarnings: (data.totalEarnings || 0) + winner.reward
             });
           }
         });
@@ -578,7 +581,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             const data = uDoc.data();
             t.update(userRef, { 
               totalWins: (data.totalWins || 0) + 1,
-              balance: (data.balance || 0) + winPrize
+              balance: (data.balance || 0) + winPrize,
+              totalEarnings: (data.totalEarnings || 0) + winPrize
             });
           }
         });
@@ -615,7 +619,10 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             const uDoc = await t.get(userRef);
             if (uDoc.exists()) {
               const data = uDoc.data();
-              t.update(userRef, { balance: (data.balance || 0) + totalKillReward });
+              t.update(userRef, { 
+                balance: (data.balance || 0) + totalKillReward,
+                totalEarnings: (data.totalEarnings || 0) + totalKillReward
+              });
             }
           });
 
