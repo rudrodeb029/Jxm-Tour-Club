@@ -53,7 +53,7 @@ const RootNavigator = () => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || (location.pathname.startsWith('/match/') && !location.pathname.includes('/card/'));
+  const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
 
   return (
     <>
