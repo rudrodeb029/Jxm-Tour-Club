@@ -89,6 +89,17 @@ export interface WinnerCeremony {
   winners: MatchWinner[];
 }
 
+export interface Gateway {
+  id: string;
+  name: string;
+  color: string;
+  logo: string;
+  number: string;
+  instructions: string;
+  order: number;
+}
+
+
 interface AdminDashboardContextType {
   // Matches
   adminMatches: AdminMatch[];
@@ -143,6 +154,12 @@ interface AdminDashboardContextType {
   // Activities
   activities: Activity[];
   logActivity: (activity: Omit<Activity, 'id' | 'timestamp'>) => void;
+
+  // Gateways (Payment Settings)
+  gateways: Gateway[];
+  updateGatewayNumber: (id: string, number: string, instructions: string) => Promise<void>;
+  addGateway: (gateway: Omit<Gateway, 'id'>) => Promise<void>;
+  deleteGateway: (id: string) => Promise<void>;
 }
 
 // ============ CONTEXT ============
@@ -173,6 +190,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [gateways, setGateways] = useState<Gateway[]>([]);
 
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
 
@@ -279,6 +297,26 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       setWinners(fbWinners);
     });
 
+    // Gateways Listener
+    const unsubscribeGateways = onSnapshot(collection(db, 'gateways'), (snapshot) => {
+      if (snapshot.empty) {
+        const defaults = [
+          { name: 'Bkash', color: '#E2136E', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png', number: '01700000000', instructions: 'Send money to this Bkash personal number and enter your Transaction ID below.', order: 1 },
+          { name: 'Nagad', color: '#F15A22', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png', number: '01800000000', instructions: 'Send money to this Nagad personal number and enter your Transaction ID below.', order: 2 },
+          { name: 'Binance', color: '#F3BA2F', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png', number: '0x1234567890abcdef...', instructions: 'Transfer USDT to this Binance BEP-20 address and enter your TXN hash.', order: 3 }
+        ];
+        defaults.forEach(async (d) => {
+          const docId = d.name.toLowerCase() + '-default';
+          await setDoc(doc(db, 'gateways', docId), d);
+        });
+      } else {
+        const fbGateways = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Gateway[];
+        fbGateways.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setGateways(fbGateways);
+      }
+    }, (error) => console.error('Error fetching gateways:', error));
+
+
     return () => {
       unsubscribeUsers();
       unsubscribePayments();
@@ -286,6 +324,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       unsubscribeActivities();
       unsubscribeMatches();
       unsubscribeWinners();
+      unsubscribeGateways();
     };
 
   }, []);
@@ -1001,6 +1040,32 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const updateGatewayNumber = async (id: string, number: string, instructions: string) => {
+    try {
+      await updateDoc(doc(db, 'gateways', id), { number, instructions });
+    } catch (e) {
+      console.error('Error updating gateway', e);
+    }
+  };
+
+  const addGateway = async (newGw: Omit<Gateway, 'id'>) => {
+    try {
+      const order = gateways.length + 1;
+      await addDoc(collection(db, 'gateways'), { ...newGw, order });
+    } catch (e) {
+      console.error('Error adding gateway', e);
+    }
+  };
+
+  const deleteGateway = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'gateways', id));
+    } catch (e) {
+      console.error('Error deleting gateway', e);
+    }
+  };
+
+
   // Stats
   const stats = {
     totalUsers: adminUsers.length,
@@ -1045,7 +1110,11 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       activeWinnerCeremony,
       clearWinnerCeremony,
       activities,
-      logActivity
+      logActivity,
+      gateways,
+      updateGatewayNumber,
+      addGateway,
+      deleteGateway
     }}>
       {children}
     </AdminDashboardContext.Provider>

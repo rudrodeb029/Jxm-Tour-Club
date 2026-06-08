@@ -44,16 +44,8 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   const [transactionId, setTransactionId] = useState('');
   const [depositSuccess, setDepositSuccess] = useState(false);
 
-  // Load gateways from local storage or defaults
-  const [gateways] = useState(() => {
-    const saved = localStorage.getItem('localGateways');
-    if (saved) return JSON.parse(saved);
-    return [
-      { id: 'bkash-default', name: 'Bkash', color: '#E2136E', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png' },
-      { id: 'nagad-default', name: 'Nagad', color: '#F15A22', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png' },
-      { id: 'binance-default', name: 'Binance', color: '#F3BA2F', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png' }
-    ];
-  });
+  // Load gateways from context
+  const { gateways } = useAdminDashboard();
 
   if (!isOpen) return null;
 
@@ -422,6 +414,56 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                       />
                     </div>
                   </div>
+
+                  {/* Deposit Account Details Configuration */}
+                  {(() => {
+                    const gw = gateways.find((g: any) => g.id === selectedGateway);
+                    if (!gw) return null;
+                    return (
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '20px',
+                        padding: '16px',
+                        marginBottom: '20px',
+                        textAlign: 'left'
+                      }}>
+                        {gw.number && (
+                          <div style={{ marginBottom: gw.instructions ? '12px' : '0' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Send Money To (Personal)</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{gw.number}</span>
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(gw.number);
+                                  alert('Account number copied to clipboard!');
+                                }}
+                                style={{
+                                  background: 'rgba(249, 111, 46, 0.1)',
+                                  border: '1px solid rgba(249, 111, 46, 0.2)',
+                                  color: 'var(--accent-orange)',
+                                  padding: '6px 12px',
+                                  borderRadius: '10px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 800,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {gw.instructions && (
+                          <div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Instructions</div>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{gw.instructions}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Transaction ID Input */}
                   <div style={{ marginBottom: '24px' }}>

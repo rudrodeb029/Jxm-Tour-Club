@@ -32,7 +32,7 @@ const Wallet = () => {
   const { formatCurrency, currency } = useCurrency();
   const { isAdminMode } = useAdmin();
   const { balance, addBalance, deductBalance, transactions: localTransactions } = useBalance();
-  const { paymentRequests, withdrawalRequests } = useAdminDashboard();
+  const { paymentRequests, withdrawalRequests, gateways, addGateway, deleteGateway } = useAdminDashboard();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser.id);
   const [profileUsername, setProfileUsername] = useState<string>('');
@@ -65,15 +65,7 @@ const Wallet = () => {
   });
 
   // Dynamic Gateways State
-  const [localGateways, setLocalGateways] = useState(() => {
-    const saved = localStorage.getItem('localGateways');
-    if (saved) return JSON.parse(saved);
-    return [
-      { id: 'bkash-default', name: 'Bkash', color: '#E2136E', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png' },
-      { id: 'nagad-default', name: 'Nagad', color: '#F15A22', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png' },
-      { id: 'binance-default', name: 'Binance', color: '#F3BA2F', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png' }
-    ];
-  });
+  const localGateways = gateways;
 
   const [showAddGateway, setShowAddGateway] = useState(false);
   const [newGateway, setNewGateway] = useState({ name: '', color: '#F96F2E', logo: '' });
@@ -88,60 +80,11 @@ const Wallet = () => {
   const [newMethodData, setNewMethodData] = useState({ name: '', number: '' });
 
   useEffect(() => {
-    localStorage.setItem('localGateways', JSON.stringify(localGateways));
-  }, [localGateways]);
-
-  useEffect(() => {
     localStorage.setItem('savedMethods', JSON.stringify(savedMethods));
   }, [savedMethods]);
 
   const isAnyWalletModalOpen = isConfirming || isWithdrawConfirming || showAddGateway || showAddMethod || deleteConfirmation !== null || successConfig.isOpen;
   useLockBodyScroll(isAnyWalletModalOpen);
-
-  // Automatic Logo Migration for broken seeklogo URLs
-  useEffect(() => {
-    const assetMap: Record<string, string> = {
-      'bkash': 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png',
-      'nagad': 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png',
-      'binance': 'https://cryptologos.cc/logos/bnb-bnb-logo.png'
-    };
-
-    let changed = false;
-    const updatedGateways = localGateways.map((gw: any) => {
-      if (gw.name.toLowerCase() === 'rocket' || gw.id === 'rocket-default') {
-        changed = true;
-        return { ...gw, id: 'binance-default', name: 'Binance', color: '#F3BA2F', logo: assetMap['binance'] };
-      }
-      if (gw.logo && gw.logo.includes('seeklogo.com')) {
-        const key = gw.name.toLowerCase();
-        if (assetMap[key]) {
-          changed = true;
-          return { ...gw, logo: assetMap[key] };
-        }
-      }
-      return gw;
-    });
-
-    const updatedMethods = savedMethods.map((m: any) => {
-      if (m.name.toLowerCase() === 'rocket') {
-        changed = true;
-        return { ...m, name: 'Binance', icon: assetMap['binance'], color: '#F3BA2F' };
-      }
-      if (m.icon && m.icon.includes('seeklogo.com')) {
-        const key = m.name.toLowerCase();
-        if (assetMap[key]) {
-          changed = true;
-          return { ...m, icon: assetMap[key] };
-        }
-      }
-      return m;
-    });
-
-    if (changed) {
-      setLocalGateways(updatedGateways);
-      setSavedMethods(updatedMethods);
-    }
-  }, []);
 
   const handleDeleteGateway = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -154,11 +97,7 @@ const Wallet = () => {
     const { id, type } = deleteConfirmation;
 
     if (type === 'gateway') {
-      setLocalGateways(prev => {
-        const updated = prev.filter((g: any) => g.id !== id);
-        localStorage.setItem('localGateways', JSON.stringify(updated));
-        return updated;
-      });
+      deleteGateway(id);
       if (selectedGateway === id) setSelectedGateway(null);
     } else {
       setSavedMethods(prev => {
@@ -176,23 +115,26 @@ const Wallet = () => {
       alert('Please fill all fields');
       return;
     }
-    const id = Date.now().toString();
-    setLocalGateways(prev => {
-      const updated = [...prev, { ...newGateway, id }];
-      localStorage.setItem('localGateways', JSON.stringify(updated));
-      return updated;
+    addGateway({
+      name: newGateway.name,
+      color: newGateway.color,
+      logo: newGateway.logo,
+      number: '',
+      instructions: '',
+      order: gateways.length + 1
     });
     setNewGateway({ name: '', color: '#F96F2E', logo: '' });
     setShowAddGateway(false);
   };
 
   const addPresetGateway = (name: string, color: string, logo: string) => {
-    const id = Date.now().toString();
-    const gateway = { name, color, logo, id };
-    setLocalGateways(prev => {
-      const updated = [...prev, gateway];
-      localStorage.setItem('localGateways', JSON.stringify(updated));
-      return updated;
+    addGateway({
+      name,
+      color,
+      logo,
+      number: '',
+      instructions: '',
+      order: gateways.length + 1
     });
     setShowAddGateway(false);
   };
@@ -936,6 +878,56 @@ const Wallet = () => {
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
               You are adding <span style={{ color: '#10B981', fontWeight: 900 }}>{formatCurrency(parseFloat(depositAmount))}</span> to your wallet using <span style={{ color: localGateways.find((g: any) => g.id === selectedGateway)?.color, fontWeight: 800 }}>{localGateways.find((g: any) => g.id === selectedGateway)?.name}</span>.
             </p>
+
+            {/* Deposit Account Details Configuration */}
+            {(() => {
+              const gw = localGateways.find((g: any) => g.id === selectedGateway);
+              if (!gw) return null;
+              return (
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--glass-border)',
+                  borderRadius: '20px',
+                  padding: '16px',
+                  marginBottom: '24px',
+                  textAlign: 'left'
+                }}>
+                  {gw.number && (
+                    <div style={{ marginBottom: gw.instructions ? '12px' : '0' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Send Money To (Personal)</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{gw.number}</span>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(gw.number);
+                            alert('Account number copied to clipboard!');
+                          }}
+                          style={{
+                            background: 'rgba(249, 111, 46, 0.1)',
+                            border: '1px solid rgba(249, 111, 46, 0.2)',
+                            color: 'var(--accent-orange)',
+                            padding: '6px 12px',
+                            borderRadius: '10px',
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {gw.instructions && (
+                    <div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Instructions</div>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{gw.instructions}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             
             <div style={{ marginBottom: '24px', textAlign: 'left' }}>
               <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>Transaction ID (Required)</label>
