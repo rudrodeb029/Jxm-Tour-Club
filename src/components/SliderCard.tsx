@@ -404,7 +404,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       {/* Bottom Join & Live/Countdown Area */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-
+          {statusConfig && statusConfig.status === 'live' && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-start' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+              {statusConfig.display}
+            </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
             <Users className="w-4 h-4" />
             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4ADE80' }}>{totalMatchCount} Match{totalMatchCount !== 1 ? 'es' : ''}</span>

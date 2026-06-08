@@ -884,24 +884,12 @@ const AdminDashboard = () => {
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)', padding: '24px' }}>
             <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
               <h3 style={{ fontWeight: 800, marginBottom: '24px' }}>⚙️ Edit Match Details</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Name</label>
                   <input value={editingMatchData.name} onChange={e => setEditingMatchData({...editingMatchData, name: e.target.value})} style={{ width: '100%', padding: '14px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Match Status</label>
-                  <select 
-                    value={editingMatchData.status} 
-                    onChange={e => setEditingMatchData({...editingMatchData, status: e.target.value as 'live' | 'upcoming' | 'finished'})} 
-                    style={{ width: '100%', padding: '14px', background: '#1e293b', border: '1px solid var(--card-border)', borderRadius: '12px', color: '#f3f4f6', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Outfit',sans-serif" }}
-                  >
-                    <option value="upcoming" style={{ background: '#111827', color: '#f3f4f6' }}>Upcoming</option>
-                    <option value="live" style={{ background: '#111827', color: '#f3f4f6' }}>Live</option>
-                    <option value="finished" style={{ background: '#111827', color: '#f3f4f6' }}>Finished</option>
-                  </select>
-                </div>
-                <div style={{ gridColumn: isMobile ? 'span 1' : 'span 2' }}>
                   <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '6px' }}>Available Modes (Check to show on card)</label>
                   <div style={{ display: 'flex', gap: '16px', background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
                     {['Solo', 'Duo', 'Squad'].map(mode => (

@@ -57,14 +57,9 @@ export const getCardStatus = (
     let diff = targetTime.getTime() - nowTime.getTime();
 
     if (diff <= 0) {
-      if (mStatus !== 'live') {
-        // If the admin has not started the match, it immediately shows as finished
-        return 'finished';
-      } else {
-        const durationMs = (Number(card.liveDuration) || 60) * 60 * 1000;
-        if (Math.abs(diff) >= durationMs) return 'finished';
-        return 'live';
-      }
+      const durationMs = (Number(card.liveDuration) || 60) * 60 * 1000;
+      if (Math.abs(diff) >= durationMs) return 'finished';
+      return 'live';
     } else {
       return 'upcoming';
     }
@@ -79,6 +74,22 @@ export const getEffectiveMatchStatus = (match: any): 'live' | 'upcoming' | 'fini
   if (!match) return 'upcoming';
   if (match.status === 'finished') return 'finished';
 
+  const cards = match.innerSections || [];
+  if (cards.length > 0) {
+    const cardStatuses = cards.map((c: any) => getCardStatus(c, match.status));
+    if (cardStatuses.includes('live')) return 'live';
+    if (cardStatuses.every((s: any) => s === 'finished')) return 'finished';
+    if (cardStatuses.includes('upcoming')) return 'upcoming';
+  } else {
+    const teams = [match.team1, match.team2, match.team3].filter(Boolean);
+    if (teams.length > 0) {
+      const cardStatuses = teams.map((c: any) => getCardStatus(c, match.status));
+      if (cardStatuses.includes('live')) return 'live';
+      if (cardStatuses.every((s: any) => s === 'finished')) return 'finished';
+      if (cardStatuses.includes('upcoming')) return 'upcoming';
+    }
+  }
+
   const matchTimeStr = match.time;
   if (!matchTimeStr) return match.status || 'upcoming';
 
@@ -90,30 +101,19 @@ export const getEffectiveMatchStatus = (match: any): 'live' | 'upcoming' | 'fini
 
     const diff = targetTime.getTime() - nowTime.getTime();
 
-    // If the scheduled start time has arrived/passed (diff <= 0)
     if (diff <= 0) {
       if (match.status !== 'live') {
-        // If the admin has not started the match, it immediately shows as finished
         return 'finished';
       } else {
-        // If the match status is 'live', check if the live duration has expired
-        const cards = match.innerSections || [];
-        let maxDurationMins = 60;
-        if (cards.length > 0) {
-          maxDurationMins = Math.max(...cards.map((c: any) => Number(c.liveDuration) || 60));
-        } else {
-          const d1 = Number(match.team1?.liveDuration) || 60;
-          const d2 = Number(match.team2?.liveDuration) || 60;
-          const d3 = Number(match.team3?.liveDuration) || 60;
-          maxDurationMins = Math.max(d1, d2, d3);
-        }
-        
+        const d1 = Number(match.team1?.liveDuration) || 60;
+        const d2 = Number(match.team2?.liveDuration) || 60;
+        const d3 = Number(match.team3?.liveDuration) || 60;
+        const maxDurationMins = Math.max(d1, d2, d3);
         const durationMs = maxDurationMins * 60 * 1000;
         if (Math.abs(diff) >= durationMs) return 'finished';
         return 'live';
       }
     } else {
-      // Future match
       return 'upcoming';
     }
   } catch (e) {
