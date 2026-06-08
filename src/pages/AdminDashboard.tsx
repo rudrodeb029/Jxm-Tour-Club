@@ -258,6 +258,7 @@ const AdminDashboard = () => {
     { rank: 3, userId: '', reward: '25' },
   ]);
   const [leaderboardSearch, setLeaderboardSearch] = useState('');
+  const [subLeaderboard, setSubLeaderboard] = useState<'winners' | 'withdrawals'>('winners');
   const [announcementTitle, setAnnouncementTitle] = useState('📢 JXM CLUB ANNOUNCEMENT');
   const [announcementText, setAnnouncementText] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
@@ -1304,13 +1305,27 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'win_prize' && (() => {
+          // Calculate withdrawals sum per user
+          const withdrawalSums = [...adminUsers].reduce((acc, user) => {
+            acc[user.id] = withdrawalRequests
+              .filter(w => w.userId === user.id && w.status === 'completed')
+              .reduce((sum, w) => sum + (w.isRaw ? w.amount : w.amount * 126), 0);
+            return acc;
+          }, {} as Record<string, number>);
+
           const sortedUsers = [...adminUsers].sort((a, b) => {
-            const winsA = a.totalWins || 0;
-            const winsB = b.totalWins || 0;
-            if (winsB !== winsA) return winsB - winsA;
-            const earningsA = a.totalEarnings || 0;
-            const earningsB = b.totalEarnings || 0;
-            return earningsB - earningsA;
+            if (subLeaderboard === 'winners') {
+              const winsA = a.totalWins || 0;
+              const winsB = b.totalWins || 0;
+              if (winsB !== winsA) return winsB - winsA;
+              const earningsA = a.totalEarnings || 0;
+              const earningsB = b.totalEarnings || 0;
+              return earningsB - earningsA;
+            } else {
+              const withdrawA = withdrawalSums[a.id] || 0;
+              const withdrawB = withdrawalSums[b.id] || 0;
+              return withdrawB - withdrawA;
+            }
           });
 
           const filteredUsers = sortedUsers.filter(u => 
@@ -1322,6 +1337,54 @@ const AdminDashboard = () => {
 
           return (
             <div>
+              {/* Tab Selector */}
+              <div style={{
+                display: 'flex',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--card-border)',
+                borderRadius: '16px',
+                padding: '4px',
+                marginBottom: '24px',
+                width: isMobile ? '100%' : 'fit-content'
+              }}>
+                <button
+                  onClick={() => setSubLeaderboard('winners')}
+                  style={{
+                    flex: isMobile ? 1 : 'none',
+                    padding: '10px 20px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontFamily: "'Outfit',sans-serif",
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    background: subLeaderboard === 'winners' ? 'linear-gradient(90deg, #F96F2E, #E34360)' : 'transparent',
+                    color: 'var(--text-primary)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  🏆 Winners Leaderboard
+                </button>
+                <button
+                  onClick={() => setSubLeaderboard('withdrawals')}
+                  style={{
+                    flex: isMobile ? 1 : 'none',
+                    padding: '10px 20px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontFamily: "'Outfit',sans-serif",
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    background: subLeaderboard === 'withdrawals' ? 'linear-gradient(90deg, #F96F2E, #E34360)' : 'transparent',
+                    color: 'var(--text-primary)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  💸 Withdrawal Leaderboard
+                </button>
+              </div>
+
               <div style={{ 
                 display: 'flex', 
                 flexDirection: isMobile ? 'column' : 'row', 
@@ -1331,7 +1394,9 @@ const AdminDashboard = () => {
                 marginBottom: '24px' 
               }}>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600 }}>
-                  Rankings based on Total Wins and Earnings
+                  {subLeaderboard === 'winners' 
+                    ? 'Rankings based on Total Wins and Earnings' 
+                    : 'Rankings based on Total Completed Withdrawals'}
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <div style={{ position: 'relative', flex: 1 }}>
@@ -1459,29 +1524,55 @@ const AdminDashboard = () => {
                             {user.username}
                           </div>
 
-                          <div style={{ 
-                            background: 'rgba(255,255,255,0.02)', 
-                            border: '1px solid rgba(255,255,255,0.05)',
-                            padding: '12px 16px', 
-                            borderRadius: '16px', 
-                            width: '100%',
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '12px'
-                          }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Wins</span>
-                              <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-                                {user.totalWins}
-                              </span>
+                          {subLeaderboard === 'winners' ? (
+                            <div style={{ 
+                              background: 'rgba(255,255,255,0.02)', 
+                              border: '1px solid rgba(255,255,255,0.05)',
+                              padding: '12px 16px', 
+                              borderRadius: '16px', 
+                              width: '100%',
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: '12px'
+                            }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Wins</span>
+                                <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+                                  {user.totalWins}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Earnings</span>
+                                <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#4ADE80', marginTop: '2px' }}>
+                                  {formatCurrency(user.totalEarnings || 0)}
+                                </span>
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Earnings</span>
-                              <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#4ADE80', marginTop: '2px' }}>
-                                {formatCurrency(user.totalEarnings || 0)}
-                              </span>
+                          ) : (
+                            <div style={{ 
+                              background: 'rgba(255,255,255,0.02)', 
+                              border: '1px solid rgba(255,255,255,0.05)',
+                              padding: '12px 16px', 
+                              borderRadius: '16px', 
+                              width: '100%',
+                              display: 'grid',
+                              gridTemplateColumns: '1fr 1fr',
+                              gap: '12px'
+                            }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Requests</span>
+                                <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+                                  {withdrawalRequests.filter(w => w.userId === user.id && w.status === 'completed').length}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Withdrawn</span>
+                                <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#EF4444', marginTop: '2px' }}>
+                                  {formatCurrency(withdrawalSums[user.id] || 0)}
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     });
@@ -1495,6 +1586,7 @@ const AdminDashboard = () => {
                     const originalIdx = sortedUsers.findIndex(u => u.id === user.id);
                     const rank = originalIdx + 1;
                     const winRate = user.totalMatches > 0 ? Math.round(((user.totalWins || 0) / user.totalMatches) * 100) : 0;
+                    const completedCount = withdrawalRequests.filter(w => w.userId === user.id && w.status === 'completed').length;
 
                     return (
                       <div 
@@ -1540,11 +1632,15 @@ const AdminDashboard = () => {
                         </div>
 
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: 900, color: '#4ADE80', fontSize: '0.95rem' }}>
-                            {formatCurrency(user.totalEarnings || 0)}
+                          <div style={{ fontWeight: 900, color: subLeaderboard === 'winners' ? '#4ADE80' : '#EF4444', fontSize: '0.95rem' }}>
+                            {subLeaderboard === 'winners' 
+                              ? formatCurrency(user.totalEarnings || 0)
+                              : formatCurrency(withdrawalSums[user.id] || 0)}
                           </div>
                           <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, marginTop: '2px' }}>
-                            {user.totalWins} Wins ({winRate}%)
+                            {subLeaderboard === 'winners'
+                              ? `${user.totalWins} Wins (${winRate}%)`
+                              : `${completedCount} Withdrawals`}
                           </div>
                         </div>
                       </div>
@@ -1561,71 +1657,121 @@ const AdminDashboard = () => {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--divider)' }}>
-                        {['Rank', 'User', 'Matches Played', 'Total Wins', 'Win Rate', 'Total Earnings'].map(h => (
-                          <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
-                        ))}
+                        {subLeaderboard === 'winners' 
+                          ? ['Rank', 'User', 'Matches Played', 'Total Wins', 'Win Rate', 'Total Earnings'].map(h => (
+                              <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
+                            ))
+                          : ['Rank', 'User', 'Completed Requests', 'Total Withdrawn'].map(h => (
+                              <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
+                            ))
+                        }
                       </tr>
                     </thead>
                     <tbody>
                       {filteredUsers.map((user) => {
                         const originalIdx = sortedUsers.findIndex(u => u.id === user.id);
                         const rank = originalIdx + 1;
-                        const winRate = user.totalMatches > 0 ? Math.round(((user.totalWins || 0) / user.totalMatches) * 100) : 0;
 
-                        return (
-                          <tr 
-                            key={user.id} 
-                            style={{ 
-                              borderBottom: '1px solid var(--divider)',
-                              transition: 'background-color 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          >
-                            <td style={{ padding: '16px 20px' }}>
-                              <div style={{ 
-                                width: '28px', 
-                                height: '28px', 
-                                borderRadius: '8px', 
-                                background: rank === 1 ? '#F59E0B20' : rank === 2 ? '#9CA3AF20' : rank === 3 ? '#D9770620' : 'transparent',
-                                color: rank === 1 ? '#F59E0B' : rank === 2 ? '#9CA3AF' : rank === 3 ? '#D97706' : 'var(--text-muted)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 800,
-                                fontSize: '0.8rem'
-                              }}>
-                                {rank}
-                              </div>
-                            </td>
-                            <td style={{ padding: '16px 20px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <img src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                                <div>
-                                  <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{user.name}</div>
-                                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1px' }}>{user.username}</div>
+                        if (subLeaderboard === 'winners') {
+                          const winRate = user.totalMatches > 0 ? Math.round(((user.totalWins || 0) / user.totalMatches) * 100) : 0;
+                          return (
+                            <tr 
+                              key={user.id} 
+                              style={{ 
+                                borderBottom: '1px solid var(--divider)',
+                                transition: 'background-color 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <td style={{ padding: '16px 20px' }}>
+                                <div style={{ 
+                                  width: '28px', 
+                                  height: '28px', 
+                                  borderRadius: '8px', 
+                                  background: rank === 1 ? '#F59E0B20' : rank === 2 ? '#9CA3AF20' : rank === 3 ? '#D9770620' : 'transparent',
+                                  color: rank === 1 ? '#F59E0B' : rank === 2 ? '#9CA3AF' : rank === 3 ? '#D97706' : 'var(--text-muted)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '0.8rem'
+                                }}>
+                                  {rank}
                                 </div>
-                              </div>
-                            </td>
-                            <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.totalMatches}</td>
-                            <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.totalWins}</td>
-                            <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span>{winRate}%</span>
-                                <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-                                  <div style={{ width: `${winRate}%`, height: '100%', background: winRate > 60 ? '#10B981' : winRate > 30 ? '#F59E0B' : '#EF4444' }} />
+                              </td>
+                              <td style={{ padding: '16px 20px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <img src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                                  <div>
+                                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{user.name}</div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1px' }}>{user.username}</div>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td style={{ padding: '16px 20px', fontWeight: 800, color: '#4ADE80', fontSize: '0.95rem' }}>
-                              {formatCurrency(user.totalEarnings || 0)}
-                            </td>
-                          </tr>
-                        );
+                              </td>
+                              <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.totalMatches}</td>
+                              <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{user.totalWins}</td>
+                              <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span>{winRate}%</span>
+                                  <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                                    <div style={{ width: `${winRate}%`, height: '100%', background: winRate > 60 ? '#10B981' : winRate > 30 ? '#F59E0B' : '#EF4444' }} />
+                                  </div>
+                                </div>
+                              </td>
+                              <td style={{ padding: '16px 20px', fontWeight: 800, color: '#4ADE80', fontSize: '0.95rem' }}>
+                                {formatCurrency(user.totalEarnings || 0)}
+                              </td>
+                            </tr>
+                          );
+                        } else {
+                          const completedCount = withdrawalRequests.filter(w => w.userId === user.id && w.status === 'completed').length;
+                          return (
+                            <tr 
+                              key={user.id} 
+                              style={{ 
+                                borderBottom: '1px solid var(--divider)',
+                                transition: 'background-color 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.01)'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <td style={{ padding: '16px 20px' }}>
+                                <div style={{ 
+                                  width: '28px', 
+                                  height: '28px', 
+                                  borderRadius: '8px', 
+                                  background: rank === 1 ? '#F59E0B20' : rank === 2 ? '#9CA3AF20' : rank === 3 ? '#D9770620' : 'transparent',
+                                  color: rank === 1 ? '#F59E0B' : rank === 2 ? '#9CA3AF' : rank === 3 ? '#D97706' : 'var(--text-muted)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '0.8rem'
+                                }}>
+                                  {rank}
+                                </div>
+                              </td>
+                              <td style={{ padding: '16px 20px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <img src={user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.name} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                                  <div>
+                                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{user.name}</div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1px' }}>{user.username}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{completedCount} requests</td>
+                              <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '0.95rem' }}>
+                                {formatCurrency(withdrawalSums[user.id] || 0)}
+                              </td>
+                            </tr>
+                          );
+                        }
                       })}
                       {filteredUsers.length === 0 && (
                         <tr>
-                          <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          <td colSpan={subLeaderboard === 'winners' ? 6 : 4} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
                             No users found matching search query.
                           </td>
                         </tr>
