@@ -201,6 +201,7 @@ const MatchDetails = () => {
                 {(() => {
                   let cardStatus = getCardStatusFromUtil(card, match.status);
                   let cardTimeLeft = match.time;
+                  let liveTimeLeft = '';
                   
                   if (card.startTime && cardStatus === 'upcoming') {
                     const nowTime = new Date(now);
@@ -218,6 +219,26 @@ const MatchDetails = () => {
                     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const s = Math.floor((diff % (1000 * 60)) / 1000);
                     cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                  } else if (cardStatus === 'live') {
+                    const timeStr = card.startTime || match.time || '';
+                    if (timeStr) {
+                      const nowTime = new Date(now);
+                      const { hours, minutes, seconds } = parseTime(timeStr);
+                      let targetTime = new Date(now);
+                      targetTime.setHours(hours, minutes, seconds, 0);
+                      const elapsedMs = nowTime.getTime() - targetTime.getTime();
+                      const liveDurationMins = Number(card.liveDuration) || 60;
+                      const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
+                      if (remainingMs > 0) {
+                        const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+                        const hrs = Math.floor(totalSeconds / 3600);
+                        const mins = Math.floor((totalSeconds % 3600) / 60);
+                        const secs = totalSeconds % 60;
+                        const mm = mins.toString().padStart(2, '0');
+                        const ss = secs.toString().padStart(2, '0');
+                        liveTimeLeft = hrs > 0 ? ` (${hrs}:${mm}:${ss})` : ` (${mm}:${ss})`;
+                      }
+                    }
                   }
                   
                   return (
@@ -225,7 +246,7 @@ const MatchDetails = () => {
                       {cardStatus === 'live' && (
                         <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                          LIVE
+                          LIVE{liveTimeLeft}
                         </div>
                       )}
                       {cardStatus === 'upcoming' && (

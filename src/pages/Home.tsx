@@ -1208,6 +1208,28 @@ const Home = () => {
                           const prizePool = card.winPrize || 0;
                           const entryType = card.entryType || 'Solo';
                           const gameMap = card.map || 'Bermuda';
+                          
+                          let liveTimeLeft = '';
+                          const timeStr = card.startTime || card.matchTime || '';
+                          if (timeStr) {
+                            const nowTime = new Date();
+                            const { hours, minutes, seconds } = parseTime(timeStr);
+                            let targetTime = new Date();
+                            targetTime.setHours(hours, minutes, seconds, 0);
+                            const elapsedMs = nowTime.getTime() - targetTime.getTime();
+                            const liveDurationMins = Number(card.liveDuration) || 60;
+                            const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
+                            if (remainingMs > 0) {
+                              const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+                              const hrs = Math.floor(totalSeconds / 3600);
+                              const mins = Math.floor((totalSeconds % 3600) / 60);
+                              const secs = totalSeconds % 60;
+                              const mm = mins.toString().padStart(2, '0');
+                              const ss = secs.toString().padStart(2, '0');
+                              liveTimeLeft = hrs > 0 ? ` (${hrs}:${mm}:${ss})` : ` (${mm}:${ss})`;
+                            }
+                          }
+
                           return (
                             <div 
                               key={card.id}
@@ -1247,7 +1269,7 @@ const Home = () => {
                                   borderRadius: '8px',
                                   border: '1px solid rgba(239, 68, 68, 0.25)',
                                   letterSpacing: '0.04em'
-                                }}>LIVE</span>
+                                }}>LIVE{liveTimeLeft}</span>
                               </div>
                               
                               {/* Metadata badge row */}

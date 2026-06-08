@@ -251,7 +251,7 @@ const LiveMatches = () => {
                     {isMatchLive ? (
                       <>
                         <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
-                        LIVE
+                        LIVE ({timeInfo.remainingStr.replace(' Remaining', '')})
                       </>
                     ) : (
                       <>

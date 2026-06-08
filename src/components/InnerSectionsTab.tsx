@@ -71,6 +71,27 @@ const InnerSectionsTab = () => {
       return { status: 'upcoming', timeLeft: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` };
     }
     
+    if (status === 'live') {
+      const nowTime = new Date(now);
+      const { hours, minutes, seconds } = parseTime(card.startTime);
+      let targetTime = new Date(now);
+      targetTime.setHours(hours, minutes, seconds, 0);
+      const elapsedMs = nowTime.getTime() - targetTime.getTime();
+      const liveDurationMins = Number(card.liveDuration) || 60;
+      const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
+      if (remainingMs > 0) {
+        const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+        const hrs = Math.floor(totalSeconds / 3600);
+        const mins = Math.floor((totalSeconds % 3600) / 60);
+        const secs = totalSeconds % 60;
+        const mm = mins.toString().padStart(2, '0');
+        const ss = secs.toString().padStart(2, '0');
+        const timeLeftStr = hrs > 0 ? `${hrs}:${mm}:${ss}` : `${mm}:${ss}`;
+        return { status: 'live', timeLeft: timeLeftStr };
+      }
+      return { status: 'live', timeLeft: '00:00' };
+    }
+    
     return { status };
   };
 
@@ -259,7 +280,7 @@ const InnerSectionsTab = () => {
                       background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.4)'
                     })
                   }}>
-                    {cardStatus.status === 'live' && <><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span> LIVE</>}
+                    {cardStatus.status === 'live' && <><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span> LIVE ({cardStatus.timeLeft})</>}
                     {cardStatus.status === 'upcoming' && <><Clock className="w-3 h-3" /> START IN {cardStatus.timeLeft}</>}
                     {cardStatus.status === 'finished' && 'ENDED'}
                   </div>

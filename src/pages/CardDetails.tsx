@@ -122,6 +122,28 @@ const CardDetails = () => {
     return `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const getLiveTimeLeft = () => {
+    const timeStr = card.startTime || match.time || '';
+    if (!timeStr || cardStatus !== 'live') return 'LIVE';
+    const nowTime = new Date(now);
+    const { hours, minutes, seconds } = parseTime(timeStr);
+    let targetTime = new Date(now);
+    targetTime.setHours(hours, minutes, seconds, 0);
+    const elapsedMs = nowTime.getTime() - targetTime.getTime();
+    const liveDurationMins = Number(card.liveDuration) || 60;
+    const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
+    if (remainingMs > 0) {
+      const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+      const hrs = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+      const mm = mins.toString().padStart(2, '0');
+      const ss = secs.toString().padStart(2, '0');
+      return hrs > 0 ? `LIVE (${hrs}:${mm}:${ss})` : `LIVE (${mm}:${ss})`;
+    }
+    return 'LIVE';
+  };
+
   const isRoomIdVisible = () => {
     if (!hasJoined) return false;
     if (match.status === 'live' || match.status === 'finished' || cardStatus === 'live' || cardStatus === 'finished') return true;
@@ -167,7 +189,7 @@ const CardDetails = () => {
 
   // Status badge colors
   const statusConfig = {
-    live: { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.4)', label: 'LIVE', icon: '🔴' },
+    live: { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.4)', label: getLiveTimeLeft(), icon: '🔴' },
     upcoming: { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.4)', label: getTimeLeft(), icon: '🕒' },
     finished: { bg: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.4)', label: 'ENDED', icon: '🏁' },
   };
