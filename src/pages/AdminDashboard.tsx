@@ -1899,98 +1899,93 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'gateways' && (
-          <div style={{ maxWidth: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px', width: '100%' }}>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              🏦 Payment Accounts Settings
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Configure deposit details and instructions for payment methods.</p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ maxWidth: '600px', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Bkash Section */}
-              <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '24px' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#E2136E', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <img src="https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png" style={{ width: '28px', height: '28px', borderRadius: '50%' }} alt="" />
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#E2136E', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src="https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
                   Bkash Account Settings
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Bkash Number</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.03em' }}>Bkash Number</label>
                     <input 
                       type="text" 
                       value={adminBkashNumber} 
                       onChange={e => setAdminBkashNumber(e.target.value)} 
                       placeholder="e.g. 017xxxxxxxx" 
-                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700 }}
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700, boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Bkash Instructions</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.03em' }}>Bkash Instructions</label>
                     <textarea 
                       value={adminBkashInstructions} 
                       onChange={e => setAdminBkashInstructions(e.target.value)} 
                       placeholder="Enter instructions..." 
-                      rows={2} 
-                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem' }}
+                      rows={2.5} 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem', lineHeight: 1.5, boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
               </div>
 
               {/* Nagad Section */}
-              <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '24px' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F15A22', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <img src="https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png" style={{ width: '28px', height: '28px', borderRadius: '50%' }} alt="" />
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#F15A22', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src="https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
                   Nagad Account Settings
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Nagad Number</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.03em' }}>Nagad Number</label>
                     <input 
                       type="text" 
                       value={adminNagadNumber} 
                       onChange={e => setAdminNagadNumber(e.target.value)} 
                       placeholder="e.g. 018xxxxxxxx" 
-                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700 }}
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700, boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Nagad Instructions</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.03em' }}>Nagad Instructions</label>
                     <textarea 
                       value={adminNagadInstructions} 
                       onChange={e => setAdminNagadInstructions(e.target.value)} 
                       placeholder="Enter instructions..." 
-                      rows={2} 
-                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem' }}
+                      rows={2.5} 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem', lineHeight: 1.5, boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
               </div>
 
               {/* Binance Section */}
-              <div style={{ paddingBottom: '12px' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F3BA2F', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" style={{ width: '28px', height: '28px', borderRadius: '50%' }} alt="" />
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#F3BA2F', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} alt="" />
                   Binance Account Settings
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Binance Wallet ID / Address</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.03em' }}>Binance Wallet ID / Address</label>
                     <input 
                       type="text" 
                       value={adminBinanceId} 
                       onChange={e => setAdminBinanceId(e.target.value)} 
                       placeholder="e.g. 0x1234..." 
-                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700 }}
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700, boxSizing: 'border-box' }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Binance Instructions</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.03em' }}>Binance Instructions</label>
                     <textarea 
                       value={adminBinanceInstructions} 
                       onChange={e => setAdminBinanceInstructions(e.target.value)} 
                       placeholder="Enter instructions..." 
-                      rows={2} 
-                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem' }}
+                      rows={2.5} 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem', lineHeight: 1.5, boxSizing: 'border-box' }}
                     />
                   </div>
                 </div>
@@ -2018,7 +2013,6 @@ const AdminDashboard = () => {
                   fontSize: '1rem',
                   cursor: 'pointer',
                   boxShadow: '0 8px 20px rgba(227,67,96,0.3)',
-                  marginTop: '16px',
                   fontFamily: "'Outfit',sans-serif"
                 }}
               >
