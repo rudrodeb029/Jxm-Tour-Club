@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
 import { Users } from 'lucide-react';
-import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
+import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getEffectiveMatchStatus } from '../utils/timeUtils';
 
 interface TeamInfo {
   name: string; 
@@ -208,9 +208,80 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       </div>
 
       {/* Title */}
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
         <h3 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 -1px 1px rgba(255,255,255,0.1)' }}>{name}</h3>
       </div>
+
+      {/* Match Status & Timer Badge */}
+      {(() => {
+        const matchObj = { status, time, team1, team2, team3, innerSections };
+        const effStatus = getEffectiveMatchStatus(matchObj);
+        
+        let badgeColor = '#EF4444';
+        let badgeBg = 'rgba(239, 68, 68, 0.15)';
+        let badgeBorder = '1px solid rgba(239, 68, 68, 0.3)';
+        let label = 'LIVE';
+        let icon = '🔴';
+        let isGlow = true;
+
+        if (effStatus === 'upcoming') {
+          badgeColor = '#F59E0B';
+          badgeBg = 'rgba(245, 158, 11, 0.15)';
+          badgeBorder = '1px solid rgba(245, 158, 11, 0.3)';
+          isGlow = false;
+          icon = '🕒';
+          
+          // Compute countdown timer
+          if (time) {
+            const nowTime = new Date(now);
+            const { hours, minutes, seconds } = parseTime(time);
+            let targetTime = new Date(nowTime);
+            targetTime.setHours(hours, minutes, seconds, 0);
+            let diff = targetTime.getTime() - nowTime.getTime();
+            if (diff > 0) {
+              const h = Math.floor(diff / (1000 * 60 * 60));
+              const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              const s = Math.floor((diff % (1000 * 60)) / 1000);
+              label = `STARTS IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            } else {
+              label = 'UPCOMING';
+            }
+          } else {
+            label = 'UPCOMING';
+          }
+        } else if (effStatus === 'finished') {
+          badgeColor = '#9CA3AF';
+          badgeBg = 'rgba(107, 114, 128, 0.15)';
+          badgeBorder = '1px solid rgba(107, 114, 128, 0.3)';
+          isGlow = false;
+          icon = '🏁';
+          label = 'ENDED';
+        }
+
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+            <span className={isGlow ? "live-badge-glow" : ""} style={{ 
+              background: badgeBg, 
+              color: badgeColor, 
+              border: badgeBorder, 
+              padding: '6px 16px', 
+              borderRadius: '20px', 
+              fontSize: '0.75rem', 
+              fontWeight: 900, 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px',
+              fontVariantNumeric: 'tabular-nums',
+              boxShadow: isGlow ? '0 0 12px rgba(239, 68, 68, 0.25)' : 'none',
+              textShadow: '0 1px 2px rgba(0,0,0,0.4)'
+            }}>
+              {isGlow && <span style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />}
+              {!isGlow && <span style={{ fontSize: '0.85rem' }}>{icon}</span>}
+              {label}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Skewed Metallic Prize Pool Cards */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '36px', padding: '0 4px' }}>
