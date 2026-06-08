@@ -1197,7 +1197,7 @@ const Home = () => {
                         alignItems: 'center',
                         gap: '5px',
                         marginBottom: '6px',
-                        textShadow: 'var(--text-shadow-3d-danger)'
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'
                       }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
                         LIVE MATCHES NOW
@@ -1285,7 +1285,7 @@ const Home = () => {
                         alignItems: 'center',
                         gap: '5px',
                         marginBottom: '6px',
-                        textShadow: 'var(--text-shadow-3d-accent)'
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'
                       }}>
                         <span style={{ fontSize: '0.75rem' }}>🕒</span>
                         TODAY'S UPCOMING MATCHES
