@@ -1090,11 +1090,11 @@ const CardDetails = () => {
                     {/* Right side: Game ID Input */}
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                        Game ID <span style={{ color: '#ef4444' }}>*</span>
+                        Game ID Name <span style={{ color: '#ef4444' }}>*</span>
                       </div>
                       <input 
                         type="text" 
-                        placeholder="Enter Game ID" 
+                        placeholder="Enter Game ID Name" 
                         value={userGameId} 
                         onChange={e => {
                           setUserGameId(e.target.value);
