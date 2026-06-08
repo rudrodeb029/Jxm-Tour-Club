@@ -45,7 +45,12 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   const [depositSuccess, setDepositSuccess] = useState(false);
 
   // Load gateways from context
-  const { gateways } = useAdminDashboard();
+  const { paymentSettings } = useAdminDashboard();
+  const gateways = [
+    { id: 'bkash-default', name: 'Bkash', color: '#E2136E', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png' },
+    { id: 'nagad-default', name: 'Nagad', color: '#F15A22', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png' },
+    { id: 'binance-default', name: 'Binance', color: '#F3BA2F', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png' }
+  ];
 
   if (!isOpen) return null;
 
@@ -419,6 +424,25 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                   {(() => {
                     const gw = gateways.find((g: any) => g.id === selectedGateway);
                     if (!gw) return null;
+                    
+                    let accountNumber = '';
+                    let instructions = '';
+                    let label = 'Send Money To (Personal)';
+                    
+                    if (gw.name === 'Bkash') {
+                      accountNumber = paymentSettings.bkashNumber || '';
+                      instructions = paymentSettings.bkashInstructions || '';
+                    } else if (gw.name === 'Nagad') {
+                      accountNumber = paymentSettings.nagadNumber || '';
+                      instructions = paymentSettings.nagadInstructions || '';
+                    } else if (gw.name === 'Binance') {
+                      accountNumber = paymentSettings.binanceId || '';
+                      instructions = paymentSettings.binanceInstructions || '';
+                      label = 'Binance Wallet Address';
+                    }
+                    
+                    if (!accountNumber && !instructions) return null;
+                    
                     return (
                       <div style={{
                         background: 'rgba(255, 255, 255, 0.03)',
@@ -428,15 +452,15 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                         marginBottom: '20px',
                         textAlign: 'left'
                       }}>
-                        {gw.number && (
-                          <div style={{ marginBottom: gw.instructions ? '12px' : '0' }}>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Send Money To (Personal)</div>
+                        {accountNumber && (
+                          <div style={{ marginBottom: instructions ? '12px' : '0' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{gw.number}</span>
+                              <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{accountNumber}</span>
                               <button 
                                 type="button"
                                 onClick={() => {
-                                  navigator.clipboard.writeText(gw.number);
+                                  navigator.clipboard.writeText(accountNumber);
                                   alert('Account number copied to clipboard!');
                                 }}
                                 style={{
@@ -455,10 +479,10 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                             </div>
                           </div>
                         )}
-                        {gw.instructions && (
+                        {instructions && (
                           <div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Instructions</div>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{gw.instructions}</p>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{instructions}</p>
                           </div>
                         )}
                       </div>

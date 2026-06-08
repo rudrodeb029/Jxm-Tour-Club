@@ -89,15 +89,15 @@ export interface WinnerCeremony {
   winners: MatchWinner[];
 }
 
-export interface Gateway {
-  id: string;
-  name: string;
-  color: string;
-  logo: string;
-  number: string;
-  instructions: string;
-  order: number;
+export interface PaymentSettings {
+  bkashNumber: string;
+  nagadNumber: string;
+  binanceId: string;
+  bkashInstructions?: string;
+  nagadInstructions?: string;
+  binanceInstructions?: string;
 }
+
 
 
 interface AdminDashboardContextType {
@@ -155,11 +155,9 @@ interface AdminDashboardContextType {
   activities: Activity[];
   logActivity: (activity: Omit<Activity, 'id' | 'timestamp'>) => void;
 
-  // Gateways (Payment Settings)
-  gateways: Gateway[];
-  updateGatewayNumber: (id: string, number: string, instructions: string) => Promise<void>;
-  addGateway: (gateway: Omit<Gateway, 'id'>) => Promise<void>;
-  deleteGateway: (id: string) => Promise<void>;
+  // Payment Settings
+  paymentSettings: PaymentSettings;
+  updatePaymentSettings: (settings: PaymentSettings) => Promise<void>;
 }
 
 // ============ CONTEXT ============
@@ -190,7 +188,14 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [winners, setWinners] = useState<Winner[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [gateways, setGateways] = useState<Gateway[]>([]);
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({
+    bkashNumber: '01700000000',
+    nagadNumber: '01800000000',
+    binanceId: '0x1234567890abcdef...',
+    bkashInstructions: 'Send money to this Bkash personal number and enter your Transaction ID below.',
+    nagadInstructions: 'Send money to this Nagad personal number and enter your Transaction ID below.',
+    binanceInstructions: 'Transfer USDT to this Binance BEP-20 address and enter your TXN hash.'
+  });
 
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
 
@@ -297,24 +302,23 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       setWinners(fbWinners);
     });
 
-    // Gateways Listener
-    const unsubscribeGateways = onSnapshot(collection(db, 'gateways'), (snapshot) => {
-      if (snapshot.empty) {
-        const defaults = [
-          { name: 'Bkash', color: '#E2136E', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png', number: '01700000000', instructions: 'Send money to this Bkash personal number and enter your Transaction ID below.', order: 1 },
-          { name: 'Nagad', color: '#F15A22', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png', number: '01800000000', instructions: 'Send money to this Nagad personal number and enter your Transaction ID below.', order: 2 },
-          { name: 'Binance', color: '#F3BA2F', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png', number: '0x1234567890abcdef...', instructions: 'Transfer USDT to this Binance BEP-20 address and enter your TXN hash.', order: 3 }
-        ];
-        defaults.forEach(async (d) => {
-          const docId = d.name.toLowerCase() + '-default';
-          await setDoc(doc(db, 'gateways', docId), d);
-        });
+    // Payment Settings Listener
+    const unsubscribePaymentSettings = onSnapshot(doc(db, 'payment_settings', 'accounts'), (docSnap) => {
+      if (docSnap.exists()) {
+        setPaymentSettings(docSnap.data() as PaymentSettings);
       } else {
-        const fbGateways = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Gateway[];
-        fbGateways.sort((a, b) => (a.order || 0) - (b.order || 0));
-        setGateways(fbGateways);
+        const defaults: PaymentSettings = {
+          bkashNumber: '01700000000',
+          nagadNumber: '01800000000',
+          binanceId: '0x1234567890abcdef...',
+          bkashInstructions: 'Send money to this Bkash personal number and enter your Transaction ID below.',
+          nagadInstructions: 'Send money to this Nagad personal number and enter your Transaction ID below.',
+          binanceInstructions: 'Transfer USDT to this Binance BEP-20 address and enter your TXN hash.'
+        };
+        setDoc(doc(db, 'payment_settings', 'accounts'), defaults);
       }
-    }, (error) => console.error('Error fetching gateways:', error));
+    }, (error) => console.error('Error fetching payment settings:', error));
+
 
 
     return () => {
@@ -324,7 +328,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       unsubscribeActivities();
       unsubscribeMatches();
       unsubscribeWinners();
-      unsubscribeGateways();
+      unsubscribePaymentSettings();
     };
 
   }, []);
@@ -1040,30 +1044,14 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
-  const updateGatewayNumber = async (id: string, number: string, instructions: string) => {
+  const updatePaymentSettings = async (settings: PaymentSettings) => {
     try {
-      await updateDoc(doc(db, 'gateways', id), { number, instructions });
+      await setDoc(doc(db, 'payment_settings', 'accounts'), settings);
     } catch (e) {
-      console.error('Error updating gateway', e);
+      console.error('Error updating payment settings:', e);
     }
   };
 
-  const addGateway = async (newGw: Omit<Gateway, 'id'>) => {
-    try {
-      const order = gateways.length + 1;
-      await addDoc(collection(db, 'gateways'), { ...newGw, order });
-    } catch (e) {
-      console.error('Error adding gateway', e);
-    }
-  };
-
-  const deleteGateway = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'gateways', id));
-    } catch (e) {
-      console.error('Error deleting gateway', e);
-    }
-  };
 
 
   // Stats
@@ -1111,10 +1099,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       clearWinnerCeremony,
       activities,
       logActivity,
-      gateways,
-      updateGatewayNumber,
-      addGateway,
-      deleteGateway
+      paymentSettings,
+      updatePaymentSettings
     }}>
       {children}
     </AdminDashboardContext.Provider>

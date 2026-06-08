@@ -18,7 +18,7 @@ const AdminDashboard = () => {
     withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal,
     adminUsers, updateUserBalance, toggleUserStatus, stats, setMatchWinners,
     winners,
-    gateways, updateGatewayNumber, addGateway, deleteGateway
+    paymentSettings, updatePaymentSettings
   } = useAdminDashboard();
   const { currency, formatCurrency } = useCurrency();
   
@@ -58,17 +58,15 @@ const AdminDashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (gateways) {
-      const numbers: Record<string, string> = {};
-      const insts: Record<string, string> = {};
-      gateways.forEach(gw => {
-        numbers[gw.id] = gw.number || '';
-        insts[gw.id] = gw.instructions || '';
-      });
-      setEditingGatewayNumber(prev => ({ ...numbers, ...prev }));
-      setEditingGatewayInstructions(prev => ({ ...insts, ...prev }));
+    if (paymentSettings) {
+      setAdminBkashNumber(paymentSettings.bkashNumber || '');
+      setAdminNagadNumber(paymentSettings.nagadNumber || '');
+      setAdminBinanceId(paymentSettings.binanceId || '');
+      setAdminBkashInstructions(paymentSettings.bkashInstructions || '');
+      setAdminNagadInstructions(paymentSettings.nagadInstructions || '');
+      setAdminBinanceInstructions(paymentSettings.binanceInstructions || '');
     }
-  }, [gateways]);
+  }, [paymentSettings]);
 
   const [showCreateMatch, setShowCreateMatch] = useState(false);
   const [newMatch, setNewMatch] = useState({ name: '', group: 'Squad Match', maxParticipants: 12, time: '21:00', bids: ['$5','$10','$25','$50'], prizePool: '', firstPrize: '', secondPrize: '', thirdPrize: '' });
@@ -80,10 +78,13 @@ const AdminDashboard = () => {
   const [selectingWinnersMatch, setSelectingWinnersMatch] = useState<AdminMatch | null>(null);
   const [editingMatchData, setEditingMatchData] = useState<AdminMatch | null>(null);
 
-  // Gateways settings state
-  const [editingGatewayNumber, setEditingGatewayNumber] = useState<Record<string, string>>({});
-  const [editingGatewayInstructions, setEditingGatewayInstructions] = useState<Record<string, string>>({});
-  const [adminNewGateway, setAdminNewGateway] = useState({ name: '', color: '#F96F2E', logo: '', number: '', instructions: '' });
+  // Payment Settings form states
+  const [adminBkashNumber, setAdminBkashNumber] = useState('');
+  const [adminNagadNumber, setAdminNagadNumber] = useState('');
+  const [adminBinanceId, setAdminBinanceId] = useState('');
+  const [adminBkashInstructions, setAdminBkashInstructions] = useState('');
+  const [adminNagadInstructions, setAdminNagadInstructions] = useState('');
+  const [adminBinanceInstructions, setAdminBinanceInstructions] = useState('');
 
   // Date filtering state for Revenue Analytics
   const [rangeType, setRangeType] = useState<'today' | 'month' | 'year' | 'all' | 'custom'>('all');
@@ -1898,293 +1899,131 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'gateways' && (
-          <div>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>🏦 Payment Accounts Settings</h2>
+          <div style={{ maxWidth: '600px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px', width: '100%' }}>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              🏦 Payment Accounts Settings
+            </h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Configure deposit details and instructions for payment methods.</p>
 
-            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '32px', alignItems: 'start' }}>
-              {/* Existing Gateways List */}
-              <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
-                {gateways.map((gw) => (
-                  <div 
-                    key={gw.id} 
-                    style={{ 
-                      background: 'var(--card-bg)', 
-                      border: '1px solid var(--card-border)', 
-                      borderRadius: '24px', 
-                      padding: '24px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '16px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <div style={{ 
-                          width: '56px', 
-                          height: '56px', 
-                          borderRadius: '50%', 
-                          background: `${gw.color}15`, 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          border: `1px solid ${gw.color}25`
-                        }}>
-                          <img src={gw.logo} alt={gw.name} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%' }} />
-                        </div>
-                        <div>
-                          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>{gw.name}</h3>
-                          <span style={{ fontSize: '0.75rem', color: gw.color, fontWeight: 700 }}>ID: {gw.id}</span>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to delete ${gw.name}?`)) {
-                            deleteGateway(gw.id);
-                          }
-                        }}
-                        style={{
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: 'none',
-                          color: '#EF4444',
-                          padding: '8px 16px',
-                          borderRadius: '10px',
-                          cursor: 'pointer',
-                          fontWeight: 700,
-                          fontSize: '0.8rem'
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                          Account Number / Wallet Address
-                        </label>
-                        <input 
-                          type="text" 
-                          value={editingGatewayNumber[gw.id] ?? ''} 
-                          onChange={(e) => setEditingGatewayNumber({ ...editingGatewayNumber, [gw.id]: e.target.value })}
-                          placeholder="e.g. 017xxxxxxxx" 
-                          style={{
-                            width: '100%',
-                            background: 'var(--input-bg)',
-                            border: '1px solid var(--card-border)',
-                            borderRadius: '12px',
-                            padding: '12px 16px',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            fontWeight: 700
-                          }}
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                          Payment Instructions
-                        </label>
-                        <textarea 
-                          value={editingGatewayInstructions[gw.id] ?? ''} 
-                          onChange={(e) => setEditingGatewayInstructions({ ...editingGatewayInstructions, [gw.id]: e.target.value })}
-                          placeholder="Provide steps for users to complete payment..." 
-                          rows={3}
-                          style={{
-                            width: '100%',
-                            background: 'var(--input-bg)',
-                            border: '1px solid var(--card-border)',
-                            borderRadius: '12px',
-                            padding: '12px 16px',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            fontFamily: 'inherit',
-                            resize: 'vertical',
-                            fontSize: '0.9rem',
-                            lineHeight: 1.5
-                          }}
-                        />
-                      </div>
-
-                      <button 
-                        onClick={async () => {
-                          const num = editingGatewayNumber[gw.id] || '';
-                          const inst = editingGatewayInstructions[gw.id] || '';
-                          await updateGatewayNumber(gw.id, num, inst);
-                          alert(`${gw.name} details saved successfully!`);
-                        }}
-                        style={{
-                          background: 'linear-gradient(90deg, #F96F2E, #E34360)',
-                          border: 'none',
-                          color: 'white',
-                          padding: '12px',
-                          borderRadius: '12px',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          marginTop: '4px',
-                          transition: 'opacity 0.2s'
-                        }}
-                      >
-                        Save Settings
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Add Gateway Form */}
-              <div style={{ flex: 1, background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px', position: isMobile ? 'static' : 'sticky', top: '24px', width: '100%' }}>
-                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  ➕ Add New Payment Method
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Bkash Section */}
+              <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#E2136E', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img src="https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png" style={{ width: '28px', height: '28px', borderRadius: '50%' }} alt="" />
+                  Bkash Account Settings
                 </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Method Name
-                    </label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Bkash Number</label>
                     <input 
                       type="text" 
-                      value={adminNewGateway.name}
-                      onChange={(e) => setAdminNewGateway({ ...adminNewGateway, name: e.target.value })}
-                      placeholder="e.g. Rocket" 
-                      style={{
-                        width: '100%',
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--card-border)',
-                        borderRadius: '12px',
-                        padding: '12px 16px',
-                        color: 'var(--text-primary)',
-                        outline: 'none',
-                        fontFamily: 'inherit',
-                        fontWeight: 700
-                      }}
+                      value={adminBkashNumber} 
+                      onChange={e => setAdminBkashNumber(e.target.value)} 
+                      placeholder="e.g. 017xxxxxxxx" 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700 }}
                     />
                   </div>
-
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Logo URL
-                    </label>
-                    <input 
-                      type="text" 
-                      value={adminNewGateway.logo}
-                      onChange={(e) => setAdminNewGateway({ ...adminNewGateway, logo: e.target.value })}
-                      placeholder="https://example.com/logo.png" 
-                      style={{
-                        width: '100%',
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--card-border)',
-                        borderRadius: '12px',
-                        padding: '12px 16px',
-                        color: 'var(--text-primary)',
-                        outline: 'none',
-                        fontFamily: 'inherit'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Theme Color
-                    </label>
-                    <input 
-                      type="color" 
-                      value={adminNewGateway.color}
-                      onChange={(e) => setAdminNewGateway({ ...adminNewGateway, color: e.target.value })}
-                      style={{
-                        width: '100%',
-                        height: '48px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Account Number / Address
-                    </label>
-                    <input 
-                      type="text" 
-                      value={adminNewGateway.number}
-                      onChange={(e) => setAdminNewGateway({ ...adminNewGateway, number: e.target.value })}
-                      placeholder="e.g. 019xxxxxxxx" 
-                      style={{
-                        width: '100%',
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--card-border)',
-                        borderRadius: '12px',
-                        padding: '12px 16px',
-                        color: 'var(--text-primary)',
-                        outline: 'none',
-                        fontFamily: 'inherit',
-                        fontWeight: 700
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Instructions
-                    </label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Bkash Instructions</label>
                     <textarea 
-                      value={adminNewGateway.instructions}
-                      onChange={(e) => setAdminNewGateway({ ...adminNewGateway, instructions: e.target.value })}
-                      placeholder="e.g. Send money and enter transaction ID..." 
-                      rows={3}
-                      style={{
-                        width: '100%',
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--card-border)',
-                        borderRadius: '12px',
-                        padding: '12px 16px',
-                        color: 'var(--text-primary)',
-                        outline: 'none',
-                        fontFamily: 'inherit',
-                        resize: 'vertical',
-                        fontSize: '0.9rem',
-                        lineHeight: 1.5
-                      }}
+                      value={adminBkashInstructions} 
+                      onChange={e => setAdminBkashInstructions(e.target.value)} 
+                      placeholder="Enter instructions..." 
+                      rows={2} 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem' }}
                     />
                   </div>
-
-                  <button 
-                    onClick={async () => {
-                      if (!adminNewGateway.name || !adminNewGateway.logo) {
-                        alert('Please enter a name and logo URL.');
-                        return;
-                      }
-                      await addGateway({
-                        name: adminNewGateway.name,
-                        logo: adminNewGateway.logo,
-                        color: adminNewGateway.color,
-                        number: adminNewGateway.number,
-                        instructions: adminNewGateway.instructions,
-                        order: gateways.length + 1
-                      });
-                      setAdminNewGateway({ name: '', logo: '', color: '#F96F2E', number: '', instructions: '' });
-                      alert('New payment method added successfully!');
-                    }}
-                    style={{
-                      background: 'linear-gradient(90deg, #F96F2E, #E34360)',
-                      border: 'none',
-                      color: 'white',
-                      padding: '14px',
-                      borderRadius: '12px',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(227,67,96,0.3)',
-                      marginTop: '8px',
-                      fontFamily: "'Outfit',sans-serif"
-                    }}
-                  >
-                    Add Payment Method
-                  </button>
                 </div>
               </div>
+
+              {/* Nagad Section */}
+              <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F15A22', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img src="https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png" style={{ width: '28px', height: '28px', borderRadius: '50%' }} alt="" />
+                  Nagad Account Settings
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Nagad Number</label>
+                    <input 
+                      type="text" 
+                      value={adminNagadNumber} 
+                      onChange={e => setAdminNagadNumber(e.target.value)} 
+                      placeholder="e.g. 018xxxxxxxx" 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700 }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Nagad Instructions</label>
+                    <textarea 
+                      value={adminNagadInstructions} 
+                      onChange={e => setAdminNagadInstructions(e.target.value)} 
+                      placeholder="Enter instructions..." 
+                      rows={2} 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Binance Section */}
+              <div style={{ paddingBottom: '12px' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F3BA2F', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img src="https://cryptologos.cc/logos/bnb-bnb-logo.png" style={{ width: '28px', height: '28px', borderRadius: '50%' }} alt="" />
+                  Binance Account Settings
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Binance Wallet ID / Address</label>
+                    <input 
+                      type="text" 
+                      value={adminBinanceId} 
+                      onChange={e => setAdminBinanceId(e.target.value)} 
+                      placeholder="e.g. 0x1234..." 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700 }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Binance Instructions</label>
+                    <textarea 
+                      value={adminBinanceInstructions} 
+                      onChange={e => setAdminBinanceInstructions(e.target.value)} 
+                      placeholder="Enter instructions..." 
+                      rows={2} 
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px 16px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={async () => {
+                  await updatePaymentSettings({
+                    bkashNumber: adminBkashNumber,
+                    nagadNumber: adminNagadNumber,
+                    binanceId: adminBinanceId,
+                    bkashInstructions: adminBkashInstructions,
+                    nagadInstructions: adminNagadInstructions,
+                    binanceInstructions: adminBinanceInstructions
+                  });
+                  alert('Payment settings saved successfully!');
+                }}
+                style={{
+                  background: 'linear-gradient(90deg, #F96F2E, #E34360)',
+                  border: 'none',
+                  color: 'white',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  fontWeight: 800,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 20px rgba(227,67,96,0.3)',
+                  marginTop: '16px',
+                  fontFamily: "'Outfit',sans-serif"
+                }}
+              >
+                Save Payment Settings
+              </button>
             </div>
           </div>
         )}

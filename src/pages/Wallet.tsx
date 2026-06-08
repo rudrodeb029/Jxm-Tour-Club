@@ -32,7 +32,7 @@ const Wallet = () => {
   const { formatCurrency, currency } = useCurrency();
   const { isAdminMode } = useAdmin();
   const { balance, addBalance, deductBalance, transactions: localTransactions } = useBalance();
-  const { paymentRequests, withdrawalRequests, gateways, addGateway, deleteGateway } = useAdminDashboard();
+  const { paymentRequests, withdrawalRequests, paymentSettings } = useAdminDashboard();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser.id);
   const [profileUsername, setProfileUsername] = useState<string>('');
@@ -65,7 +65,11 @@ const Wallet = () => {
   });
 
   // Dynamic Gateways State
-  const localGateways = gateways;
+  const localGateways = [
+    { id: 'bkash-default', name: 'Bkash', color: '#E2136E', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png' },
+    { id: 'nagad-default', name: 'Nagad', color: '#F15A22', logo: 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png' },
+    { id: 'binance-default', name: 'Binance', color: '#F3BA2F', logo: 'https://cryptologos.cc/logos/bnb-bnb-logo.png' }
+  ];
 
   const [showAddGateway, setShowAddGateway] = useState(false);
   const [newGateway, setNewGateway] = useState({ name: '', color: '#F96F2E', logo: '' });
@@ -89,54 +93,19 @@ const Wallet = () => {
   const handleDeleteGateway = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setDeleteConfirmation({ id, type: 'gateway' });
   };
 
   const confirmDelete = () => {
     if (!deleteConfirmation) return;
-    const { id, type } = deleteConfirmation;
+    const { id } = deleteConfirmation;
 
-    if (type === 'gateway') {
-      deleteGateway(id);
-      if (selectedGateway === id) setSelectedGateway(null);
-    } else {
-      setSavedMethods(prev => {
-        const updated = prev.filter((m: any) => m.id !== id);
-        localStorage.setItem('savedMethods', JSON.stringify(updated));
-        return updated;
-      });
-      if (selectedWithdrawMethod === id) setSelectedWithdrawMethod(null);
-    }
+    setSavedMethods(prev => {
+      const updated = prev.filter((m: any) => m.id !== id);
+      localStorage.setItem('savedMethods', JSON.stringify(updated));
+      return updated;
+    });
+    if (selectedWithdrawMethod === id) setSelectedWithdrawMethod(null);
     setDeleteConfirmation(null);
-  };
-
-  const handleAddGateway = () => {
-    if (!newGateway.name || !newGateway.logo) {
-      alert('Please fill all fields');
-      return;
-    }
-    addGateway({
-      name: newGateway.name,
-      color: newGateway.color,
-      logo: newGateway.logo,
-      number: '',
-      instructions: '',
-      order: gateways.length + 1
-    });
-    setNewGateway({ name: '', color: '#F96F2E', logo: '' });
-    setShowAddGateway(false);
-  };
-
-  const addPresetGateway = (name: string, color: string, logo: string) => {
-    addGateway({
-      name,
-      color,
-      logo,
-      number: '',
-      instructions: '',
-      order: gateways.length + 1
-    });
-    setShowAddGateway(false);
   };
 
   const handleDeleteMethod = (e: React.MouseEvent, id: string) => {
@@ -441,57 +410,8 @@ const Wallet = () => {
                     <img src={gw.logo} alt={gw.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }} />
                     <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>{gw.name}</span>
                   </button>
-                  
-                  {isAdminMode && (
-                    <button 
-                      onClick={(e) => handleDeleteGateway(e, gw.id)}
-                      style={{ 
-                        position: 'absolute', 
-                        top: '-8px', 
-                        right: '-8px', 
-                        background: '#EF4444', 
-                        border: 'none', 
-                        borderRadius: '50%', 
-                        width: '24px', 
-                        height: '24px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        cursor: 'pointer', 
-                        zIndex: 20, 
-                        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)', 
-                        color: 'white' 
-                      }}
-                    >
-                      <Trash2 size={12} strokeWidth={3} />
-                    </button>
-                  )}
                 </div>
               ))}
-
-              {isAdminMode && (
-                <button 
-                  onClick={() => setShowAddGateway(true)}
-                  style={{
-                    background: 'var(--glass-bg)',
-                    border: '2px dashed var(--glass-border)',
-                    padding: '16px 8px',
-                    borderRadius: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    color: 'var(--text-secondary)'
-                  }}
-                >
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--glass-border)' }}>
-
-                    <Plus size={24} strokeWidth={2.5} />
-                  </div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>Add New</span>
-                </button>
-              )}
             </div>
 
             <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.01em' }}>Quick Amount</h3>
@@ -883,6 +803,25 @@ const Wallet = () => {
             {(() => {
               const gw = localGateways.find((g: any) => g.id === selectedGateway);
               if (!gw) return null;
+              
+              let accountNumber = '';
+              let instructions = '';
+              let label = 'Send Money To (Personal)';
+              
+              if (gw.name === 'Bkash') {
+                accountNumber = paymentSettings.bkashNumber || '';
+                instructions = paymentSettings.bkashInstructions || '';
+              } else if (gw.name === 'Nagad') {
+                accountNumber = paymentSettings.nagadNumber || '';
+                instructions = paymentSettings.nagadInstructions || '';
+              } else if (gw.name === 'Binance') {
+                accountNumber = paymentSettings.binanceId || '';
+                instructions = paymentSettings.binanceInstructions || '';
+                label = 'Binance Wallet Address';
+              }
+              
+              if (!accountNumber && !instructions) return null;
+              
               return (
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.03)',
@@ -892,15 +831,15 @@ const Wallet = () => {
                   marginBottom: '24px',
                   textAlign: 'left'
                 }}>
-                  {gw.number && (
-                    <div style={{ marginBottom: gw.instructions ? '12px' : '0' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Send Money To (Personal)</div>
+                  {accountNumber && (
+                    <div style={{ marginBottom: instructions ? '12px' : '0' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{gw.number}</span>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{accountNumber}</span>
                         <button 
                           type="button"
                           onClick={() => {
-                            navigator.clipboard.writeText(gw.number);
+                            navigator.clipboard.writeText(accountNumber);
                             alert('Account number copied to clipboard!');
                           }}
                           style={{
@@ -919,10 +858,10 @@ const Wallet = () => {
                       </div>
                     </div>
                   )}
-                  {gw.instructions && (
+                  {instructions && (
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Instructions</div>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{gw.instructions}</p>
+                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{instructions}</p>
                     </div>
                   )}
                 </div>
@@ -1063,120 +1002,7 @@ const Wallet = () => {
         </ModalPortal>
       )}
 
-      {showAddGateway && (
-        <ModalPortal>
-        <div 
-          className="animate-fade-in"
-          style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(16px)',
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px'
-          }}
-          onClick={() => setShowAddGateway(false)}
-        >
-          <div 
-            className="animate-scale-up"
-            style={{
-              background: 'var(--modal-bg)',
-              width: '100%',
-              maxWidth: '400px',
-              borderRadius: '40px',
-              padding: '24px 16px',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--glass-border)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
 
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>Add <span style={{ color: 'var(--accent-orange)' }}>Gateway</span></h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.9rem' }}>Configure a new payment provider for users.</p>
-            
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#4B5563', textAlign: 'left', marginBottom: '12px', paddingLeft: '4px', letterSpacing: '0.05em' }}>QUICK PRESETS</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                <button 
-                  onClick={() => addPresetGateway('Bkash', '#E2136E', 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Bkash.png')}
-                  style={{ background: 'rgba(226, 19, 110, 0.1)', border: '1px solid rgba(226, 19, 110, 0.2)', padding: '12px 8px', borderRadius: '16px', color: '#E2136E', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
-                >
-                  BKASH
-                </button>
-                <button 
-                  onClick={() => addPresetGateway('Nagad', '#F15A22', 'https://raw.githubusercontent.com/ultraDevs/Bangladeshi-Payment-Gateways/master/assets/images/Nagad.png')}
-                  style={{ background: 'rgba(241, 90, 34, 0.1)', border: '1px solid rgba(241, 90, 34, 0.2)', padding: '12px 8px', borderRadius: '16px', color: '#F15A22', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
-                >
-                  NAGAD
-                </button>
-                <button 
-                  onClick={() => addPresetGateway('Binance', '#F3BA2F', 'https://cryptologos.cc/logos/bnb-bnb-logo.png')}
-                  style={{ background: 'rgba(243, 186, 47, 0.1)', border: '1px solid rgba(243, 186, 47, 0.2)', padding: '12px 8px', borderRadius: '16px', color: '#F3BA2F', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
-                >
-                  BINANCE
-                </button>
-              </div>
-            </div>
-
-            <div style={{ position: 'relative', height: '1px', background: 'var(--glass-border)', margin: '0 0 24px' }}>
-              <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'var(--modal-bg)', padding: '0 12px', color: 'var(--text-secondary)', fontSize: '0.7rem', fontWeight: 800 }}>OR CUSTOM</span>
-            </div>
-
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '32px' }}>
-              <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>GATEWAY NAME</label>
-                <input 
-                  type="text" 
-                  value={newGateway.name}
-                  onChange={(e) => setNewGateway({...newGateway, name: e.target.value})}
-                  placeholder="e.g. Upay" 
-                  style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', fontWeight: 700 }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>LOGO URL</label>
-                <input 
-                  type="text" 
-                  value={newGateway.logo}
-                  onChange={(e) => setNewGateway({...newGateway, logo: e.target.value})}
-                  placeholder="https://..." 
-                  style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '16px', color: 'var(--text-primary)', fontWeight: 700 }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '8px' }}>THEME COLOR</label>
-                <input 
-                  type="color" 
-                  value={newGateway.color}
-                  onChange={(e) => setNewGateway({...newGateway, color: e.target.value})}
-                  style={{ width: '100%', height: '50px', background: 'none', border: 'none', cursor: 'pointer' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button 
-                onClick={handleAddGateway}
-                style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}
-              >
-                ADD PAYMENT METHOD
-              </button>
-              <button 
-                onClick={() => setShowAddGateway(false)}
-                style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-        </ModalPortal>
-      )}
 
       {/* Add Saved Method Modal */}
       {showAddMethod && (
