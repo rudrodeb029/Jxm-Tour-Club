@@ -61,7 +61,7 @@ export const getCardStatus = (
         // If the admin has not started the match, it immediately shows as finished
         return 'finished';
       } else {
-        const durationMs = (card.liveDuration || 60) * 60 * 1000;
+        const durationMs = (Number(card.liveDuration) || 60) * 60 * 1000;
         if (Math.abs(diff) >= durationMs) return 'finished';
         return 'live';
       }
@@ -100,11 +100,11 @@ export const getEffectiveMatchStatus = (match: any): 'live' | 'upcoming' | 'fini
         const cards = match.innerSections || [];
         let maxDurationMins = 60;
         if (cards.length > 0) {
-          maxDurationMins = Math.max(...cards.map((c: any) => c.liveDuration || 60));
+          maxDurationMins = Math.max(...cards.map((c: any) => Number(c.liveDuration) || 60));
         } else {
-          const d1 = match.team1?.liveDuration || 60;
-          const d2 = match.team2?.liveDuration || 60;
-          const d3 = match.team3?.liveDuration || 60;
+          const d1 = Number(match.team1?.liveDuration) || 60;
+          const d2 = Number(match.team2?.liveDuration) || 60;
+          const d3 = Number(match.team3?.liveDuration) || 60;
           maxDurationMins = Math.max(d1, d2, d3);
         }
         

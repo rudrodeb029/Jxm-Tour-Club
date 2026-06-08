@@ -430,7 +430,16 @@ const InnerSectionsTab = () => {
                 </div>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Live Duration (mins)</label>
-                  <input type="number" value={cardForm.liveDuration ?? ''} onChange={e => setCardForm({...cardForm, liveDuration: e.target.value === '' ? undefined : Number(e.target.value)})} placeholder="e.g. 60" style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                  <input 
+                    type="number" 
+                    id="liveDuration"
+                    name="liveDuration"
+                    autoComplete="off"
+                    value={cardForm.liveDuration ?? ''} 
+                    onChange={e => setCardForm({...cardForm, liveDuration: e.target.value === '' ? undefined : Number(e.target.value)})} 
+                    placeholder="e.g. 60" 
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} 
+                  />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
