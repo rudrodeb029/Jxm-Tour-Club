@@ -27,10 +27,6 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
   targetTime.setHours(hours, minutes, seconds, 0);
 
   let diff = targetTime.getTime() - nowTime.getTime();
-  if (matchStatus === 'upcoming' && diff <= 0) {
-    targetTime.setDate(targetTime.getDate() + 1);
-    diff = targetTime.getTime() - nowTime.getTime();
-  }
 
   const end = new Date(targetTime.getTime() + liveDurationMs);
   const endTimeStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -57,39 +53,54 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
       endTimeStr: `Ends at: ${endTimeStr}`,
       isOver: false
     };
-  } else if (Math.abs(diff) < liveDurationMs) {
-    // Live
-    const elapsedMs = Math.abs(diff);
-    const remainingMs = liveDurationMs - elapsedMs;
-
-    const elapsedMins = Math.floor(elapsedMs / 60000);
-    const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
-    const remainingMins = Math.floor(remainingMs / 60000);
-    const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
-
-    const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
-    const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
-
-    return {
-      isLive: true,
-      statusText: 'LIVE',
-      displayTime: `Starts at: ${formatTime(startTimeStr)}`,
-      elapsedStr,
-      remainingStr,
-      endTimeStr: `Ends at: ${endTimeStr}`,
-      isOver: false
-    };
   } else {
-    // Ended
-    return {
-      isLive: false,
-      statusText: 'ENDED',
-      displayTime: `Started: ${formatTime(startTimeStr)}`,
-      elapsedStr: 'Match Ended',
-      remainingStr: 'Match Ended',
-      endTimeStr: `Ended at: ${endTimeStr}`,
-      isOver: true
-    };
+    // Scheduled time has passed (diff <= 0)
+    if (matchStatus !== 'live') {
+      // If the admin did not start the match, it immediately shows as ENDED
+      return {
+        isLive: false,
+        statusText: 'ENDED',
+        displayTime: `Scheduled: ${formatTime(startTimeStr)}`,
+        elapsedStr: 'Match Ended (Not Started)',
+        remainingStr: 'Match Ended',
+        endTimeStr: `Ended at: ${endTimeStr}`,
+        isOver: true
+      };
+    } else {
+      // Admin started the match, check if duration has expired
+      if (Math.abs(diff) < liveDurationMs) {
+        const elapsedMs = Math.abs(diff);
+        const remainingMs = liveDurationMs - elapsedMs;
+
+        const elapsedMins = Math.floor(elapsedMs / 60000);
+        const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
+        const remainingMins = Math.floor(remainingMs / 60000);
+        const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
+
+        const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
+        const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
+
+        return {
+          isLive: true,
+          statusText: 'LIVE',
+          displayTime: `Starts at: ${formatTime(startTimeStr)}`,
+          elapsedStr,
+          remainingStr,
+          endTimeStr: `Ends at: ${endTimeStr}`,
+          isOver: false
+        };
+      } else {
+        return {
+          isLive: false,
+          statusText: 'ENDED',
+          displayTime: `Started: ${formatTime(startTimeStr)}`,
+          elapsedStr: 'Match Ended',
+          remainingStr: 'Match Ended',
+          endTimeStr: `Ended at: ${endTimeStr}`,
+          isOver: true
+        };
+      }
+    }
   }
 };
 

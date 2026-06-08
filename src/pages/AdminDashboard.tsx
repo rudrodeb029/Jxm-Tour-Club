@@ -6,6 +6,8 @@ import type { AdminMatch } from '../context/AdminDashboardContext';
 import InnerSectionsTab from '../components/InnerSectionsTab';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy, addDoc, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { getEffectiveMatchStatus } from '../utils/timeUtils';
+
 
 
 const AdminDashboard = () => {
@@ -835,14 +837,14 @@ const AdminDashboard = () => {
                   overflow: 'hidden'
                 }}>
                   {/* Background Accent */}
-                  <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', background: statusColor(match.status) + '10', borderRadius: '50%', filter: 'blur(30px)' }} />
+                  <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', background: statusColor(getEffectiveMatchStatus(match)) + '10', borderRadius: '50%', filter: 'blur(30px)' }} />
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <div>
                       <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: '4px' }}>{match.name}</div>
                       <div style={{ color: '#F96F2E', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{(match.availableModes || []).join(' | ')}</div>
                     </div>
-                    <StatusBadge status={match.status} />
+                    <StatusBadge status={getEffectiveMatchStatus(match)} />
                   </div>
                   
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>

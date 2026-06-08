@@ -46,7 +46,6 @@ export const getCardStatus = (
   if (!card) return 'idle';
   const mStatus = matchStatus || 'upcoming';
   if (mStatus === 'finished') return 'finished';
-  if (mStatus === 'upcoming') return 'upcoming';
   if (!card.startTime) return mStatus === 'live' ? 'live' : 'idle';
 
   try {
@@ -57,11 +56,17 @@ export const getCardStatus = (
 
     let diff = targetTime.getTime() - nowTime.getTime();
 
-    if (mStatus === 'live') {
-      if (diff > 0) return 'upcoming';
-      const durationMs = (card.liveDuration || 60) * 60 * 1000;
-      if (Math.abs(diff) >= durationMs) return 'finished';
-      return 'live';
+    if (diff <= 0) {
+      if (mStatus !== 'live') {
+        // If the admin has not started the match, it immediately shows as finished
+        return 'finished';
+      } else {
+        const durationMs = (card.liveDuration || 60) * 60 * 1000;
+        if (Math.abs(diff) >= durationMs) return 'finished';
+        return 'live';
+      }
+    } else {
+      return 'upcoming';
     }
   } catch (e) {
     console.error("Error computing card status", e);
@@ -70,15 +75,61 @@ export const getCardStatus = (
   return 'upcoming';
 };
 
+export const getEffectiveMatchStatus = (match: any): 'live' | 'upcoming' | 'finished' => {
+  if (!match) return 'upcoming';
+  if (match.status === 'finished') return 'finished';
+
+  const matchTimeStr = match.time;
+  if (!matchTimeStr) return match.status || 'upcoming';
+
+  try {
+    const nowTime = new Date();
+    const { hours, minutes, seconds } = parseTime(matchTimeStr);
+    let targetTime = new Date(nowTime);
+    targetTime.setHours(hours, minutes, seconds, 0);
+
+    const diff = targetTime.getTime() - nowTime.getTime();
+
+    // If the scheduled start time has arrived/passed (diff <= 0)
+    if (diff <= 0) {
+      if (match.status !== 'live') {
+        // If the admin has not started the match, it immediately shows as finished
+        return 'finished';
+      } else {
+        // If the match status is 'live', check if the live duration has expired
+        const cards = match.innerSections || [];
+        let maxDurationMins = 60;
+        if (cards.length > 0) {
+          maxDurationMins = Math.max(...cards.map((c: any) => c.liveDuration || 60));
+        } else {
+          const d1 = match.team1?.liveDuration || 60;
+          const d2 = match.team2?.liveDuration || 60;
+          const d3 = match.team3?.liveDuration || 60;
+          maxDurationMins = Math.max(d1, d2, d3);
+        }
+        
+        const durationMs = maxDurationMins * 60 * 1000;
+        if (Math.abs(diff) >= durationMs) return 'finished';
+        return 'live';
+      }
+    } else {
+      // Future match
+      return 'upcoming';
+    }
+  } catch (e) {
+    console.error("Error computing effective match status", e);
+  }
+
+  return match.status || 'upcoming';
+};
+
 export const isCardLive = (card?: { startTime?: string; liveDuration?: number }, matchStatus?: string) => {
   if (!card || !card.startTime) return false;
   return getCardStatus(card, matchStatus || 'live') === 'live';
 };
 
 export const isMatchLive = (match: any) => {
-  if (match.status !== 'live') return false;
-  const hasStartTimes = (match.team1?.startTime) || (match.team2?.startTime) || (match.team3?.startTime);
-  if (!hasStartTimes) return true;
-  return isCardLive(match.team1, match.status) || isCardLive(match.team2, match.status) || isCardLive(match.team3, match.status);
+  return getEffectiveMatchStatus(match) === 'live';
 };
+
 
