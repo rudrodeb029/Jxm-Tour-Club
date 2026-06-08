@@ -256,19 +256,24 @@ const MatchDetails = () => {
               </div>
 
               {match.status !== 'finished' && (
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/match/${match.id}/card/${card.id}`);
-                  }}
-                  style={{
-                    marginTop: '12px'
-                  }}
-                >
-                  JOIN
-                </button>
+                (() => {
+                  const cardHasJoined = currentUser ? (card.participantIds || []).includes(currentUser.uid) : false;
+                  return (
+                    <button
+                      type="button"
+                      className={`btn ${cardHasJoined ? 'btn-joined' : 'btn-primary'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/match/${match.id}/card/${card.id}`);
+                      }}
+                      style={{
+                        marginTop: '12px'
+                      }}
+                    >
+                      {cardHasJoined ? '✅ JOINED' : 'JOIN'}
+                    </button>
+                  );
+                })()
               )}
             </div>
           ))}
