@@ -156,6 +156,51 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const squadCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'squad').length;
   const totalMatchCount = allCards.length;
 
+  // Compute overall match live status and remaining duration
+  let statusConfig: { status: 'live' | 'upcoming' | 'finished' | 'idle'; display: string } | null = null;
+  const matchObj = { status, time, team1, team2, team3, innerSections };
+  const effStatus = getEffectiveMatchStatus(matchObj);
+  
+  if (effStatus === 'live') {
+    // Find if any submatch is currently live to display its ticking timer
+    let liveTimeStr = '';
+    const cards = innerSections || [];
+    let activeLiveCard: any = null;
+    
+    if (cards.length > 0) {
+      activeLiveCard = cards.find(c => getCardStatusFromUtil(c, status) === 'live');
+    } else {
+      activeLiveCard = [team1, team2, team3].filter(Boolean).find(t => getCardStatusFromUtil(t, status) === 'live');
+    }
+    
+    if (activeLiveCard) {
+      const timeStr = activeLiveCard.startTime || time || '';
+      if (timeStr) {
+        const nowTime = new Date(now);
+        const { hours, minutes, seconds } = parseTime(timeStr);
+        let targetTime = new Date(nowTime);
+        targetTime.setHours(hours, minutes, seconds, 0);
+        const elapsedMs = nowTime.getTime() - targetTime.getTime();
+        const liveDurationMins = Number(activeLiveCard.liveDuration) || 60;
+        const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
+        if (remainingMs > 0) {
+          const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+          const hrs = Math.floor(totalSeconds / 3600);
+          const mins = Math.floor((totalSeconds % 3600) / 60);
+          const secs = totalSeconds % 60;
+          const mm = mins.toString().padStart(2, '0');
+          const ss = secs.toString().padStart(2, '0');
+          const timeStrDisplay = hrs > 0 ? `${hrs}:${mm}:${ss}` : `${mm}:${ss}`;
+          statusConfig = { status: 'live', display: `LIVE (${timeStrDisplay})` };
+        }
+      }
+    }
+    
+    if (!statusConfig) {
+      statusConfig = { status: 'live', display: 'LIVE' };
+    }
+  }
+
   return (
     <div 
       onClick={!isFull ? onClick : undefined}
