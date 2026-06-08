@@ -973,18 +973,32 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   };
 
   // User operations
-  const updateUserBalance = (userId: string, newBalance: number) => {
-    setAdminUsers(prev => prev.map(u => u.id === userId ? { ...u, balance: newBalance } : u));
+  const updateUserBalance = async (userId: string, newBalance: number) => {
+    try {
+      await updateDoc(doc(db, 'users', userId), { balance: newBalance });
+      setAdminUsers(prev => prev.map(u => u.id === userId ? { ...u, balance: newBalance } : u));
+    } catch (e) {
+      console.error('Error updating user balance:', e);
+    }
   };
 
   const incrementUserMatches = (userId: string) => {
     setAdminUsers(prev => prev.map(u => u.id === userId ? { ...u, totalMatches: u.totalMatches + 1 } : u));
   };
 
-  const toggleUserStatus = (userId: string) => {
-    setAdminUsers(prev => prev.map(u => 
-      u.id === userId ? { ...u, status: u.status === 'active' ? 'suspended' as const : 'active' as const } : u
-    ));
+  const toggleUserStatus = async (userId: string) => {
+    try {
+      const u = adminUsers.find(x => x.id === userId);
+      if (u) {
+        const newStatus = u.status === 'active' ? 'suspended' : 'active';
+        await updateDoc(doc(db, 'users', userId), { status: newStatus });
+        setAdminUsers(prev => prev.map(user => 
+          user.id === userId ? { ...user, status: newStatus } : user
+        ));
+      }
+    } catch (e) {
+      console.error('Error toggling user status:', e);
+    }
   };
 
   // Stats
