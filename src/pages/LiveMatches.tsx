@@ -53,51 +53,39 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     };
   } else {
     // Scheduled time has passed (diff <= 0)
-    if (matchStatus !== 'live') {
-      // If the admin did not start the match, it immediately shows as ENDED
+    if (Math.abs(diff) < liveDurationMs) {
+      // Admin started or automated time makes it live
+      const elapsedMs = Math.abs(diff);
+      const remainingMs = liveDurationMs - elapsedMs;
+
+      const elapsedMins = Math.floor(elapsedMs / 60000);
+      const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
+      const remainingMins = Math.floor(remainingMs / 60000);
+      const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
+
+      const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
+      const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
+
+      return {
+        isLive: true,
+        statusText: 'LIVE',
+        displayTime: `Starts at: ${formatTime(startTimeStr)}`,
+        elapsedStr,
+        remainingStr,
+        endTimeStr: `Ends at: ${endTimeStr}`,
+        isOver: false
+      };
+    } else {
+      // Live duration has passed, so it has ended
       return {
         isLive: false,
         statusText: 'ENDED',
-        displayTime: `Scheduled: ${formatTime(startTimeStr)}`,
-        elapsedStr: 'Match Ended (Not Started)',
+        displayTime: `Started: ${formatTime(startTimeStr)}`,
+        elapsedStr: 'Match Ended',
         remainingStr: 'Match Ended',
         endTimeStr: `Ended at: ${endTimeStr}`,
         isOver: true
       };
-    } else {
-      // Admin started the match, check if duration has expired
-      if (Math.abs(diff) < liveDurationMs) {
-        const elapsedMs = Math.abs(diff);
-        const remainingMs = liveDurationMs - elapsedMs;
-
-        const elapsedMins = Math.floor(elapsedMs / 60000);
-        const elapsedSecs = Math.floor((elapsedMs % 60000) / 1000);
-        const remainingMins = Math.floor(remainingMs / 60000);
-        const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
-
-        const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
-        const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
-
-        return {
-          isLive: true,
-          statusText: 'LIVE',
-          displayTime: `Starts at: ${formatTime(startTimeStr)}`,
-          elapsedStr,
-          remainingStr,
-          endTimeStr: `Ends at: ${endTimeStr}`,
-          isOver: false
-        };
-      } else {
-        return {
-          isLive: false,
-          statusText: 'ENDED',
-          displayTime: `Started: ${formatTime(startTimeStr)}`,
-          elapsedStr: 'Match Ended',
-          remainingStr: 'Match Ended',
-          endTimeStr: `Ended at: ${endTimeStr}`,
-          isOver: true
-        };
-      }
     }
   }
 };
@@ -116,7 +104,7 @@ const LiveMatches = () => {
   const liveTeams = adminMatches
     .filter(m => m.status !== 'finished')
     .flatMap((match) => {
-      const teams = [];
+      const teams: any[] = [];
       const baseInfo = {
         matchId: match.id,
         matchName: match.name,
@@ -127,30 +115,44 @@ const LiveMatches = () => {
         maxParticipants: match.maxParticipants
       };
 
-      if (match.team1) teams.push({ 
-        ...match.team1, 
-        ...baseInfo,
-        startTime: match.team1.startTime || match.time,
-        liveDuration: match.team1.liveDuration || 60,
-        participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
-        status: match.status
-      });
-      if (match.team2) teams.push({ 
-        ...match.team2, 
-        ...baseInfo,
-        startTime: match.team2.startTime || match.time,
-        liveDuration: match.team2.liveDuration || 60,
-        participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
-        status: match.status
-      });
-      if (match.team3) teams.push({ 
-        ...match.team3, 
-        ...baseInfo,
-        startTime: match.team3.startTime || match.time,
-        liveDuration: match.team3.liveDuration || 60,
-        participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
-        status: match.status
-      });
+      const innerCards = match.innerSections || [];
+      if (innerCards.length > 0) {
+        innerCards.forEach((card: any) => {
+          teams.push({
+            ...card,
+            ...baseInfo,
+            startTime: card.startTime || match.time,
+            liveDuration: card.liveDuration || 60,
+            participantCount: card.participantIds ? card.participantIds.length : 0,
+            status: match.status
+          });
+        });
+      } else {
+        if (match.team1) teams.push({ 
+          ...match.team1, 
+          ...baseInfo,
+          startTime: match.team1.startTime || match.time,
+          liveDuration: match.team1.liveDuration || 60,
+          participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
+          status: match.status
+        });
+        if (match.team2) teams.push({ 
+          ...match.team2, 
+          ...baseInfo,
+          startTime: match.team2.startTime || match.time,
+          liveDuration: match.team2.liveDuration || 60,
+          participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
+          status: match.status
+        });
+        if (match.team3) teams.push({ 
+          ...match.team3, 
+          ...baseInfo,
+          startTime: match.team3.startTime || match.time,
+          liveDuration: match.team3.liveDuration || 60,
+          participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
+          status: match.status
+        });
+      }
       return teams;
     })
     .filter(team => {
