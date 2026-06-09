@@ -428,7 +428,7 @@ const Profile = () => {
           { label: t('accountSecurity'), icon: <Shield size={20} />, onClick: () => setShowSecurity(true) },
           { label: t('paymentMethods'), icon: <CreditCard size={20} />, onClick: () => setShowPayments(true) },
           { label: t('notifications'), icon: <Bell size={20} />, onClick: () => setShowNotifications(true) },
-          { label: t('languageRegion'), icon: <Globe size={20} />, onClick: () => setShowLanguage(true) },
+          { label: t('language'), icon: <Globe size={20} />, onClick: () => setLanguage(language === 'en' ? 'bn' : 'en'), langToggle: true, toggleState: language },
           { label: t('appearance'), icon: isDarkMode ? <Moon size={20} /> : <Sun size={20} />, onClick: toggleTheme, isToggle: true, toggleState: isDarkMode },
           { label: 'Currency Preference', icon: <DollarSign size={20} />, onClick: () => setCurrency(currency === 'USD' ? 'BDT' : 'USD'), customToggle: true, toggleState: currency },
           { label: t('helpCenter'), icon: <HelpCircle size={20} />, onClick: () => setShowHelp(true) },
@@ -487,7 +487,58 @@ const Profile = () => {
                 </div>
                 {item.label}
               </div>
-              {item.customToggle ? (
+              {item.langToggle ? (
+                <div style={{
+                  display: 'flex',
+                  background: 'rgba(0,0,0,0.4)',
+                  borderRadius: '100px',
+                  padding: '2px',
+                  position: 'relative',
+                  width: '74px',
+                  height: '30px',
+                  boxSizing: 'border-box',
+                  border: `1px solid ${currentStyle.border}40`
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '1px',
+                    left: item.toggleState === 'en' ? '1px' : '37px',
+                    width: '32px',
+                    height: '26px',
+                    background: currentStyle.border,
+                    borderRadius: '100px',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                    boxShadow: `0 2px 8px ${currentStyle.border}80`
+                  }} />
+                  
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                    color: item.toggleState === 'en' ? '#000' : currentStyle.text,
+                    fontSize: '0.85rem',
+                    fontWeight: 900,
+                    transition: 'color 0.3s'
+                  }}>
+                    EN
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                    color: item.toggleState === 'bn' ? '#000' : currentStyle.text,
+                    fontSize: '0.85rem',
+                    fontWeight: 900,
+                    transition: 'color 0.3s'
+                  }}>
+                    BN
+                  </div>
+                </div>
+              ) : item.customToggle ? (
                 <div style={{
                   display: 'flex',
                   background: 'rgba(0,0,0,0.4)',
