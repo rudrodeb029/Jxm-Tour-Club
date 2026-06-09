@@ -17,7 +17,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
-import { isMatchLive, parseTime, formatTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
+import { isMatchLive, parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
 import { doc, getDoc, collection, addDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useCurrency } from '../context/CurrencyContext';
@@ -1213,9 +1213,7 @@ const Home = () => {
                           const timeStr = card.startTime || card.matchTime || '';
                           if (timeStr) {
                             const nowTime = new Date();
-                            const { hours, minutes, seconds } = parseTime(timeStr);
-                            let targetTime = new Date();
-                            targetTime.setHours(hours, minutes, seconds, 0);
+                            const targetTime = getTargetDateTime(timeStr, nowTime);
                             const elapsedMs = nowTime.getTime() - targetTime.getTime();
                             const liveDurationMins = Number(card.liveDuration) || 60;
                             const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;

@@ -3,7 +3,7 @@ import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { Trophy, Users, X, AlertTriangle, CheckCircle, Clock, Zap, UserMinus } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import type { Team } from '../data/mockData';
-import { parseTime, formatTime, to24hTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
+import { parseTime, formatTime, to24hTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
 
 const InnerSectionsTab = () => {
   const { adminMatches, addMatchCard, updateMatchCard, deleteMatchCard, setCardWinners, adminUsers, removeParticipantFromCard, resetMatchCard } = useAdminDashboard();
@@ -50,20 +50,18 @@ const InnerSectionsTab = () => {
   const selectedMatch = adminMatches.find(m => m.id === selectedMatchId);
   const cards: Team[] = selectedMatch?.innerSections || [];
 
-  // Helper: compute card status from startTime/liveDuration
   const getCardStatus = (card: Team): { status: 'live' | 'upcoming' | 'finished' | 'idle', timeLeft?: string } => {
     if (!card.startTime) return { status: 'idle' };
     const status = getCardStatusFromUtil(card, selectedMatch?.status || 'upcoming');
     
     if (status === 'upcoming') {
       const nowTime = new Date(now);
-      const { hours, minutes, seconds } = parseTime(card.startTime);
-      let targetTime = new Date(now);
-      targetTime.setHours(hours, minutes, seconds, 0);
+      const targetTime = getTargetDateTime(card.startTime, nowTime);
       let diff = targetTime.getTime() - nowTime.getTime();
       if (diff <= 0) {
-        targetTime.setDate(targetTime.getDate() + 1);
-        diff = targetTime.getTime() - nowTime.getTime();
+        const tomorrow = new Date(targetTime);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        diff = tomorrow.getTime() - nowTime.getTime();
       }
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -73,9 +71,7 @@ const InnerSectionsTab = () => {
     
     if (status === 'live') {
       const nowTime = new Date(now);
-      const { hours, minutes, seconds } = parseTime(card.startTime);
-      let targetTime = new Date(now);
-      targetTime.setHours(hours, minutes, seconds, 0);
+      const targetTime = getTargetDateTime(card.startTime, nowTime);
       const elapsedMs = nowTime.getTime() - targetTime.getTime();
       const liveDurationMins = Number(card.liveDuration) || 60;
       const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;

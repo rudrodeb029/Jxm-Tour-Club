@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
 import { Users } from 'lucide-react';
-import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getEffectiveMatchStatus } from '../utils/timeUtils';
+import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getEffectiveMatchStatus, getTargetDateTime } from '../utils/timeUtils';
 
 interface TeamInfo {
   name: string; 
@@ -77,13 +77,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     
     if (cardStatus === 'upcoming') {
       const nowTime = new Date(now);
-      const { hours, minutes, seconds } = parseTime(card.startTime);
-      let targetTime = new Date(nowTime);
-      targetTime.setHours(hours, minutes, seconds, 0);
+      const targetTime = getTargetDateTime(card.startTime, nowTime);
       let diff = targetTime.getTime() - nowTime.getTime();
       if (diff <= 0) {
-        targetTime.setDate(targetTime.getDate() + 1);
-        diff = targetTime.getTime() - nowTime.getTime();
+        const tomorrow = new Date(targetTime);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        diff = tomorrow.getTime() - nowTime.getTime();
       }
       
       // Check if details are revealed
@@ -101,9 +100,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       const timeStr = card.startTime || time || '';
       if (timeStr) {
         const nowTime = new Date(now);
-        const { hours, minutes, seconds } = parseTime(timeStr);
-        let targetTime = new Date(nowTime);
-        targetTime.setHours(hours, minutes, seconds, 0);
+        const targetTime = getTargetDateTime(timeStr, nowTime);
         const elapsedMs = nowTime.getTime() - targetTime.getTime();
         const liveDurationMins = Number(card.liveDuration) || 60;
         const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
@@ -177,9 +174,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       const timeStr = activeLiveCard.startTime || time || '';
       if (timeStr) {
         const nowTime = new Date(now);
-        const { hours, minutes, seconds } = parseTime(timeStr);
-        let targetTime = new Date(nowTime);
-        targetTime.setHours(hours, minutes, seconds, 0);
+        const targetTime = getTargetDateTime(timeStr, nowTime);
         const elapsedMs = nowTime.getTime() - targetTime.getTime();
         const liveDurationMins = Number(activeLiveCard.liveDuration) || 60;
         const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;

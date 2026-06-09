@@ -9,7 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
-import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil } from '../utils/timeUtils';
+import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
 
 
 const CardDetails = () => {
@@ -108,13 +108,13 @@ const CardDetails = () => {
   const getTimeLeft = () => {
     if (!card.startTime || cardStatus !== 'upcoming') return '';
     const nowTime = new Date(now);
-    const { hours, minutes, seconds } = parseTime(card.startTime);
-    let targetTime = new Date(now);
-    targetTime.setHours(hours, minutes, seconds, 0);
+    const targetTime = getTargetDateTime(card.startTime, nowTime);
     let diff = targetTime.getTime() - nowTime.getTime();
     if (diff <= 0) {
-      targetTime.setDate(targetTime.getDate() + 1);
-      diff = targetTime.getTime() - nowTime.getTime();
+      // Fallback in case of tiny delay/offset issues, though getTargetDateTime handles date rolling
+      const tomorrow = new Date(targetTime);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      diff = tomorrow.getTime() - nowTime.getTime();
     }
     const h = Math.floor(diff / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -126,9 +126,7 @@ const CardDetails = () => {
     const timeStr = card.startTime || match.time || '';
     if (!timeStr || cardStatus !== 'live') return 'LIVE';
     const nowTime = new Date(now);
-    const { hours, minutes, seconds } = parseTime(timeStr);
-    let targetTime = new Date(now);
-    targetTime.setHours(hours, minutes, seconds, 0);
+    const targetTime = getTargetDateTime(timeStr, nowTime);
     const elapsedMs = nowTime.getTime() - targetTime.getTime();
     const liveDurationMins = Number(card.liveDuration) || 60;
     const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
@@ -150,9 +148,7 @@ const CardDetails = () => {
     const targetTimeString = card.startTime || match.time;
     if (targetTimeString) {
       const nowTime = new Date();
-      const { hours, minutes, seconds } = parseTime(targetTimeString);
-      let targetTime = new Date();
-      targetTime.setHours(hours, minutes, seconds, 0);
+      const targetTime = getTargetDateTime(targetTimeString, nowTime);
       const diffMinutes = (targetTime.getTime() - nowTime.getTime()) / (1000 * 60);
       if (diffMinutes <= dynamicRevealTime && diffMinutes >= -120) return true;
     }

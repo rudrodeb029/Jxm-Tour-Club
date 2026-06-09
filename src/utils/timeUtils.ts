@@ -39,6 +39,42 @@ export const to24hTime = (timeStr: string | undefined) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
+export const getTargetDateTime = (startTimeStr: string, now = new Date()): Date => {
+  const { hours, minutes, seconds } = parseTime(startTimeStr);
+  
+  // Try today
+  const todayTarget = new Date(now);
+  todayTarget.setHours(hours, minutes, seconds, 0);
+  
+  // Try yesterday
+  const yesterdayTarget = new Date(todayTarget);
+  yesterdayTarget.setDate(yesterdayTarget.getDate() - 1);
+  
+  // Try tomorrow
+  const tomorrowTarget = new Date(todayTarget);
+  tomorrowTarget.setDate(tomorrowTarget.getDate() + 1);
+  
+  const diffToday = todayTarget.getTime() - now.getTime();
+  
+  if (diffToday <= 0) {
+    // Today's target has passed. If elapsed time is less than 12 hours, assume it was today's match.
+    // Otherwise, it represents tomorrow's upcoming match.
+    if (Math.abs(diffToday) < 12 * 60 * 60 * 1000) {
+      return todayTarget;
+    } else {
+      return tomorrowTarget;
+    }
+  } else {
+    // Today's target is in the future. If it starts in less than 18 hours, assume it is today's match.
+    // Otherwise, assume it was yesterday's match.
+    if (diffToday < 18 * 60 * 60 * 1000) {
+      return todayTarget;
+    } else {
+      return yesterdayTarget;
+    }
+  }
+};
+
 export const getCardStatus = (
   card: { startTime?: string; liveDuration?: number } | undefined,
   matchStatus: string | undefined
@@ -50,11 +86,8 @@ export const getCardStatus = (
 
   try {
     const nowTime = new Date();
-    const { hours, minutes, seconds } = parseTime(card.startTime);
-    let targetTime = new Date(nowTime);
-    targetTime.setHours(hours, minutes, seconds, 0);
-
-    let diff = targetTime.getTime() - nowTime.getTime();
+    const targetTime = getTargetDateTime(card.startTime, nowTime);
+    const diff = targetTime.getTime() - nowTime.getTime();
 
     if (diff <= 0) {
       const durationMs = (Number(card.liveDuration) || 60) * 60 * 1000;
@@ -95,10 +128,7 @@ export const getEffectiveMatchStatus = (match: any): 'live' | 'upcoming' | 'fini
 
   try {
     const nowTime = new Date();
-    const { hours, minutes, seconds } = parseTime(matchTimeStr);
-    let targetTime = new Date(nowTime);
-    targetTime.setHours(hours, minutes, seconds, 0);
-
+    const targetTime = getTargetDateTime(matchTimeStr, nowTime);
     const diff = targetTime.getTime() - nowTime.getTime();
 
     if (diff <= 0) {

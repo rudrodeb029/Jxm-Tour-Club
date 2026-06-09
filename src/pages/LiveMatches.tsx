@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAdmin } from '../context/AdminContext';
-import { parseTime, formatTime } from '../utils/timeUtils';
+import { parseTime, formatTime, getTargetDateTime } from '../utils/timeUtils';
 
 const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number, matchStatus?: string) => {
   const liveDurationMins = durationMins || 60;
@@ -22,9 +22,7 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     };
   }
 
-  const { hours, minutes, seconds } = parseTime(startTimeStr);
-  const targetTime = new Date(nowTime);
-  targetTime.setHours(hours, minutes, seconds, 0);
+  const targetTime = getTargetDateTime(startTimeStr, nowTime);
 
   let diff = targetTime.getTime() - nowTime.getTime();
 
