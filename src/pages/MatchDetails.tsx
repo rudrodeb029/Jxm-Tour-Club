@@ -138,15 +138,15 @@ const MatchDetails = () => {
               style={{
                 background: 'var(--glass-bg)',
                 border: `1px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-                borderRadius: '28px',
-                padding: '24px 16px',
+                borderRadius: '20px',
+                padding: '14px 12px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '16px',
+                gap: '8px',
                 cursor: 'pointer',
                 boxShadow: selectedTeam === card.id 
-                  ? `0 15px 35px ${card.color}33, 0 0 15px ${card.color}22` 
+                  ? `0 10px 25px ${card.color}22, 0 0 10px ${card.color}15` 
                   : 'var(--card-shadow)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 textAlign: 'center',
@@ -157,26 +157,26 @@ const MatchDetails = () => {
               {/* 3D Glow Backlight */}
               <div style={{
                 position: 'absolute',
-                top: '-20px',
-                width: '120px',
-                height: '120px',
-                background: `radial-gradient(circle, ${card.color}22 0%, transparent 70%)`,
-                filter: 'blur(20px)',
+                top: '-10px',
+                width: '80px',
+                height: '80px',
+                background: `radial-gradient(circle, ${card.color}15 0%, transparent 70%)`,
+                filter: 'blur(15px)',
                 pointerEvents: 'none',
                 zIndex: 0
               }} />
 
               {/* Glowing Logo Container */}
               <div style={{ 
-                width: '88px', 
-                height: '88px', 
+                width: '60px', 
+                height: '60px', 
                 borderRadius: '50%', 
                 background: 'rgba(0,0,0,0.4)', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                border: `2px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : card.color + 'cc'}`,
-                boxShadow: `0 0 20px ${card.color}55`,
+                border: `1.5px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : card.color + 'aa'}`,
+                boxShadow: `0 0 12px ${card.color}44`,
                 position: 'relative',
                 zIndex: 1,
                 overflow: 'hidden',
@@ -194,8 +194,8 @@ const MatchDetails = () => {
                 />
               </div>
               
-              <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{card.name}</h3>
+              <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                <h3 style={{ fontSize: '0.98rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{card.name}</h3>
                 
                 {/* Dynamic Status Badge (Positioned below the Title) */}
                 {(() => {
@@ -239,19 +239,19 @@ const MatchDetails = () => {
                   return (
                     <>
                       {cardStatus === 'live' && (
-                        <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                        <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
                           LIVE{liveTimeLeft}
                         </div>
                       )}
                       {cardStatus === 'upcoming' && (
-                        <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>
+                        <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>
                           <span>🕒</span>
                           {cardTimeLeft}
                         </div>
                       )}
                       {cardStatus === 'finished' && (
-                        <div style={{ background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.3)', padding: '3px 8px', borderRadius: '10px', fontSize: '0.62rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                        <div style={{ background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
                           ENDED
                         </div>
                       )}
@@ -260,7 +260,7 @@ const MatchDetails = () => {
                 })()}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '12px', fontSize: '0.8rem', zIndex: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', fontSize: '0.72rem', zIndex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
                   <span>Entry Type</span>
                   <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{card.entryType || 'Solo'}</span>
@@ -283,7 +283,9 @@ const MatchDetails = () => {
                         navigate(`/match/${match.id}/card/${card.id}`);
                       }}
                       style={{
-                        marginTop: '12px'
+                        marginTop: '6px',
+                        padding: '6px 12px',
+                        fontSize: '0.78rem'
                       }}
                     >
                       {cardHasJoined ? '✅ JOINED' : 'JOIN'}
