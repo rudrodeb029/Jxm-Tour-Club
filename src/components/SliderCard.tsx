@@ -50,7 +50,6 @@ interface SliderCardProps {
   thirdPrize?: number;
   version?: string;
   perKillReward?: number;
-  perKillReward?: number;
   map?: string;
   image?: string;
   availableModes?: string[];

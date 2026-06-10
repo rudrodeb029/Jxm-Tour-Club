@@ -9,6 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
 
 
@@ -20,6 +21,7 @@ const MatchDetails = () => {
   const { balance, deductBalance } = useBalance();
   const { formatCurrency } = useCurrency();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
 
 
 

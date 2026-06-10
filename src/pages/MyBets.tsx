@@ -5,6 +5,7 @@ import { useBalance } from '../context/BalanceContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const MyBets = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const MyBets = () => {
   const { formatCurrency } = useCurrency();
   const { adminMatches, adminUsers } = useAdminDashboard();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
 
   // Filter matches that the user has joined

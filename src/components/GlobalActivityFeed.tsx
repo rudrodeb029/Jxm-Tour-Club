@@ -2,12 +2,14 @@ import React, { useMemo } from 'react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, UserPlus, Flame, Trophy, Zap, Star } from 'lucide-react';
 
 const GlobalActivityFeed: React.FC = () => {
   const { activities } = useAdminDashboard();
   const { formatCurrency, currency } = useCurrency();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const currentUserId = currentUser?.uid || 'USER123';
 
   const getIcon = (type: string) => {
