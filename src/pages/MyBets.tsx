@@ -32,7 +32,7 @@ const MyBets = () => {
         </h1>
       </div>
 
-      <div style={{ padding: '24px 12px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ padding: '24px 12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {myMatches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>No Matches Joined</h3>
@@ -41,235 +41,100 @@ const MyBets = () => {
         ) : (
           myMatches.map((match) => {
             const joinedCard = (match.innerSections || []).find(c => c.participantIds?.includes(currentUser?.uid || ''));
-            const realEntryFee = joinedCard ? (joinedCard.entryFee || 0) : (match.entryFee || 0);
-            const realPrize = joinedCard ? (joinedCard.winPrize || 0) : (match.prizePool || 0);
             const cardMode = joinedCard ? joinedCard.entryType : undefined;
+            const matchDate = match.time || 'N/A'; // Using match time as "Joined Time"
 
-            let statusLabel = 'UPCOMING';
             let statusColor = '#F59E0B';
-            let statusBg = 'rgba(245, 158, 11, 0.1)';
-            let statusBorder = '#F59E0B33';
-            let resultText = 'Waiting...';
-            let returnText = 'Calculating...';
-            let returnColor = 'var(--text-primary)';
-
-            if (match.status === 'live') {
-              statusLabel = 'IN PROGRESS';
-              statusColor = '#38BDF8';
-              statusBg = 'rgba(56, 189, 248, 0.1)';
-              statusBorder = '#38BDF833';
-              resultText = 'In Progress';
-            } else if (match.status === 'finished') {
-              const userWin = match.winners?.find(w => w.userId === (currentUser?.uid || displayUserId));
-              if (userWin) {
-                statusLabel = 'VICTORY';
-                statusColor = '#10B981';
-                statusBg = 'rgba(16, 185, 129, 0.1)';
-                statusBorder = '#10B98133';
-                resultText = 'Victory';
-                returnText = `+${formatCurrency(userWin.reward)}`;
-                returnColor = '#10B981';
-              } else {
-                statusLabel = 'FINISHED';
-                statusColor = '#94A3B8';
-                statusBg = 'rgba(148, 163, 184, 0.1)';
-                statusBorder = '#94A3B833';
-                resultText = 'Match Ended';
-                returnText = formatCurrency(realPrize);
-                returnColor = 'var(--text-secondary)';
-              }
-            } else {
-              returnText = `Up to ${formatCurrency(realPrize)}`;
-            }
-
-            const getGroupLabel = (group: string, entryType?: string) => {
-              const base = entryType ? `${entryType} Match` : group;
-              const clean = base.trim();
-              if (/match$/i.test(clean)) {
-                return clean.toUpperCase();
-              }
-              return `${clean} MATCH`.toUpperCase();
-            };
+            if (match.status === 'live') statusColor = '#38BDF8';
+            if (match.status === 'finished') statusColor = '#10B981';
 
             return (
               <div 
                 key={match.id}
-                style={{ 
-                  background: 'rgba(30, 41, 59, 0.4)',
-                  borderRadius: '32px',
-                  padding: '24px',
-                  border: '1.5px solid rgba(255, 255, 255, 0.05)',
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+                style={{
+                  gap: '12px',
+                  padding: '16px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
               >
-                {/* Background Glow */}
-                <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '200px', height: '200px', background: 'var(--accent-orange)', opacity: 0.05, filter: 'blur(80px)', borderRadius: '50%' }} />
-
-                {/* Status Badge */}
+                {/* Status Indicator Bar */}
                 <div style={{ 
                   position: 'absolute', 
-                  top: '24px', 
-                  right: '24px',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  fontSize: '0.7rem',
-                  fontWeight: 900,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  background: statusBg,
-                  color: statusColor,
-                  border: `1.5px solid ${statusBorder}`,
-                  boxShadow: `0 4px 15px ${statusBg}`
-                }}>
-                  {statusLabel}
-                </div>
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '4px',
+                  background: statusColor,
+                  boxShadow: `0 0 15px ${statusColor}66`
+                }} />
 
-                <div style={{ marginBottom: '24px' }}>
-                  <div style={{ color: 'var(--accent-orange)', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>
-                    {getGroupLabel(match.group, cardMode)}
-                  </div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, color: 'white', letterSpacing: '-0.02em' }}>{match.name}</h3>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
-                  <div>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ENTRY FEE</span>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'white' }}>{formatCurrency(realEntryFee)}</span>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>STATUS</span>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 900, color: statusColor }}>{resultText}</span>
+                <div style={{ flexShrink: 0 }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '16px',
+                    background: 'rgba(249, 111, 46, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid rgba(249, 111, 46, 0.2)'
+                  }}>
+                    <Trophy size={24} style={{ color: 'var(--accent-orange)' }} />
                   </div>
                 </div>
 
-                {/* Participants Section - Professional Community Style */}
-                <div style={{ marginBottom: '28px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                    <div style={{ width: '4px', height: '20px', background: 'var(--accent-orange)', borderRadius: '4px', boxShadow: '0 0 10px var(--accent-orange)' }} />
-                    <span style={{ fontSize: '0.9rem', fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Joined Players ({match.participantIds?.length || 0})
+                <div style={{ flex: 1, minWidth: 0, marginLeft: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <h4 style={{
+                      fontSize: '1rem',
+                      fontWeight: 900,
+                      margin: 0,
+                      color: 'white',
+                      letterSpacing: '-0.01em',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {match.name}
+                    </h4>
+                    <span style={{
+                      fontSize: '7px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      color: 'var(--text-secondary)',
+                      padding: '2px 6px',
+                      borderRadius: '6px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}>
+                      {cardMode || match.group || 'MATCH'}
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {(match.participantIds || []).slice(0, 5).map(pid => {
-                      const user = adminUsers.find(u => u.id === pid);
-                      if (!user) return null;
-                      const isMe = user.id === currentUser?.uid;
-
-                      return (
-                        <div key={user.id} style={{
-                          gap: '12px',
-                          padding: '16px',
-                          background: 'rgba(255, 255, 255, 0.03)',
-                          border: '1px solid rgba(255, 255, 255, 0.05)',
-                          borderRadius: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-                          position: 'relative',
-                          overflow: 'hidden'
-                        }}>
-                          <div style={{ flexShrink: 0 }}>
-                            <div style={{
-                              width: '44px',
-                              height: '44px',
-                              borderRadius: '50%',
-                              padding: '2px',
-                              border: '1.5px solid var(--glass-border)',
-                              background: 'rgba(0, 0, 0, 0.4)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}>
-                              <img src={user.avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                            </div>
-                          </div>
-
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                              <h4 style={{
-                                fontSize: '0.95rem',
-                                fontWeight: 800,
-                                margin: 0,
-                                color: 'white',
-                                letterSpacing: '-0.01em'
-                              }}>
-                                {user.name}
-                              </h4>
-                              {isMe && (
-                                <span style={{
-                                  fontSize: '8px',
-                                  background: 'var(--accent-orange)',
-                                  color: 'black',
-                                  padding: '2px 8px',
-                                  borderRadius: '20px',
-                                  fontWeight: 900,
-                                  textTransform: 'uppercase',
-                                  fontStyle: 'italic'
-                                }}>YOU</span>
-                              )}
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>@{user.username}</div>
-                          </div>
-
-                          <div style={{ flexShrink: 0, width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Zap size={16} style={{ color: '#38BDF8', filter: 'drop-shadow(0 0 5px rgba(56, 189, 248, 0.4))' }} strokeWidth={3} />
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {(match.participantIds?.length || 0) > 5 && (
-                      <div style={{
-                        textAlign: 'center',
-                        padding: '14px',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        borderRadius: '16px',
-                        fontSize: '0.8rem',
-                        color: 'var(--text-secondary)',
-                        fontWeight: 700,
-                        border: '1.5px dashed rgba(255, 255, 255, 0.1)',
-                        letterSpacing: '0.02em'
-                      }}>
-                        +{(match.participantIds?.length || 0) - 5} more players joined this match
-                      </div>
-                    )}
-
-                    {(match.participantIds?.length || 0) === 0 && (
-                      <div style={{
-                        textAlign: 'center',
-                        padding: '30px',
-                        background: 'rgba(255, 255, 255, 0.01)',
-                        borderRadius: '24px',
-                        border: '1.5px dashed rgba(255, 255, 255, 0.1)',
-                        fontSize: '0.9rem',
-                        color: 'var(--text-muted)',
-                        fontWeight: 600
-                      }}>
-                        No players have joined yet
-                      </div>
-                    )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={12} style={{ color: 'var(--text-muted)' }} />
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      Joined on {matchDate}
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent)', marginBottom: '24px' }} />
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {match.status === 'finished' ? 'Final Prize' : 'Prize Pool'}
-                  </span>
-                  <span style={{ 
-                    fontSize: '1.6rem',
-                    fontWeight: 900, 
-                    color: returnColor,
-                    letterSpacing: '-0.02em',
-                    textShadow: '0 0 20px rgba(255, 255, 255, 0.1)'
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    padding: '8px',
+                    borderRadius: '12px',
+                    background: 'rgba(56, 189, 248, 0.1)',
+                    border: '1px solid rgba(56, 189, 248, 0.2)'
                   }}>
-                    {match.status === 'finished' ? returnText : `Up to ${formatCurrency(realPrize)}`}
-                  </span>
+                    <Zap size={18} style={{ color: '#38BDF8', filter: 'drop-shadow(0 0 5px rgba(56, 189, 248, 0.4))' }} strokeWidth={3} />
+                  </div>
                 </div>
               </div>
             );
