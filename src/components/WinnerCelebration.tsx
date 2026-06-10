@@ -2,11 +2,13 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { Trophy, Medal, Star, X, Crown, Sparkles, Target } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { useLanguage } from '../context/LanguageContext';
 import ModalPortal from './ModalPortal';
 
 const WinnerCelebration: React.FC = () => {
   const { activeWinnerCeremony, clearWinnerCeremony } = useAdminDashboard();
   const { formatCurrency } = useCurrency();
+  const { t } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -138,7 +140,7 @@ const WinnerCelebration: React.FC = () => {
                 textTransform: 'uppercase', 
                 letterSpacing: '0.2em' 
               }}>
-                Victory Ceremony
+                {t('victoryCeremony')}
               </span>
               <Sparkles size={16} className="text-yellow-400" />
             </div>
@@ -151,13 +153,13 @@ const WinnerCelebration: React.FC = () => {
               lineHeight: 1.1,
               textShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}>
-              MATCH <br />
+              {t('matchComplete').split(' ')[0]} <br />
               <span style={{ 
                 background: 'linear-gradient(to right, #fff, var(--accent-orange))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
-                COMPLETE!
+                {t('matchComplete').split(' ')[1]}
               </span>
             </h2>
             <div style={{ 
@@ -232,13 +234,13 @@ const WinnerCelebration: React.FC = () => {
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em'
                   }}>
-                    {winner.rank === 1 ? 'Ultimate Champion' : winner.rank === 2 ? 'Elite Runner Up' : 'Bronze Contender'}
+                    {winner.rank === 1 ? t('ultimateChampion') : winner.rank === 2 ? t('eliteRunnerUp') : t('bronzeContender')}
                   </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 900, color: '#10B981', fontSize: '1.4rem', fontFamily: 'monospace' }}>+{formatCurrency(winner.reward)}</div>
-                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 800 }}>CLAIMED</div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', fontWeight: 800 }}>{t('claimed').toUpperCase()}</div>
                 </div>
               </div>
             ))}
@@ -266,7 +268,7 @@ const WinnerCelebration: React.FC = () => {
               e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
             }}
           >
-            DISMISS CEREMONY
+            {t('dismissCeremony').toUpperCase()}
           </button>
         </div>
       </div>
@@ -304,5 +306,8 @@ const WinnerCelebration: React.FC = () => {
     </ModalPortal>
   );
 };
+
+export default WinnerCelebration;
+
 
 export default WinnerCelebration;

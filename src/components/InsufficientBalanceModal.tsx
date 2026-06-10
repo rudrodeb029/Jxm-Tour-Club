@@ -3,6 +3,7 @@ import { AlertCircle, Wallet, X, ChevronRight, Check } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase';
 import { collection, addDoc, doc, onSnapshot } from 'firebase/firestore';
 import ModalPortal from './ModalPortal';
@@ -21,6 +22,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   currentBalance,
 }) => {
   const { formatCurrency, currency } = useCurrency();
+  const { t } = useLanguage();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const [profileUsername, setProfileUsername] = useState<string>('');
@@ -61,8 +63,13 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
     const amount = parseFloat(depositAmount);
     const gateway = gateways.find((g: any) => g.id === selectedGateway);
 
+    if (amount < 50) {
+      alert(`${t('minimumDeposit')} ৳50`);
+      return;
+    }
+
     if (!transactionId.trim()) {
-      alert("Please enter a valid Transaction ID.");
+      alert(t('txnIdRequired'));
       return;
     }
 
@@ -90,7 +97,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
         }, 2000);
       } catch (error) {
         console.error("Error submitting quick deposit request:", error);
-        alert("Failed to submit deposit request. Please try again.");
+        alert(t('authFailed'));
       }
     }
   };
@@ -190,9 +197,9 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
             }}>
               <Check size={40} color="var(--accent-green)" strokeWidth={3} />
             </div>
-            <h4 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>Request Sent!</h4>
+            <h4 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>{t('requestSent')}</h4>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500, lineHeight: 1.5 }}>
-              Your deposit request for {formatCurrency(parseFloat(depositAmount))} has been submitted. Balance will update once approved by admin.
+              {t('depositSuccessSub', { amount: formatCurrency(parseFloat(depositAmount)) })}
             </p>
           </div>
         ) : (
@@ -231,7 +238,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                   WebkitTextFillColor: 'transparent',
                   letterSpacing: '-0.02em'
                 }}>
-                  Insufficient Balance
+                  {t('insufficientBalance')}
                 </h3>
                 
                 <p style={{ 
@@ -241,7 +248,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                   marginBottom: '24px',
                   fontWeight: 500
                 }}>
-                  You don't have enough funds to complete this transaction. Let's top up your wallet.
+                  {t('insufficientBalanceSub')}
                 </p>
 
                 {/* Amount Breakdown Box */}
@@ -256,16 +263,16 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                   gap: '12px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Required Fee:</span>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{t('requiredFee')}:</span>
                     <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(requiredAmount)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Your Balance:</span>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{t('balance')}:</span>
                     <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(currentBalance)}</span>
                   </div>
                   <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                    <span style={{ color: 'var(--color-danger)', fontWeight: 700 }}>Shortfall:</span>
+                    <span style={{ color: 'var(--color-danger)', fontWeight: 700 }}>{t('shortfall')}:</span>
                     <span style={{ fontWeight: 900, color: 'var(--color-danger)' }}>{formatCurrency(shortfall)}</span>
                   </div>
                 </div>
@@ -293,7 +300,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                     className="hover-scale"
                   >
                     <Wallet size={16} />
-                    QUICK DEPOSIT NOW
+                    {t('quickDepositNow')}
                     <ChevronRight size={16} />
                   </button>
 
@@ -312,7 +319,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                     }}
                     className="hover-scale"
                   >
-                    CANCEL
+                    {t('cancel').toUpperCase()}
                   </button>
                 </div>
               </div>
@@ -332,15 +339,15 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                       padding: '4px'
                     }}
                   >
-                    ← Back
+                    ← {t('back')}
                   </button>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>Quick Deposit</h3>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>{t('quickDeposit')}</h3>
                 </div>
 
                 <form onSubmit={handleDepositSubmit}>
                   {/* Select Payment Gateway */}
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Select Gateway</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>{t('selectGateway')}</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                       {gateways.map((gw: any) => (
                         <div 
@@ -369,7 +376,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
 
                   {/* Preset Amount Grid */}
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Amount to Add</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>{t('amountToAdd')}</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                       {[Math.max(10, Math.ceil(shortfall)), 50, 100].map((amount) => (
                         <button
@@ -474,7 +481,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                                   cursor: 'pointer'
                                 }}
                               >
-                                Copy
+                                {t('copy') || 'Copy'}
                               </button>
                             </div>
                           </div>
@@ -491,12 +498,12 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
 
                   {/* Transaction ID Input */}
                   <div style={{ marginBottom: '24px' }}>
-                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>Transaction ID (Required)</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>{t('txnIdRequired')}</label>
                     <input 
                       type="text" 
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder="Enter TXN ID from your payment" 
+                      placeholder={t('enterTxnId')}
                       style={{
                         width: '100%',
                         background: 'var(--input-bg)',
@@ -532,7 +539,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
                     }}
                     className="hover-scale"
                   >
-                    SUBMIT DEPOSIT REQUEST
+                    {t('submitDepositRequest')}
                   </button>
                 </form>
               </div>
@@ -546,3 +553,4 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
 };
 
 export default InsufficientBalanceModal;
+

@@ -5,7 +5,7 @@ type Language = 'en' | 'bn' | 'hi';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -208,6 +208,16 @@ const translations: Record<Language, Record<string, string>> = {
     'updating': 'Updating...',
     'match': 'Match',
     'matches': 'Matches',
+    'shortfall': 'Shortfall',
+    'requiredFee': 'Required Fee',
+    'quickDepositNow': 'QUICK DEPOSIT NOW',
+    'requestSent': 'Request Sent!',
+    'quickDeposit': 'Quick Deposit',
+    'amountToAdd': 'Amount to Add',
+    'submitDepositRequest': 'SUBMIT DEPOSIT REQUEST',
+    'back': 'Back',
+    'insufficientBalanceSub': "You don't have enough funds to complete this transaction. Let's top up your wallet.",
+    'depositSuccessSub': 'Your deposit request for {amount} has been submitted. Balance will update once approved by admin.',
     'awaitingCommunity': 'Awaiting community moves...',
     'player': 'A Player',
     'deposited': 'deposited',
@@ -242,7 +252,15 @@ const translations: Record<Language, Record<string, string>> = {
     'emailInUse': 'This email is already registered.',
     'invalidCredentials': 'Invalid email or password.',
     'weakPassword': 'Password should be at least 6 characters.',
-    'authFailed': 'Authentication failed. Please try again.'
+    'authFailed': 'Authentication failed. Please try again.',
+    'victoryCeremony': 'Victory Ceremony',
+    'matchComplete': 'MATCH COMPLETE!',
+    'ultimateChampion': 'Ultimate Champion',
+    'eliteRunnerUp': 'Elite Runner Up',
+    'bronzeContender': 'Bronze Contender',
+    'claimed': 'CLAIMED',
+    'dismissCeremony': 'DISMISS CEREMONY',
+    'supportBot': 'Support Bot'
   },
   bn: {
     'home': 'হোম',
@@ -443,6 +461,16 @@ const translations: Record<Language, Record<string, string>> = {
     'updating': 'আপডেট হচ্ছে...',
     'match': 'ম্যাচ',
     'matches': 'ম্যাচ',
+    'shortfall': 'ঘাটতি',
+    'requiredFee': 'প্রয়োজনীয় ফি',
+    'quickDepositNow': 'এখনই জমা করুন',
+    'requestSent': 'অনুরোধ পাঠানো হয়েছে!',
+    'quickDeposit': 'দ্রুত জমা',
+    'amountToAdd': 'যোগ করার পরিমাণ',
+    'submitDepositRequest': 'জমার অনুরোধ জমা দিন',
+    'back': 'ফিরে যান',
+    'insufficientBalanceSub': 'এই লেনদেনটি সম্পন্ন করার জন্য আপনার পর্যাপ্ত তহবিল নেই। আপনার ওয়ালেট টপ আপ করুন।',
+    'depositSuccessSub': 'আপনার {amount} জমার অনুরোধ জমা দেওয়া হয়েছে। অ্যাডমিন অনুমোদন করলে ব্যালেন্স আপডেট হবে।',
     'awaitingCommunity': 'কমিউনিটির কার্যক্রমের অপেক্ষায়...',
     'player': 'একজন খেলোয়াড়',
     'deposited': 'জমা করেছেন',
@@ -477,7 +505,15 @@ const translations: Record<Language, Record<string, string>> = {
     'emailInUse': 'এই ইমেলটি ইতিমধ্যে নিবন্ধিত।',
     'invalidCredentials': 'ভুল ইমেল বা পাসওয়ার্ড।',
     'weakPassword': 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।',
-    'authFailed': 'প্রমাণীকরণ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।'
+    'authFailed': 'প্রমাণীকরণ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।',
+    'victoryCeremony': 'বিজয় অনুষ্ঠান',
+    'matchComplete': 'ম্যাচ শেষ!',
+    'ultimateChampion': 'চূড়ান্ত চ্যাম্পিয়ন',
+    'eliteRunnerUp': 'এলিট রানার আপ',
+    'bronzeContender': 'ব্রোঞ্জ প্রতিযোগী',
+    'claimed': 'দাবি করা হয়েছে',
+    'dismissCeremony': 'অনুষ্ঠান শেষ করুন',
+    'supportBot': 'সাপোর্ট বট'
   },
   hi: {
     'home': 'होम',
@@ -568,8 +604,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('appLanguage', lang);
   };
 
-  const t = (key: string) => {
-    return translations[language][key] || translations['en'][key] || key;
+  const t = (key: string, params?: Record<string, string>) => {
+    let text = translations[language][key] || translations['en'][key] || key;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, v);
+      });
+    }
+    return text;
   };
 
   return (
