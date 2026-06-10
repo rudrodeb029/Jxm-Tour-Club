@@ -95,96 +95,107 @@ const MyBets = () => {
               <div 
                 key={match.id}
                 style={{ 
-                  background: 'var(--glass-bg)', 
-                  borderRadius: '28px', 
+                  background: 'rgba(30, 41, 59, 0.4)',
+                  borderRadius: '32px',
                   padding: '24px',
-                  border: '1px solid var(--glass-border)',
-                  boxShadow: 'var(--card-shadow)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.05)',
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
               >
+                {/* Background Glow */}
+                <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '200px', height: '200px', background: 'var(--accent-orange)', opacity: 0.05, filter: 'blur(80px)', borderRadius: '50%' }} />
+
                 {/* Status Badge */}
                 <div style={{ 
                   position: 'absolute', 
                   top: '24px', 
                   right: '24px',
                   padding: '6px 14px',
-                  borderRadius: '12px',
-                  fontSize: '0.75rem',
+                  borderRadius: '20px',
+                  fontSize: '0.7rem',
                   fontWeight: 900,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   background: statusBg,
                   color: statusColor,
-                  border: `1px solid ${statusBorder}`
+                  border: `1.5px solid ${statusBorder}`,
+                  boxShadow: `0 4px 15px ${statusBg}`
                 }}>
                   {statusLabel}
                 </div>
 
-                <div style={{ marginBottom: '20px' }}>
-                  <div style={{ color: 'var(--accent-orange)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ color: 'var(--accent-orange)', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>
                     {getGroupLabel(match.group, cardMode)}
                   </div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 900, margin: 0 }}>{match.name}</h3>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, color: 'white', letterSpacing: '-0.02em' }}>{match.name}</h3>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '28px' }}>
                   <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>ENTRY FEE</span>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 900 }}>{formatCurrency(realEntryFee)}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ENTRY FEE</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'white' }}>{formatCurrency(realEntryFee)}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>STATUS</span>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 900, color: statusColor }}>{resultText}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>STATUS</span>
+                    <span style={{ fontSize: '1.2rem', fontWeight: 900, color: statusColor }}>{resultText}</span>
                   </div>
                 </div>
 
-                {/* Participants Section - Community Style */}
-                <div style={{ marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                    <div style={{ width: '4px', height: '16px', background: 'var(--accent-orange)', borderRadius: '2px' }} />
-                    <span style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {/* Participants Section - Professional Community Style */}
+                <div style={{ marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                    <div style={{ width: '4px', height: '20px', background: 'var(--accent-orange)', borderRadius: '4px', boxShadow: '0 0 10px var(--accent-orange)' }} />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 900, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Joined Players ({match.participantIds?.length || 0})
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {(match.participantIds || []).slice(0, 5).map(pid => {
                       const user = adminUsers.find(u => u.id === pid);
                       if (!user) return null;
                       const isMe = user.id === currentUser?.uid;
 
                       return (
-                        <div key={user.id} className="group relative flex items-center overflow-hidden card-skewed" style={{
+                        <div key={user.id} style={{
                           gap: '12px',
-                          padding: '12px 16px',
-                          background: 'rgba(255,255,255,0.02)',
-                          border: '1px solid var(--glass-border)',
-                          borderRadius: '16px',
-                          transition: 'all 0.3s ease'
+                          padding: '16px',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                          position: 'relative',
+                          overflow: 'hidden'
                         }}>
                           <div style={{ flexShrink: 0 }}>
-                            <div className="relative" style={{
-                              width: '40px',
-                              height: '40px',
+                            <div style={{
+                              width: '44px',
+                              height: '44px',
                               borderRadius: '50%',
                               padding: '2px',
-                              border: '1px solid var(--glass-border)',
-                              background: 'rgba(0,0,0,0.4)',
-                              boxShadow: isMe ? '0 0 15px rgba(249, 115, 22, 0.2)' : 'none'
+                              border: '1.5px solid var(--glass-border)',
+                              background: 'rgba(0, 0, 0, 0.4)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
                             }}>
                               <img src={user.avatar} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} alt="" />
                             </div>
                           </div>
 
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div className="flex items-center gap-2" style={{ marginBottom: '2px' }}>
-                              <h4 className={`truncate ${isMe ? 'text-orange-400' : 'text-white'}`} style={{
-                                fontSize: '0.9rem',
-                                fontWeight: 900,
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                              <h4 style={{
+                                fontSize: '0.95rem',
+                                fontWeight: 800,
                                 margin: 0,
-                                textShadow: isMe ? '0 0 10px rgba(249, 115, 22, 0.3)' : 'none'
+                                color: 'white',
+                                letterSpacing: '-0.01em'
                               }}>
                                 {user.name}
                               </h4>
@@ -193,21 +204,19 @@ const MyBets = () => {
                                   fontSize: '8px',
                                   background: 'var(--accent-orange)',
                                   color: 'black',
-                                  padding: '2px 6px',
-                                  borderRadius: '10px',
+                                  padding: '2px 8px',
+                                  borderRadius: '20px',
                                   fontWeight: 900,
                                   textTransform: 'uppercase',
-                                  fontStyle: 'italic',
-                                  letterSpacing: '-0.02em',
-                                  boxShadow: '0 0 10px rgba(249,115,22,0.3)'
+                                  fontStyle: 'italic'
                                 }}>YOU</span>
                               )}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '-0.02em' }}>@{user.username}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>@{user.username}</div>
                           </div>
 
-                          <div className="shrink-0 flex items-center justify-center p-2 rounded-xl border border-white/10 bg-blue-500/10 shadow-lg">
-                            <Zap size={14} className="text-blue-400" strokeWidth={3} />
+                          <div style={{ flexShrink: 0, width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Zap size={16} style={{ color: '#38BDF8', filter: 'drop-shadow(0 0 5px rgba(56, 189, 248, 0.4))' }} strokeWidth={3} />
                           </div>
                         </div>
                       );
@@ -216,13 +225,14 @@ const MyBets = () => {
                     {(match.participantIds?.length || 0) > 5 && (
                       <div style={{
                         textAlign: 'center',
-                        padding: '10px',
-                        background: 'rgba(255,255,255,0.02)',
-                        borderRadius: '12px',
-                        fontSize: '0.75rem',
+                        padding: '14px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        borderRadius: '16px',
+                        fontSize: '0.8rem',
                         color: 'var(--text-secondary)',
                         fontWeight: 700,
-                        border: '1px dashed var(--glass-border)'
+                        border: '1.5px dashed rgba(255, 255, 255, 0.1)',
+                        letterSpacing: '0.02em'
                       }}>
                         +{(match.participantIds?.length || 0) - 5} more players joined this match
                       </div>
@@ -231,11 +241,11 @@ const MyBets = () => {
                     {(match.participantIds?.length || 0) === 0 && (
                       <div style={{
                         textAlign: 'center',
-                        padding: '20px',
-                        background: 'rgba(255,255,255,0.01)',
-                        borderRadius: '20px',
-                        border: '1px dashed var(--glass-border)',
-                        fontSize: '0.8rem',
+                        padding: '30px',
+                        background: 'rgba(255, 255, 255, 0.01)',
+                        borderRadius: '24px',
+                        border: '1.5px dashed rgba(255, 255, 255, 0.1)',
+                        fontSize: '0.9rem',
                         color: 'var(--text-muted)',
                         fontWeight: 600
                       }}>
@@ -245,16 +255,20 @@ const MyBets = () => {
                   </div>
                 </div>
 
-                <div style={{ height: '1px', background: 'var(--glass-border)', marginBottom: '20px' }} />
+                <div style={{ height: '1.5px', background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent)', marginBottom: '24px' }} />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{match.status === 'finished' ? 'Final Prize' : 'Prize Pool'}</span>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {match.status === 'finished' ? 'Final Prize' : 'Prize Pool'}
+                  </span>
                   <span style={{ 
-                    fontSize: '1.3rem', 
+                    fontSize: '1.6rem',
                     fontWeight: 900, 
-                    color: returnColor 
+                    color: returnColor,
+                    letterSpacing: '-0.02em',
+                    textShadow: '0 0 20px rgba(255, 255, 255, 0.1)'
                   }}>
-                    {returnText}
+                    {match.status === 'finished' ? returnText : `Up to ${formatCurrency(realPrize)}`}
                   </span>
                 </div>
               </div>
@@ -265,6 +279,7 @@ const MyBets = () => {
     </div>
   );
 };
+
 
 export default MyBets;
 

@@ -153,8 +153,8 @@ const Wallet = () => {
       alert('Please select a withdrawal method');
       return;
     }
-    if (amountUSD <= 0) {
-      alert('Please enter a valid amount');
+    if (amountUSD < 50) {
+      alert('Minimum withdrawal amount is 50৳');
       return;
     }
     if (amountUSD > balance) {
@@ -220,6 +220,11 @@ const Wallet = () => {
     const amountUSD = getUSDAmount(depositAmount);
     const gateway = localGateways.find(g => g.id === selectedGateway);
     
+    if (amountUSD < 50) {
+      alert("Minimum deposit amount is 50৳");
+      return;
+    }
+
     if (!transactionId.trim()) {
       alert("Please enter a valid Transaction ID.");
       return;
@@ -459,11 +464,11 @@ const Wallet = () => {
 
             <button 
               onClick={() => setIsConfirming(true)}
-              disabled={!depositAmount || parseFloat(depositAmount) <= 0 || !selectedGateway}
+              disabled={!depositAmount || parseFloat(depositAmount) < 50 || !selectedGateway}
               className="btn btn-primary" 
-              style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800, marginBottom: '48px', opacity: (!depositAmount || !selectedGateway) ? 0.5 : 1 }}
+              style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800, marginBottom: '48px', opacity: (!depositAmount || parseFloat(depositAmount) < 50 || !selectedGateway) ? 0.5 : 1 }}
             >
-              {!selectedGateway ? 'SELECT GATEWAY' : 'ADD FUNDS NOW'}
+              {!selectedGateway ? 'SELECT GATEWAY' : parseFloat(depositAmount) < 50 ? 'Minimun Deposit ৳50' : 'ADD FUNDS NOW'}
             </button>
           </div>
         ) : (
@@ -608,7 +613,7 @@ const Wallet = () => {
 
             <button 
               onClick={handleWithdraw}
-              disabled={!selectedWithdrawMethod || !withdrawAmount}
+              disabled={!selectedWithdrawMethod || !withdrawAmount || parseFloat(withdrawAmount) < 50}
               className="btn btn-primary" 
               style={{ 
                 width: '100%', 
@@ -616,11 +621,11 @@ const Wallet = () => {
                 borderRadius: '14px', 
                 fontSize: '1rem',
                 fontWeight: 800,
-                opacity: (!selectedWithdrawMethod || !withdrawAmount) ? 0.5 : 1, 
-                cursor: (!selectedWithdrawMethod || !withdrawAmount) ? 'not-allowed' : 'pointer' 
+                opacity: (!selectedWithdrawMethod || !withdrawAmount || parseFloat(withdrawAmount) < 50) ? 0.5 : 1,
+                cursor: (!selectedWithdrawMethod || !withdrawAmount || parseFloat(withdrawAmount) < 50) ? 'not-allowed' : 'pointer'
               }}
             >
-              REQUEST WITHDRAWAL
+              {parseFloat(withdrawAmount) < 50 ? 'Minimun Withdraw ৳50' : 'REQUEST WITHDRAWAL'}
             </button>
           </div>
         </>
