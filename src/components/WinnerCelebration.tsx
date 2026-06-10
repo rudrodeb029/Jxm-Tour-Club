@@ -309,5 +309,3 @@ const WinnerCelebration: React.FC = () => {
 
 export default WinnerCelebration;
 
-
-export default WinnerCelebration;
