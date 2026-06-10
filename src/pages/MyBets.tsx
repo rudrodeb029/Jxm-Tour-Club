@@ -30,15 +30,15 @@ const MyBets = () => {
           </svg>
         </button>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 auto', transform: 'translateX(-20px)', letterSpacing: '-0.02em' }}>
-          Match <span style={{ color: 'var(--accent-orange)' }}>History</span>
+          {t('myBets').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('myBets').split(' ')[1] || ''}</span>
         </h1>
       </div>
 
       <div style={{ padding: '24px 12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {myMatches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>No Matches Joined</h3>
-            <p>Join an upcoming match to see your history here.</p>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>{t('noMatchesJoined')}</h3>
+            <p>{t('arenaSub')}</p>
           </div>
         ) : (
           myMatches.map((match) => {
@@ -128,7 +128,7 @@ const MyBets = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Calendar size={12} style={{ color: 'var(--text-muted)' }} />
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                      Joined on {matchDate}
+                      {t('joinedOn')} {matchDate}
                     </div>
                   </div>
                 </div>

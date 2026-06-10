@@ -132,9 +132,9 @@ const Home = () => {
   }, [currentUser]);
 
   const displayStats = [
-    { id: 'live', value: adminStats.activeMatches.toString(), label: 'Live Matches' },
-    { id: 'participants', value: adminStats.totalUsers.toLocaleString(), label: 'Participants' },
-    { id: 'winners', value: adminStats.totalWinners.toLocaleString(), label: 'Winners' }
+    { id: 'live', value: adminStats.activeMatches.toString(), label: t('liveMatches') },
+    { id: 'participants', value: adminStats.totalUsers.toLocaleString(), label: t('participants') },
+    { id: 'winners', value: adminStats.totalWinners.toLocaleString(), label: t('winnersCount') }
   ];
 
   const navigate = useNavigate();
@@ -262,7 +262,7 @@ const Home = () => {
         setTransactionId('');
         setShowAddConfirm(false);
         setIsAddBalanceOpen(false);
-        triggerSuccess("Deposit Request Sent!", `৳${amount} deposit request has been sent for admin approval.`);
+        triggerSuccess(t('depositRequestSent') || "Deposit Request Sent!", `৳${amount} ${t('depositSentSub') || 'deposit request has been sent for admin approval.'}`);
       } catch (error) {
         console.error("Error adding payment request in Home:", error);
         alert("Failed to submit deposit request. Please try again.");
@@ -678,7 +678,7 @@ const Home = () => {
             <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '250px', height: '250px', background: 'radial-gradient(circle, rgba(249, 111, 46, 0.15) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
 
             <h3 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '32px', letterSpacing: '-0.02em' }}>
-              Add <span style={{ color: 'var(--accent-orange)' }}>Funds</span>
+              {t('addFundsTitle').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('addFundsTitle').split(' ')[1]}</span>
             </h3>
             
             {!showAddConfirm ? (
@@ -708,7 +708,7 @@ const Home = () => {
                 </div>
                 
                 <div style={{ marginBottom: '40px' }}>
-                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Custom Amount</label>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('customAmountLabel')}</label>
                   <div style={{ position: 'relative' }}>
 
                     <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-orange)' }}>৳</span>
@@ -743,7 +743,7 @@ const Home = () => {
                   style={{ width: '100%', padding: '13px 20px', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 800, letterSpacing: '0.05em' }}
                   onClick={() => setShowAddConfirm(true)}
                 >
-                  PROCEED TO CONFIRM
+                  {t('proceedToConfirm') || 'PROCEED TO CONFIRM'}
                 </button>
               </div>
             ) : (
@@ -764,18 +764,18 @@ const Home = () => {
                     <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <h4 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>Confirm Deposit</h4>
+                <h4 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '12px' }}>{t('confirmDeposit')}</h4>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1rem', lineHeight: 1.6 }}>
-                  You are adding <span style={{ color: '#10B981', fontWeight: 900, fontSize: '1.2rem' }}>৳{parseFloat(depositAmount).toLocaleString()}</span> to your secure wallet.
+                  {t('addingFundsPrefix') || 'You are adding'} <span style={{ color: '#10B981', fontWeight: 900, fontSize: '1.2rem' }}>৳{parseFloat(depositAmount).toLocaleString()}</span> {t('addingFundsSuffix') || 'to your secure wallet.'}
                 </p>
 
                 <div style={{ marginBottom: '24px', textAlign: 'left' }}>
-                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>Transaction ID (Required)</label>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>{t('txnIdRequired')}</label>
                   <input 
                     type="text"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
-                    placeholder="Enter TXN ID from your payment"
+                    placeholder={t('enterTxnId')}
                     style={{
                       width: '100%',
                       background: 'var(--glass-bg)',
@@ -811,7 +811,7 @@ const Home = () => {
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    CONFIRM & ADD NOW
+                    {t('confirmAndAddNow')}
                   </button>
                   <button 
                     onClick={() => setShowAddConfirm(false)}
@@ -827,7 +827,7 @@ const Home = () => {
                       fontSize: '0.95rem'
                     }}
                   >
-                    Cancel and go back
+                    {t('cancelGoBack')}
                   </button>
                 </div>
               </div>
@@ -1136,7 +1136,7 @@ const Home = () => {
               {/* Title Section (No Megaphone Icon for minimal height) */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '16px', marginTop: '4px' }}>
                 <span className="announcement-badge" style={{ fontSize: '0.62rem', padding: '3px 8px', marginBottom: '6px' }}>
-                  ✨ OFFICIAL BROADCAST
+                  ✨ {t('officialBroadcast')}
                 </span>
 
                 <h3 style={{ 
@@ -1200,7 +1200,7 @@ const Home = () => {
                         textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'
                       }}>
                         <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-                        LIVE MATCHES NOW
+                        {t('liveMatchesNow')}
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {liveCards.map((card) => {
@@ -1308,7 +1308,7 @@ const Home = () => {
                         textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)'
                       }}>
                         <span style={{ fontSize: '0.75rem' }}>🕒</span>
-                        TODAY'S UPCOMING MATCHES
+                        {t('upcomingMatches')}
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {upcomingCards.map((card) => {
@@ -1401,7 +1401,7 @@ const Home = () => {
                   gap: '4px'
                 }}>
                   <span style={{ fontSize: '1.2rem' }}>📅</span>
-                  <span style={{ fontWeight: 600 }}>No matches scheduled for today.</span>
+                  <span style={{ fontWeight: 600 }}>{t('noMatchesScheduled')}</span>
                 </div>
               )}
 
@@ -1418,7 +1418,7 @@ const Home = () => {
                   marginTop: '4px'
                 }}
               >
-                Enter Lobby
+                {t('enterLobby')}
               </button>
 
             </div>

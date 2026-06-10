@@ -5,7 +5,10 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { User as UserIcon } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+
 const Auth = () => {
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +27,7 @@ const Auth = () => {
     setSuccessMsg('');
 
     if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
+      setErrorMsg(t('enterEmailPassword'));
       return;
     }
 
@@ -33,12 +36,12 @@ const Auth = () => {
         if (!isLogin) {
           // Registration flow
           if (!isAgreed) {
-            setErrorMsg('You must agree to the Terms of Service to register.');
+            setErrorMsg(t('agreeTermsWarn'));
             setIsLoading(false);
             return;
           }
           if (!name) {
-            setErrorMsg('Please enter your name.');
+            setErrorMsg(t('enterNameWarn'));
             setIsLoading(false);
             return;
           }
@@ -69,7 +72,7 @@ const Auth = () => {
           balance: 0,
         });
 
-        setSuccessMsg('Registration successful! Logging you in...');
+        setSuccessMsg(t('registrationSuccess'));
         setTimeout(() => navigate('/home'), 1500);
       } else {
         // Login flow
@@ -79,13 +82,13 @@ const Auth = () => {
     } catch (error: any) {
       console.error(error);
       if (error.code === 'auth/email-already-in-use') {
-        setErrorMsg('This email is already registered.');
+        setErrorMsg(t('emailInUse'));
       } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        setErrorMsg('Invalid email or password.');
+        setErrorMsg(t('invalidCredentials'));
       } else if (error.code === 'auth/weak-password') {
-        setErrorMsg('Password should be at least 6 characters.');
+        setErrorMsg(t('weakPassword'));
       } else {
-        setErrorMsg(error.message || 'Authentication failed. Please try again.');
+        setErrorMsg(error.message || t('authFailed'));
       }
     } finally {
       setIsLoading(false);
@@ -187,7 +190,7 @@ const Auth = () => {
             }}
           >
             <UserPlus size={18} />
-            Register
+            {t('register')}
           </button>
           <button
             onClick={() => {
@@ -213,7 +216,7 @@ const Auth = () => {
             }}
           >
             <LogIn size={18} />
-            Login
+            {t('login')}
           </button>
         </div>
 
@@ -221,12 +224,12 @@ const Auth = () => {
         <div style={{ width: '100%', maxWidth: '300px', transition: 'all 0.4s ease' }}>
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px' }}>
-              {isLogin ? 'Welcome Back' : 'Join the Elite'}
+              {isLogin ? t('welcomeBack') : t('joinTheElite')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
               {isLogin 
-                ? 'Enter your email and password to jump back into the action.' 
-                : 'Experience the thrill of elite competitive gaming with Jxm Tour Club.'}
+                ? t('loginSub')
+                : t('registerSub')}
             </p>
           </div>
 
@@ -292,7 +295,7 @@ const Auth = () => {
                     padding: (isNameFocused || name) ? '0 8px' : '0',
                     borderRadius: '4px'
                   }}>
-                    Full Name
+                    {t('fullName')}
                   </label>
                   <input 
                     type="text" 
@@ -323,7 +326,7 @@ const Auth = () => {
               border: `2px solid ${isEmailFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
               borderRadius: '12px',
               padding: '12px 16px',
-              display: 'flex',
+              display: 'center',
               alignItems: 'center',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: isEmailFocused ? '0 0 20px rgba(249, 115, 22, 0.15)' : 'none'
@@ -347,7 +350,7 @@ const Auth = () => {
                   padding: (isEmailFocused || email) ? '0 8px' : '0',
                   borderRadius: '4px'
                 }}>
-                  Email Address
+                  {t('emailAddress')}
                 </label>
                 <input 
                   type="email" 
@@ -401,7 +404,7 @@ const Auth = () => {
                   padding: (isPasswordFocused || password) ? '0 8px' : '0',
                   borderRadius: '4px'
                 }}>
-                  Password
+                  {t('password')}
                 </label>
                 <input 
                   type="password" 
@@ -456,7 +459,7 @@ const Auth = () => {
                 cursor: 'pointer',
                 textAlign: 'left'
               }}>
-                I certify that I am 18 years of age or older, and agree to the Terms of Service.
+                {t('termsAgreement')}
               </label>
             </div>
           )}
@@ -478,7 +481,7 @@ const Auth = () => {
               cursor: isLoading ? 'not-allowed' : 'pointer'
             }}
           >
-            {isLoading ? 'Processing...' : (isLogin ? 'Login Now' : 'Register Account')}
+            {isLoading ? t('processing') : (isLogin ? t('loginNowBtn') : t('registerAccountBtn'))}
             <ArrowRight size={20} />
           </button>
         </div>
@@ -486,5 +489,8 @@ const Auth = () => {
     </div>
   );
 };
+
+export default Auth;
+
 
 export default Auth;

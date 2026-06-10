@@ -154,7 +154,7 @@ const Wallet = () => {
       return;
     }
     if (amountUSD < 50) {
-      alert('Minimum withdrawal amount is 50৳');
+      alert(`${t('minimumWithdraw')} ৳50`);
       return;
     }
     if (amountUSD > balance) {
@@ -221,7 +221,7 @@ const Wallet = () => {
     const gateway = localGateways.find(g => g.id === selectedGateway);
     
     if (amountUSD < 50) {
-      alert("Minimum deposit amount is 50৳");
+      alert(`${t('minimumDeposit')} ৳50`);
       return;
     }
 
@@ -282,7 +282,7 @@ const Wallet = () => {
           <ChevronLeft size={20} strokeWidth={3} />
         </button>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 auto', transform: 'translateX(-20px)', letterSpacing: '-0.02em' }}>
-          My <span style={{ color: 'var(--accent-orange)' }}>Wallet</span>
+          {t('wallet').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('wallet').split(' ')[1] || ''}</span>
         </h1>
       </div>
 
@@ -333,7 +333,7 @@ const Wallet = () => {
 
           {/* Card Middle: Balance */}
           <div style={{ zIndex: 1, marginTop: '10px' }}>
-            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Balance</div>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('totalBalance') || 'Total Balance'}</div>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
               <h2 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.02em', lineHeight: 1, color: 'white' }}>
                 {formatCurrency(balance)}
@@ -344,7 +344,7 @@ const Wallet = () => {
           {/* Card Bottom: User ID & Mastercard Logo */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 1 }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>USER ID: {profileUsername || displayUserId}</div>
+              <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '4px' }}>{t('userId')}: {profileUsername || displayUserId}</div>
             </div>
             
             <div style={{ position: 'relative', width: '50px', height: '32px' }}>
@@ -367,7 +367,7 @@ const Wallet = () => {
             }}
           >
             <ArrowDownCircle size={20} />
-            Deposit
+            {t('deposit')}
           </button>
           <button 
             onClick={() => setActiveTab('withdraw')}
@@ -380,7 +380,7 @@ const Wallet = () => {
             }}
           >
             <ArrowUpCircle size={20} />
-            Withdraw
+            {t('withdraw')}
           </button>
         </div>
       </div>
@@ -389,11 +389,11 @@ const Wallet = () => {
       <div style={{ padding: '0 12px' }}>
         {activeTab === 'deposit' ? (
           <div className="animate-fade-in">
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.01em' }}>Select Gateway</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.01em' }}>{t('selectGateway')}</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
               {localGateways.length === 0 && !isAdminMode && (
                 <div style={{ gridColumn: 'span 3', textAlign: 'center', padding: '20px', background: 'var(--glass-bg)', borderRadius: '24px', color: 'var(--text-muted)', border: '1px solid var(--glass-border)' }}>
-                  No payment methods available.
+                  {t('noPaymentMethods') || 'No payment methods available.'}
                 </div>
               )}
 
@@ -419,7 +419,7 @@ const Wallet = () => {
               ))}
             </div>
 
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.01em' }}>Quick Amount</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '20px', letterSpacing: '-0.01em' }}>{t('quickAmount')}</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '32px' }}>
               {[10, 50, 100, 250, 500, 1000].map((amountUSD) => {
                 return (
@@ -439,7 +439,7 @@ const Wallet = () => {
             </div>
 
             <div style={{ marginBottom: '32px' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '12px', fontWeight: 700, textTransform: 'uppercase' }}>Custom Amount</label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '12px', fontWeight: 700, textTransform: 'uppercase' }}>{t('customAmount')}</label>
 
               <div className="card-skewed" style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{currency === 'BDT' ? '৳' : '$'}</span>
@@ -447,7 +447,7 @@ const Wallet = () => {
                   type="number" 
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
-                  placeholder="Enter amount" 
+                  placeholder={t('enterAmount') || 'Enter amount'}
                   style={{
                     width: '100%',
                     background: 'transparent',
@@ -468,7 +468,7 @@ const Wallet = () => {
               className="btn btn-primary" 
               style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800, marginBottom: '48px', opacity: (!depositAmount || parseFloat(depositAmount) < 50 || !selectedGateway) ? 0.5 : 1 }}
             >
-              {!selectedGateway ? 'SELECT GATEWAY' : parseFloat(depositAmount) < 50 ? 'Minimun Deposit ৳50' : 'ADD FUNDS NOW'}
+              {!selectedGateway ? t('selectGateway').toUpperCase() : parseFloat(depositAmount) < 50 ? `${t('minimumDeposit')} ৳50` : t('addFunds').toUpperCase()}
             </button>
           </div>
         ) : (
@@ -476,7 +476,7 @@ const Wallet = () => {
             {/* Linked Accounts Section */}
             <div style={{ marginBottom: '32px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>My Linked Accounts</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>{t('myLinkedAccounts')}</h3>
                 <button 
                   onClick={() => setShowAddMethod(true)}
                   style={{ 
@@ -494,7 +494,7 @@ const Wallet = () => {
                   }}
                 >
                   <PlusCircle size={14} />
-                  Add New
+                  {t('addNew')}
                 </button>
               </div>
 
@@ -526,8 +526,8 @@ const Wallet = () => {
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(249, 111, 46, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <CreditCard size={40} color="var(--accent-orange)" strokeWidth={2.5} />
             </div>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '12px' }}>Withdraw Winnings</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>Select a linked account to receive your winnings.</p>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '12px' }}>{t('withdrawWinnings')}</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>{t('selectLinkedAccount')}</p>
 
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
@@ -566,7 +566,7 @@ const Wallet = () => {
               >
 
                 <PlusCircle size={18} />
-                Link New Account
+                {t('linkNew')}
               </button>
             </div>
 
@@ -574,7 +574,7 @@ const Wallet = () => {
               <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{currency === 'BDT' ? '৳' : '$'}</span>
               <input 
                 type="number" 
-                placeholder="Withdraw amount"
+                placeholder={t('withdrawAmount')}
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 style={{
@@ -607,7 +607,7 @@ const Wallet = () => {
                   zIndex: 2
                 }}
               >
-                MAX
+                {t('max')}
               </button>
             </div>
 
@@ -625,7 +625,7 @@ const Wallet = () => {
                 cursor: (!selectedWithdrawMethod || !withdrawAmount || parseFloat(withdrawAmount) < 50) ? 'not-allowed' : 'pointer'
               }}
             >
-              {parseFloat(withdrawAmount) < 50 ? 'Minimun Withdraw ৳50' : 'REQUEST WITHDRAWAL'}
+              {parseFloat(withdrawAmount) < 50 ? `${t('minimumWithdraw')} ৳50` : t('requestWithdrawal').toUpperCase()}
             </button>
           </div>
         </>
@@ -635,7 +635,7 @@ const Wallet = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <History size={20} color="var(--accent-orange)" />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 900, margin: 0 }}>Activity</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 900, margin: 0 }}>{t('activity')}</h3>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button 
@@ -646,7 +646,7 @@ const Wallet = () => {
                   fontSize: '0.75rem', 
                 }}
               >
-                Personal
+                {t('personal')}
               </button>
               <button 
                 onClick={() => setHistoryTab('community')}
@@ -658,7 +658,7 @@ const Wallet = () => {
                 }}
               >
                 <Globe size={12} />
-                Community
+                {t('community')}
               </button>
             </div>
           </div>
@@ -742,7 +742,7 @@ const Wallet = () => {
                 </div>
               )) : (
                 <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--glass-bg)', borderRadius: '24px', color: 'var(--text-muted)', border: '1px solid var(--glass-border)' }}>
-                  No personal transactions yet.
+                  {t('noTransactions')}
                 </div>
               )
             })()}
@@ -799,9 +799,9 @@ const Wallet = () => {
             }}>
               <img src={localGateways.find((g: any) => g.id === selectedGateway)?.logo} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>Confirm via {localGateways.find((g: any) => g.id === selectedGateway)?.name}</h3>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmVia')} {localGateways.find((g: any) => g.id === selectedGateway)?.name}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-              You are adding <span style={{ color: '#10B981', fontWeight: 900 }}>{formatCurrency(parseFloat(depositAmount))}</span> to your wallet using <span style={{ color: localGateways.find((g: any) => g.id === selectedGateway)?.color, fontWeight: 800 }}>{localGateways.find((g: any) => g.id === selectedGateway)?.name}</span>.
+              {t('addingFundsPrefix')} <span style={{ color: '#10B981', fontWeight: 900 }}>{formatCurrency(parseFloat(depositAmount))}</span> {t('addingFundsSuffix')} <span style={{ color: localGateways.find((g: any) => g.id === selectedGateway)?.color, fontWeight: 800 }}>{localGateways.find((g: any) => g.id === selectedGateway)?.name}</span>.
             </p>
 
             {/* Deposit Account Details Configuration */}
@@ -874,12 +874,12 @@ const Wallet = () => {
             })()}
             
             <div style={{ marginBottom: '24px', textAlign: 'left' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>Transaction ID (Required)</label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>{t('txnIdRequired')}</label>
               <input 
                 type="text"
                 value={transactionId}
                 onChange={(e) => setTransactionId(e.target.value)}
-                placeholder="Enter TXN ID from your payment"
+                placeholder={t('enterTxnId')}
                 style={{
                   width: '100%',
                   background: 'var(--glass-bg)',
@@ -913,13 +913,13 @@ const Wallet = () => {
                   boxShadow: `0 8px 20px ${localGateways.find((g: any) => g.id === selectedGateway)?.color}33` 
                 }}
               >
-                CONFIRM & DEPOSIT
+                {t('confirmAndAddNow').toUpperCase()}
               </button>
               <button 
                 onClick={() => setIsConfirming(false)}
                 style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </div>
@@ -972,9 +972,9 @@ const Wallet = () => {
             }}>
               <img src={savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.icon} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>Confirm Withdrawal</h3>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmWithdrawal')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
-              You are requesting to withdraw <span style={{ color: 'var(--accent-orange)', fontWeight: 900 }}>{formatCurrency(parseFloat(withdrawAmount))}</span> to your <span style={{ color: savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color, fontWeight: 800 }}>{savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.name}</span> account ({savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.number}).
+              {t('withdrawingFundsPrefix') || 'You are requesting to withdraw'} <span style={{ color: 'var(--accent-orange)', fontWeight: 900 }}>{formatCurrency(parseFloat(withdrawAmount))}</span> {t('withdrawingFundsSuffix') || 'to your'} <span style={{ color: savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color, fontWeight: 800 }}>{savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.name}</span> {t('account') || 'account'} ({savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.number}).
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -993,13 +993,13 @@ const Wallet = () => {
                   boxShadow: '0 8px 20px rgba(249, 111, 46, 0.2)' 
                 }}
               >
-                CONFIRM & WITHDRAW
+                {t('confirmAndWithdraw').toUpperCase() || 'CONFIRM & WITHDRAW'}
               </button>
               <button 
                 onClick={() => setIsWithdrawConfirming(false)}
                 style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </div>
@@ -1042,8 +1042,8 @@ const Wallet = () => {
             onClick={(e) => e.stopPropagation()}
           >
 
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>Link <span style={{ color: 'var(--accent-orange)' }}>Account</span></h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Link your Bkash, Nagad or Binance for quick payments.</p>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('linkAccountTitle')}</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>{t('linkAccountSub')}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
               <select 
@@ -1051,7 +1051,7 @@ const Wallet = () => {
                 onChange={(e) => setNewMethodData({...newMethodData, name: e.target.value})}
                 style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '16px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '1rem', outline: 'none' }}
               >
-                <option value="" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>Select Provider</option>
+                <option value="" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>{t('selectProvider')}</option>
                 <option value="Bkash" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>Bkash</option>
                 <option value="Nagad" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>Nagad</option>
                 <option value="Binance" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>Binance</option>
@@ -1059,7 +1059,7 @@ const Wallet = () => {
 
               <input 
                 type="text" 
-                placeholder="Enter account number"
+                placeholder={t('enterAccountNumber')}
                 value={newMethodData.number}
                 onChange={(e) => setNewMethodData({...newMethodData, number: e.target.value})}
                 style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '16px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '1rem', outline: 'none' }}
@@ -1072,13 +1072,13 @@ const Wallet = () => {
                 onClick={handleAddMethod}
                 style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}
               >
-                LINK ACCOUNT
+                {t('linkAccountBtn')}
               </button>
               <button 
                 onClick={() => setShowAddMethod(false)}
                 style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </div>
@@ -1134,9 +1134,9 @@ const Wallet = () => {
               </svg>
             </div>
             
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>Confirm Deletion</h3>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmDeletion')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
-              Are you sure you want to remove this {deleteConfirmation.type === 'gateway' ? 'payment gateway' : 'linked account'}? This action cannot be undone.
+              {t('deleteConfirmationMsg')}
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1155,7 +1155,7 @@ const Wallet = () => {
                   boxShadow: '0 8px 20px rgba(239, 68, 68, 0.3)'
                 }}
               >
-                DELETE NOW
+                {t('deleteNow')}
               </button>
               <button 
                 onClick={() => setDeleteConfirmation(null)}
@@ -1171,7 +1171,7 @@ const Wallet = () => {
                   cursor: 'pointer' 
                 }}
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </div>

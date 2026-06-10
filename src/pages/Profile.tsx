@@ -428,9 +428,9 @@ const Profile = () => {
           { label: t('accountSecurity'), icon: <Shield size={20} />, onClick: () => setShowSecurity(true) },
           { label: t('paymentMethods'), icon: <CreditCard size={20} />, onClick: () => setShowPayments(true) },
           { label: t('notifications'), icon: <Bell size={20} />, onClick: () => setShowNotifications(true) },
-          { label: t('language'), icon: <Globe size={20} />, onClick: () => setLanguage(language === 'en' ? 'bn' : 'en'), langToggle: true, toggleState: language },
+          { label: t('language'), icon: <Globe size={20} />, onClick: () => setShowLanguage(true), langToggle: true, toggleState: language },
           { label: t('appearance'), icon: isDarkMode ? <Moon size={20} /> : <Sun size={20} />, onClick: toggleTheme, isToggle: true, toggleState: isDarkMode },
-          { label: 'Currency Preference', icon: <DollarSign size={20} />, onClick: () => setCurrency(currency === 'USD' ? 'BDT' : 'USD'), customToggle: true, toggleState: currency },
+          { label: t('currencyPreference') || 'Currency Preference', icon: <DollarSign size={20} />, onClick: () => setCurrency(currency === 'USD' ? 'BDT' : 'USD'), customToggle: true, toggleState: currency },
           { label: t('helpCenter'), icon: <HelpCircle size={20} />, onClick: () => setShowHelp(true) },
           { label: t('logout'), icon: <LogOut size={20} />, onClick: async () => { await logout(); navigate('/auth'); }, isLogout: true }
         ].map((item, i) => {
@@ -982,14 +982,14 @@ const Profile = () => {
             border: '1px solid var(--glass-border)',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Notification <span style={{ color: 'var(--accent-orange)' }}>Settings</span></h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>Control how you receive alerts and updates.</p>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>{t('notifications')} <span style={{ color: 'var(--accent-orange)' }}>{t('settings')}</span></h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>{t('notificationSettingsSub') || 'Control how you receive alerts and updates.'}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
-                { id: 'push', label: 'Push Notifications', desc: 'Alerts for matches and tournaments', icon: <Bell size={20} /> },
-                { id: 'email', label: 'Email Alerts', desc: 'Updates about your account and wallet', icon: <Globe size={20} /> },
-                { id: 'updates', label: 'Tournament Updates', desc: 'New features and event announcements', icon: <Shield size={20} /> }
+                { id: 'push', label: t('pushNotifications') || 'Push Notifications', desc: t('pushNotificationsDesc') || 'Alerts for matches and tournaments', icon: <Bell size={20} /> },
+                { id: 'email', label: t('emailAlerts') || 'Email Alerts', desc: t('emailAlertsDesc') || 'Updates about your account and wallet', icon: <Globe size={20} /> },
+                { id: 'updates', label: t('tournamentUpdates') || 'Tournament Updates', desc: t('tournamentUpdatesDesc') || 'New features and event announcements', icon: <Shield size={20} /> }
               ].map((notif, i) => {
                 const enabled = notificationPrefs[notif.id as keyof typeof notificationPrefs];
                 return (
@@ -1085,14 +1085,14 @@ const Profile = () => {
             border: '1px solid var(--glass-border)',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Language & <span style={{ color: 'var(--accent-orange)' }}>Region</span></h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>Select your preferred language for the interface.</p>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>{t('languageRegion').split('&')[0]} & <span style={{ color: 'var(--accent-orange)' }}>{t('languageRegion').split('&')[1]}</span></h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>{t('selectLanguageSub') || 'Select your preferred language for the interface.'}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { name: 'English', native: 'English', region: 'United States', flag: '🇺🇸', code: 'en' },
-                { name: 'Bengali', native: 'বাংলা', region: 'Bangladesh', flag: '🇧🇩', code: 'bn' },
-                { name: 'Hindi', native: 'हिन्दी', region: 'India', flag: '🇮🇳', code: 'hi' }
+                { name: t('langEnglish') || 'English', native: 'English', region: t('regionUS') || 'United States', flag: '🇺🇸', code: 'en' },
+                { name: t('langBengali') || 'Bengali', native: 'বাংলা', region: t('regionBD') || 'Bangladesh', flag: '🇧🇩', code: 'bn' },
+                { name: t('langHindi') || 'Hindi', native: 'हिन्दी', region: t('regionIN') || 'India', flag: '🇮🇳', code: 'hi' }
               ].map((lang, i) => {
                 const isSelected = language === lang.code;
                 return (
@@ -1191,8 +1191,8 @@ const Profile = () => {
             overflowY: 'auto',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Help <span style={{ color: 'var(--accent-orange)' }}>Center</span></h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>Find answers or contact our support team.</p>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>{t('helpCenter').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('helpCenter').split(' ')[1]}</span></h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>{t('helpCenterSub') || 'Find answers or contact our support team.'}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div style={{ 
@@ -1205,8 +1205,8 @@ const Profile = () => {
                 boxShadow: '0 15px 35px rgba(249, 111, 46, 0.3)'
               }}>
                 <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '1.4rem', fontWeight: 900, position: 'relative' }}>Need more help?</h4>
-                <p style={{ margin: '0 0 24px 0', fontSize: '0.95rem', fontWeight: 600, opacity: 0.9, position: 'relative', lineHeight: 1.4 }}>Our support team is available 24/7 to assist you with any issues.</p>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '1.4rem', fontWeight: 900, position: 'relative' }}>{t('needMoreHelp') || 'Need more help?'}</h4>
+                <p style={{ margin: '0 0 24px 0', fontSize: '0.95rem', fontWeight: 600, opacity: 0.9, position: 'relative', lineHeight: 1.4 }}>{t('supportTeamAvailability') || 'Our support team is available 24/7 to assist you with any issues.'}</p>
                 <button 
                   onClick={() => {
                     setIsChatOpen(true);
@@ -1228,17 +1228,17 @@ const Profile = () => {
                   position: 'relative'
                 }}>
                   <MessageSquare size={20} />
-                  CHAT WITH US
+                  {t('chatWithUs') || 'CHAT WITH US'}
                 </button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <h4 style={{ margin: '8px 4px', fontSize: '1.2rem', fontWeight: 800 }}>Frequently Asked Questions</h4>
+                <h4 style={{ margin: '8px 4px', fontSize: '1.2rem', fontWeight: 800 }}>{t('faqTitle') || 'Frequently Asked Questions'}</h4>
                 {[
-                  { q: 'How do I join a match?', a: 'Go to the Home screen, select a tournament, and click Join. Make sure you have enough balance!' },
-                  { q: 'When will I get my winnings?', a: 'Winnings are usually credited within 1-2 hours after the match ends.' },
-                  { q: 'What are the withdrawal limits?', a: 'Minimum withdrawal is 100 BDT and maximum is 50,000 BDT per day.' },
-                  { q: 'Is my data secure?', a: 'Yes, we use enterprise-grade encryption to protect all your personal and financial data.' }
+                  { q: t('faq1q') || 'How do I join a match?', a: t('faq1a') || 'Go to the Home screen, select a tournament, and click Join. Make sure you have enough balance!' },
+                  { q: t('faq2q') || 'When will I get my winnings?', a: t('faq2a') || 'Winnings are usually credited within 1-2 hours after the match ends.' },
+                  { q: t('faq3q') || 'What are the withdrawal limits?', a: t('faq3a') || 'Minimum withdrawal is 100 BDT and maximum is 50,000 BDT per day.' },
+                  { q: t('faq4q') || 'Is my data secure?', a: t('faq4a') || 'Yes, we use enterprise-grade encryption to protect all your personal and financial data.' }
                 ].map((faq, i) => (
                   <div key={i} style={{ 
                     padding: '24px', 
@@ -1273,7 +1273,7 @@ const Profile = () => {
                 letterSpacing: '1px'
               }}
             >
-              CLOSE CENTER
+              {t('closeCenter') || 'CLOSE CENTER'}
             </button>
           </div>
         </div>
@@ -1332,9 +1332,9 @@ const Profile = () => {
               </svg>
             </div>
             
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '16px' }}>Wait a Second!</h3>
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '16px' }}>{t('waitASec') || 'Wait a Second!'}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6, fontSize: '1.05rem', fontWeight: 500 }}>
-              Are you sure you want to remove this <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>payment method</span>? You will need to link it again for future withdrawals.
+              {t('deleteMethodWarn') || 'Are you sure you want to remove this payment method? You will need to link it again for future withdrawals.'}
             </p>
 
             
@@ -1354,7 +1354,7 @@ const Profile = () => {
                   boxShadow: '0 8px 20px rgba(239, 68, 68, 0.4)'
                 }}
               >
-                YES, REMOVE IT
+                {t('yesRemoveIt') || 'YES, REMOVE IT'}
               </button>
               <button 
                 onClick={() => setDeleteConfirmation(null)}
@@ -1370,7 +1370,7 @@ const Profile = () => {
                   cursor: 'pointer' 
                 }}
               >
-                Keep Method
+                {t('keepMethod') || 'Keep Method'}
               </button>
 
             </div>
