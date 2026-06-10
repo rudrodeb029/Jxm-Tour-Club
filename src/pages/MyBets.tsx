@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { ArrowLeft, History, Trophy, Calendar, Users, Zap, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, History, Trophy, Calendar, Users, Zap, Star, ChevronRight } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 
 const MyBets = () => {
+  const navigate = useNavigate();
   const { balance } = useBalance();
   const { formatCurrency } = useCurrency();
   const { adminMatches, adminUsers } = useAdminDashboard();
@@ -20,7 +22,7 @@ const MyBets = () => {
       {/* Header */}
       <div style={{ padding: '16px 12px', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10, background: 'var(--modal-bg)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--glass-border)' }}>
         <button 
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
           style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -42,15 +44,17 @@ const MyBets = () => {
           myMatches.map((match) => {
             const joinedCard = (match.innerSections || []).find(c => c.participantIds?.includes(currentUser?.uid || ''));
             const cardMode = joinedCard ? joinedCard.entryType : undefined;
-            const matchDate = match.time || 'N/A'; // Using match time as "Joined Time"
+            const matchDate = match.time || 'N/A';
 
             let statusColor = '#F59E0B';
             if (match.status === 'live') statusColor = '#38BDF8';
             if (match.status === 'finished') statusColor = '#10B981';
 
             return (
-              <div 
+              <button
                 key={match.id}
+                onClick={() => navigate(`/match/${match.id}`)}
+                className="hover-scale"
                 style={{
                   gap: '12px',
                   padding: '16px',
@@ -61,7 +65,10 @@ const MyBets = () => {
                   alignItems: 'center',
                   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  width: '100%',
+                  textAlign: 'left',
+                  cursor: 'pointer'
                 }}
               >
                 {/* Status Indicator Bar */}
@@ -130,13 +137,13 @@ const MyBets = () => {
                   <div style={{
                     padding: '8px',
                     borderRadius: '12px',
-                    background: 'rgba(56, 189, 248, 0.1)',
-                    border: '1px solid rgba(56, 189, 248, 0.2)'
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)'
                   }}>
-                    <Zap size={18} style={{ color: '#38BDF8', filter: 'drop-shadow(0 0 5px rgba(56, 189, 248, 0.4))' }} strokeWidth={3} />
+                    <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })
         )}
@@ -145,6 +152,4 @@ const MyBets = () => {
   );
 };
 
-
 export default MyBets;
-
