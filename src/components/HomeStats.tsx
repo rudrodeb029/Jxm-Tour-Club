@@ -129,7 +129,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           <div className="led-indicator" />
         </div>
         <div className="stat-value" style={{ color: '#10B981' }}>{stats[0].value}</div>
-        <div className="stat-label">LIVE MATCHES</div>
+        <div className="stat-label">{stats[0].label}</div>
       </div>
 
       {/* 2. Participants */}
@@ -147,7 +147,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           </svg>
         </div>
         <div className="stat-value" style={{ color: '#38BDF8' }}>{stats[1].value}</div>
-        <div className="stat-label">PARTICIPANTS</div>
+        <div className="stat-label">{stats[1].label}</div>
       </div>
 
       {/* 3. Winners */}
@@ -176,7 +176,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           </div>
         </div>
         <div className="stat-value" style={{ color: '#FBBF24' }}>{stats[2].value}</div>
-        <div className="stat-label">WINNERS</div>
+        <div className="stat-label">{stats[2].label}</div>
       </div>
 
     </div>

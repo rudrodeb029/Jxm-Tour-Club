@@ -146,6 +146,7 @@ interface AdminDashboardContextType {
     pendingWithdrawals: number;
     totalRevenue: number;
     totalWinners: number;
+    totalJoins: number;
   };
 
   activeWinnerCeremony: WinnerCeremony | null;
@@ -1082,6 +1083,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0),
     totalWinners: winners.length,
+    totalJoins: adminMatches.reduce((sum, m) => sum + (m.participantIds?.length || 0), 0),
   };
 
   return (
