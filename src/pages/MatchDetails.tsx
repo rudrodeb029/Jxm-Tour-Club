@@ -288,7 +288,14 @@ const MatchDetails = () => {
 
               {match.status !== 'finished' && (
                 (() => {
+                  const cardStatus = getCardStatusFromUtil(card, match.status);
                   const cardHasJoined = currentUser ? (card.participantIds || []).includes(currentUser.uid) : false;
+
+                  let buttonLabel = t('join').toUpperCase();
+                  if (cardHasJoined) {
+                    buttonLabel = cardStatus === 'finished' ? `✅ ${t('joinedEnd').toUpperCase()}` : `✅ ${t('joined').toUpperCase()}`;
+                  }
+
                   return (
                     <button
                       type="button"
@@ -303,7 +310,7 @@ const MatchDetails = () => {
                         fontSize: '0.78rem'
                       }}
                     >
-                      {cardHasJoined ? `✅ ${t('joined').toUpperCase()}` : t('join').toUpperCase()}
+                      {buttonLabel}
                     </button>
                   );
                 })()

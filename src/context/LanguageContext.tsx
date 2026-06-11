@@ -260,10 +260,9 @@ const translations: Record<Language, Record<string, string>> = {
     'bronzeContender': 'Bronze Contender',
     'claimed': 'CLAIMED',
     'dismissCeremony': 'DISMISS CEREMONY',
-    'supportBot': 'Support Bot',
-    'myWallet': 'My Wallet',
     'assignedSlot': 'Assigned Slot',
-    'slotNumber': 'Slot Number'
+    'slotNumber': 'Slot Number',
+    'joinedEnd': 'JOINED END'
   },
   bn: {
     'home': 'হোম',
@@ -519,7 +518,8 @@ const translations: Record<Language, Record<string, string>> = {
     'supportBot': 'সাপোর্ট বট',
     'myWallet': 'আমার ওয়ালেট',
     'assignedSlot': 'নির্ধারিত স্লট',
-    'slotNumber': 'স্লট নম্বর'
+    'slotNumber': 'স্লট নম্বর',
+    'joinedEnd': 'অংশগ্রহণ শেষ'
   },
   hi: {
     'home': 'होम',
