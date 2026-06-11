@@ -33,12 +33,12 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
     // Parse the amount, stripping out any existing currency symbols or commas
     if (typeof amount === 'string') {
       const cleanedString = amount.replace(/[^0-9.-]+/g, '');
-      numericAmount = parseFloat(cleanedString) || 0;
+      numericAmount = parseFloat(cleanedString);
     } else if (typeof amount === 'number') {
       numericAmount = amount;
-    } else {
-      numericAmount = 0;
     }
+
+    if (isNaN(numericAmount)) numericAmount = 0;
 
     if (currency === 'BDT') {
       const converted = numericAmount * CONVERSION_RATE;

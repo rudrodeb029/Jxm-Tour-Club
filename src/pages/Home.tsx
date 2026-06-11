@@ -17,7 +17,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { useAuth } from '../context/AuthContext';
-import { isMatchLive, parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
+import { isMatchLive, parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime, getEffectiveMatchStatus } from '../utils/timeUtils';
 import { doc, getDoc, collection, addDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useCurrency } from '../context/CurrencyContext';
@@ -481,9 +481,9 @@ const Home = () => {
           </>
         )}
 
-        {localMatches.filter(m => !isMatchLive(m)).length > 0 && (
+        {localMatches.filter(m => !isMatchLive(m) && getEffectiveMatchStatus(m) !== 'finished').length > 0 && (
           <>
-            {localMatches.filter(m => !isMatchLive(m)).map((match, index) => (
+            {localMatches.filter(m => !isMatchLive(m) && getEffectiveMatchStatus(m) !== 'finished').map((match, index) => (
               <div 
                 key={match.id} 
                 className="animate-slide-up" 

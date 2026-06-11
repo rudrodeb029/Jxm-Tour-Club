@@ -282,7 +282,7 @@ const Wallet = () => {
           <ChevronLeft size={20} strokeWidth={3} />
         </button>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 auto', transform: 'translateX(-20px)', letterSpacing: '-0.02em' }}>
-          {t('myWallet').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('myWallet').split(' ')[1] || ''}</span>
+          {t('myWallet')}
         </h1>
       </div>
 
@@ -677,7 +677,7 @@ const Wallet = () => {
                   type: 'Deposit' as const,
                   amount: p.isRaw ? p.amount : p.amount * 126,
                   date: p.timestamp,
-                  status: p.status.charAt(0).toUpperCase() + p.status.slice(1) as any
+                  status: (p.status || 'Pending').charAt(0).toUpperCase() + (p.status || 'Pending').slice(1) as any
                 }));
               
               const userWithdrawals = withdrawalRequests
@@ -687,7 +687,7 @@ const Wallet = () => {
                   type: 'Withdraw' as const,
                   amount: -(w.isRaw ? w.amount : w.amount * 126),
                   date: w.timestamp,
-                  status: w.status.charAt(0).toUpperCase() + w.status.slice(1) as any
+                  status: (w.status || 'Pending').charAt(0).toUpperCase() + (w.status || 'Pending').slice(1) as any
                 }));
 
               const allTxs = [...userPayments, ...userWithdrawals, ...localTransactions]
@@ -790,18 +790,18 @@ const Wallet = () => {
               width: '90px', 
               height: '90px', 
               borderRadius: '50%', 
-              background: `${localGateways.find((g: any) => g.id === selectedGateway)?.color}15`, 
+              background: `${localGateways.find((g: any) => g.id === selectedGateway)?.color || '#f97316'}15`,
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               margin: '0 auto 24px',
-              border: `1px solid ${localGateways.find((g: any) => g.id === selectedGateway)?.color}33`
+              border: `1px solid ${localGateways.find((g: any) => g.id === selectedGateway)?.color || '#f97316'}33`
             }}>
               <img src={localGateways.find((g: any) => g.id === selectedGateway)?.logo} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmVia')} {localGateways.find((g: any) => g.id === selectedGateway)?.name}</h3>
+            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmVia')} {localGateways.find((g: any) => g.id === selectedGateway)?.name || 'Gateway'}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
-              {t('addingFundsPrefix')} <span style={{ color: '#10B981', fontWeight: 900 }}>{formatCurrency(parseFloat(depositAmount))}</span> {t('addingFundsSuffix')} <span style={{ color: localGateways.find((g: any) => g.id === selectedGateway)?.color, fontWeight: 800 }}>{localGateways.find((g: any) => g.id === selectedGateway)?.name}</span>.
+              {t('addingFundsPrefix')} <span style={{ color: '#10B981', fontWeight: 900 }}>{formatCurrency(parseFloat(depositAmount) || 0)}</span> {t('addingFundsSuffix')} <span style={{ color: localGateways.find((g: any) => g.id === selectedGateway)?.color || 'var(--accent-orange)', fontWeight: 800 }}>{localGateways.find((g: any) => g.id === selectedGateway)?.name || 'Gateway'}</span>.
             </p>
 
             {/* Deposit Account Details Configuration */}
@@ -963,18 +963,18 @@ const Wallet = () => {
               width: '90px', 
               height: '90px', 
               borderRadius: '50%', 
-              background: `${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color}15`, 
+              background: `${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || '#f97316'}15`,
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               margin: '0 auto 24px',
-              border: `1px solid ${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color}33`
+              border: `1px solid ${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || '#f97316'}33`
             }}>
               <img src={savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.icon} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
             <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmWithdrawal')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
-              {t('withdrawingFundsPrefix') || 'You are requesting to withdraw'} <span style={{ color: 'var(--accent-orange)', fontWeight: 900 }}>{formatCurrency(parseFloat(withdrawAmount))}</span> {t('withdrawingFundsSuffix') || 'to your'} <span style={{ color: savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color, fontWeight: 800 }}>{savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.name}</span> {t('account') || 'account'} ({savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.number}).
+              {t('withdrawingFundsPrefix') || 'You are requesting to withdraw'} <span style={{ color: 'var(--accent-orange)', fontWeight: 900 }}>{formatCurrency(parseFloat(withdrawAmount) || 0)}</span> {t('withdrawingFundsSuffix') || 'to your'} <span style={{ color: savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || 'var(--accent-orange)', fontWeight: 800 }}>{savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.name || 'Account'}</span> {t('account') || 'account'} ({savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.number || 'N/A'}).
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

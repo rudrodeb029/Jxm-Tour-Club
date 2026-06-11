@@ -145,12 +145,13 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const status2 = getCardStatusAndDisplay(team2);
   const status3 = getCardStatusAndDisplay(team3);
 
-  // Count available matches per entry type from innerSections
-  const allCards = innerSections || [];
-  const soloCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'solo').length;
-  const duoCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'duo').length;
-  const squadCount = allCards.filter(c => (c.entryType || '').toLowerCase() === 'squad').length;
-  const totalMatchCount = allCards.length;
+  // Filter out finished sub-matches from innerSections for counting
+  const activeSubMatches = (innerSections || []).filter(c => getCardStatusFromUtil(c, status) !== 'finished');
+
+  const soloCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'solo').length;
+  const duoCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'duo').length;
+  const squadCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'squad').length;
+  const totalMatchCount = activeSubMatches.length;
 
   // Compute overall match live status and remaining duration
   let statusConfig: { status: 'live' | 'upcoming' | 'finished' | 'idle'; display: string } | null = null;
