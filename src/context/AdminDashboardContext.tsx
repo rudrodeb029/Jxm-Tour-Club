@@ -377,9 +377,13 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       let hasChanges = false;
       
       const updatedMatches = adminMatches.map(m => {
+        // Only auto-start if match is explicitly marked as 'upcoming'
         if (m.status === 'upcoming') {
           try {
-            const { hours: targetH, minutes: targetM, seconds: targetS } = parseTime(m.time);
+            const matchTimeStr = m.time;
+            if (!matchTimeStr) return m;
+
+            const { hours: targetH, minutes: targetM, seconds: targetS } = parseTime(matchTimeStr);
             const target = new Date();
             target.setHours(targetH, targetM, targetS, 0);
             
@@ -404,7 +408,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       }
     };
 
-    const interval = setInterval(checkUpcomingMatches, 5000); // Check every 5 seconds
+    const interval = setInterval(checkUpcomingMatches, 10000); // Check every 10 seconds
     return () => clearInterval(interval);
   }, [adminMatches]);
 
