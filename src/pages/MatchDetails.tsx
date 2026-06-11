@@ -52,6 +52,7 @@ const MatchDetails = () => {
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [showJoinSuccess, setShowJoinSuccess] = useState(false);
+  const [joinedSlot, setJoinedSlot] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isBetModalOpen) {
@@ -105,7 +106,11 @@ const MatchDetails = () => {
     }
     setUserGameIdError(false);
     if (deductBalance(dynamicEntryFee)) {
-      updateMatch(match.id, { 
+      const targetCard = cards.find(c => c.id === selectedTeam);
+      const slot = (targetCard?.participantIds?.length || 0) + 1;
+      setJoinedSlot(slot);
+
+      updateMatch(match.id, {
         currentParticipants: match.currentParticipants + 1,
         totalBidsCount: `${match.currentParticipants + 1} Players joined`
       });
@@ -502,6 +507,24 @@ const MatchDetails = () => {
                   </svg>
                 </div>
                 <h4 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>{t('joinedSuccessfully')}</h4>
+
+                {joinedSlot && (
+                  <div style={{
+                    background: 'rgba(249, 111, 46, 0.1)',
+                    padding: '16px 20px',
+                    borderRadius: '20px',
+                    marginBottom: '24px',
+                    border: '1px solid rgba(249, 111, 46, 0.2)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('assignedSlot')}</span>
+                    <span style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent-orange)', textShadow: '0 0 15px rgba(249, 111, 46, 0.3)' }}>#{joinedSlot}</span>
+                  </div>
+                )}
+
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', fontWeight: 500 }}>
                   {t('success')}! {t('joined')}
                 </p>

@@ -261,7 +261,9 @@ const translations: Record<Language, Record<string, string>> = {
     'claimed': 'CLAIMED',
     'dismissCeremony': 'DISMISS CEREMONY',
     'supportBot': 'Support Bot',
-    'myWallet': 'My Wallet'
+    'myWallet': 'My Wallet',
+    'assignedSlot': 'Assigned Slot',
+    'slotNumber': 'Slot Number'
   },
   bn: {
     'home': 'হোম',
@@ -363,7 +365,7 @@ const translations: Record<Language, Record<string, string>> = {
     'selectLinkedAccount': 'আপনার জেতা টাকা পেতে একটি লিঙ্ক করা অ্যাকাউন্ট নির্বাচন করুন।',
     'withdrawAmount': 'উত্তোলনের পরিমাণ',
     'max': 'সর্বোচ্চ',
-    'personal': 'ব্যক্তিগত',
+    'personal': 'ব্যগত',
     'community': 'কমিউনিটি',
     'noTransactions': 'এখনো কোন ব্যক্তিগত লেনদেন নেই।',
     'activity': 'কার্যক্রম',
@@ -514,8 +516,10 @@ const translations: Record<Language, Record<string, string>> = {
     'bronzeContender': 'ব্রোঞ্জ প্রতিযোগী',
     'claimed': 'দাবি করা হয়েছে',
     'dismissCeremony': 'অনুষ্ঠান শেষ করুন',
-    'supportBot': 'Support Bot',
-    'myWallet': 'আমার ওয়ালেট'
+    'supportBot': 'সাপোর্ট বট',
+    'myWallet': 'আমার ওয়ালেট',
+    'assignedSlot': 'নির্ধারিত স্লট',
+    'slotNumber': 'স্লট নম্বর'
   },
   hi: {
     'home': 'होम',
