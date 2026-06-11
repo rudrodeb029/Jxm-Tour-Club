@@ -1,24 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-/* ─── Slide Data ─── */
-const slides = [
-  {
-    icon: 'crosshair',
-    title: 'Ready to\nPlace Bids?',
-    description: 'Lock your target, place your bid, and dominate the Free Fire battlefield. Swipe to learn more.',
-  },
-  {
-    icon: 'shield',
-    title: 'Choose Your\nFF Squad',
-    description: 'Choose your favourite Free Fire team, back them with confidence, and watch them conquer Bermuda.',
-  },
-  {
-    icon: 'trophy',
-    title: 'Claim Your\nVictory',
-    description: 'Win big rewards when your Free Fire squad takes the Booyah! Your glory awaits.',
-  },
-];
+import { useLanguage } from '../context/LanguageContext';
 
 /* ─────────────────────────────────────────
    Animated Illustrations (pure CSS + SVG)
@@ -203,9 +185,28 @@ const AnimationMap: Record<string, React.FC> = {
 
 /* ─── Main Onboarding ─── */
 const Onboarding = () => {
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const navigate = useNavigate();
+
+  const slides = [
+    {
+      icon: 'crosshair',
+      titleKey: 'onboardingSlide1Title',
+      descKey: 'onboardingSlide1Desc',
+    },
+    {
+      icon: 'shield',
+      titleKey: 'onboardingSlide2Title',
+      descKey: 'onboardingSlide2Desc',
+    },
+    {
+      icon: 'trophy',
+      titleKey: 'onboardingSlide3Title',
+      descKey: 'onboardingSlide3Desc',
+    },
+  ];
 
   useEffect(() => {
     setAnimKey((k) => k + 1);
@@ -231,7 +232,7 @@ const Onboarding = () => {
       <button className="ob-skip" onClick={() => {
         localStorage.setItem('hasSeenOnboarding', 'true');
         navigate('/auth');
-      }}>Skip</button>
+      }}>{t('skip')}</button>
 
       <div className="ob-content animate-fade-in" key={animKey}>
         {/* Animation area */}
@@ -252,11 +253,11 @@ const Onboarding = () => {
             ))}
           </div>
 
-          <h2 className="ob-title">{slide.title}</h2>
-          <p className="ob-desc">{slide.description}</p>
+          <h2 className="ob-title">{t(slide.titleKey)}</h2>
+          <p className="ob-desc">{t(slide.descKey)}</p>
 
           <button className="ob-cta" onClick={handleNext}>
-            {currentSlide === slides.length - 1 ? "Let's Start" : 'Next'}
+            {currentSlide === slides.length - 1 ? t('letsStart') : t('next')}
             <span className="ob-cta-arrow">→</span>
           </button>
         </div>

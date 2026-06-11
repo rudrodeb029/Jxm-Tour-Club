@@ -5,7 +5,10 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { User as UserIcon } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+
 const Auth = () => {
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +27,7 @@ const Auth = () => {
     setSuccessMsg('');
 
     if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
+      setErrorMsg(t('enterEmailPass'));
       return;
     }
 
@@ -33,12 +36,12 @@ const Auth = () => {
         if (!isLogin) {
           // Registration flow
           if (!isAgreed) {
-            setErrorMsg('You must agree to the Terms of Service to register.');
+            setErrorMsg(t('agreeTerms'));
             setIsLoading(false);
             return;
           }
           if (!name) {
-            setErrorMsg('Please enter your name.');
+            setErrorMsg(t('enterName'));
             setIsLoading(false);
             return;
           }
@@ -187,7 +190,7 @@ const Auth = () => {
             }}
           >
             <UserPlus size={18} />
-            Register
+            {t('register')}
           </button>
           <button
             onClick={() => {
@@ -213,7 +216,7 @@ const Auth = () => {
             }}
           >
             <LogIn size={18} />
-            Login
+            {t('login')}
           </button>
         </div>
 
@@ -221,12 +224,12 @@ const Auth = () => {
         <div style={{ width: '100%', maxWidth: '300px', transition: 'all 0.4s ease' }}>
           <div style={{ marginBottom: '20px' }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px' }}>
-              {isLogin ? 'Welcome Back' : 'Join the Elite'}
+              {isLogin ? t('welcomeBack') : t('joinTheElite')}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
               {isLogin 
-                ? 'Enter your email and password to jump back into the action.' 
-                : 'Experience the thrill of elite competitive gaming with Jxm Tour Club.'}
+                ? t('loginSub') 
+                : t('registerSub')}
             </p>
           </div>
 
@@ -292,7 +295,7 @@ const Auth = () => {
                     padding: (isNameFocused || name) ? '0 8px' : '0',
                     borderRadius: '4px'
                   }}>
-                    Full Name
+                    {t('fullName')}
                   </label>
                   <input 
                     type="text" 
@@ -300,7 +303,7 @@ const Auth = () => {
                     onChange={(e) => setName(e.target.value)}
                     onFocus={() => setIsNameFocused(true)}
                     onBlur={() => setIsNameFocused(false)}
-                    placeholder={isNameFocused ? "John Doe" : ""}
+                    placeholder={isNameFocused ? t('fullName') : ""}
                     style={{
                       width: '100%',
                       background: 'transparent',
@@ -347,7 +350,7 @@ const Auth = () => {
                   padding: (isEmailFocused || email) ? '0 8px' : '0',
                   borderRadius: '4px'
                 }}>
-                  Email Address
+                  {t('emailAddress')}
                 </label>
                 <input 
                   type="email" 
@@ -401,7 +404,7 @@ const Auth = () => {
                   padding: (isPasswordFocused || password) ? '0 8px' : '0',
                   borderRadius: '4px'
                 }}>
-                  Password
+                  {t('password')}
                 </label>
                 <input 
                   type="password" 
@@ -456,7 +459,7 @@ const Auth = () => {
                 cursor: 'pointer',
                 textAlign: 'left'
               }}>
-                I certify that I am 18 years of age or older, and agree to the Terms of Service.
+                {t('ageCertification')}
               </label>
             </div>
           )}
@@ -478,7 +481,7 @@ const Auth = () => {
               cursor: isLoading ? 'not-allowed' : 'pointer'
             }}
           >
-            {isLoading ? 'Processing...' : (isLogin ? 'Login Now' : 'Register Account')}
+            {isLoading ? t('processing') : (isLogin ? t('loginNow') : t('registerAccount'))}
             <ArrowRight size={20} />
           </button>
         </div>

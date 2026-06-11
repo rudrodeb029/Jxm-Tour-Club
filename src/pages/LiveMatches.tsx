@@ -4,8 +4,9 @@ import { ArrowLeft } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAdmin } from '../context/AdminContext';
 import { parseTime, formatTime, getTargetDateTime } from '../utils/timeUtils';
+import { useLanguage } from '../context/LanguageContext';
 
-const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number, matchStatus?: string) => {
+const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | undefined, now: number, matchStatus?: string, t?: any, language?: string) => {
   const liveDurationMins = durationMins || 60;
   const liveDurationMs = liveDurationMins * 60 * 1000;
   const nowTime = new Date(now);
@@ -13,7 +14,7 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
   if (!startTimeStr) {
     return {
       isLive: false,
-      statusText: 'UPCOMING',
+      statusText: t ? t('upcoming') : 'UPCOMING',
       displayTime: 'N/A',
       elapsedStr: '',
       remainingStr: '',
@@ -37,18 +38,18 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
     
     let startsInStr = '';
     if (diffHrs > 0) {
-      startsInStr = `Starts in: ${diffHrs}h ${remainingMins}m`;
+      startsInStr = language === 'bn' ? `শুরু হবে: ${diffHrs}ঘণ্টা ${remainingMins}মিনিট` : `Starts in: ${diffHrs}h ${remainingMins}m`;
     } else {
-      startsInStr = `Starts in: ${diffMins}m`;
+      startsInStr = language === 'bn' ? `শুরু হবে: ${diffMins}মিনিট` : `Starts in: ${diffMins}m`;
     }
 
     return {
       isLive: false,
-      statusText: 'UPCOMING',
-      displayTime: `Starts at: ${formatTime(startTimeStr)}`,
+      statusText: t ? t('upcoming') : 'UPCOMING',
+      displayTime: language === 'bn' ? `শুরু হবে: ${formatTime(startTimeStr)}` : `Starts at: ${formatTime(startTimeStr)}`,
       elapsedStr: startsInStr,
       remainingStr: startsInStr,
-      endTimeStr: `Ends at: ${endTimeStr}`,
+      endTimeStr: language === 'bn' ? `শেষ হবে: ${endTimeStr}` : `Ends at: ${endTimeStr}`,
       isOver: false
     };
   } else {
@@ -63,27 +64,31 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
       const remainingMins = Math.floor(remainingMs / 60000);
       const remainingSecs = Math.floor((remainingMs % 60000) / 1000);
 
-      const elapsedStr = `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
-      const remainingStr = `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
+      const elapsedStr = language === 'bn' 
+        ? `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} অতিবাহিত`
+        : `${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} Elapsed`;
+      const remainingStr = language === 'bn'
+        ? `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} বাকি`
+        : `${remainingMins}:${remainingSecs.toString().padStart(2, '0')} Remaining`;
 
       return {
         isLive: true,
-        statusText: 'LIVE',
-        displayTime: `Starts at: ${formatTime(startTimeStr)}`,
+        statusText: t ? t('live') : 'LIVE',
+        displayTime: language === 'bn' ? `শুরু হবে: ${formatTime(startTimeStr)}` : `Starts at: ${formatTime(startTimeStr)}`,
         elapsedStr,
         remainingStr,
-        endTimeStr: `Ends at: ${endTimeStr}`,
+        endTimeStr: language === 'bn' ? `শেষ হবে: ${endTimeStr}` : `Ends at: ${endTimeStr}`,
         isOver: false
       };
     } else {
       // Live duration has passed, so it has ended
       return {
         isLive: false,
-        statusText: 'ENDED',
-        displayTime: `Started: ${formatTime(startTimeStr)}`,
-        elapsedStr: 'Match Ended',
-        remainingStr: 'Match Ended',
-        endTimeStr: `Ended at: ${endTimeStr}`,
+        statusText: t ? t('completed') : 'ENDED',
+        displayTime: language === 'bn' ? `শুরু হয়েছিল: ${formatTime(startTimeStr)}` : `Started: ${formatTime(startTimeStr)}`,
+        elapsedStr: language === 'bn' ? 'ম্যাচ সমাপ্ত' : 'Match Ended',
+        remainingStr: language === 'bn' ? 'ম্যাচ সমাপ্ত' : 'Match Ended',
+        endTimeStr: language === 'bn' ? `শেষ হয়েছে: ${endTimeStr}` : `Ended at: ${endTimeStr}`,
         isOver: true
       };
     }
@@ -95,6 +100,7 @@ const LiveMatches = () => {
   const { adminMatches } = useAdminDashboard();
   const { isAdminMode } = useAdmin();
   const [now, setNow] = useState(Date.now());
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -156,8 +162,8 @@ const LiveMatches = () => {
       return teams;
     })
     .filter(team => {
-      const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status);
-      return timeInfo.statusText !== 'ENDED';
+      const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status, t, language);
+      return timeInfo.statusText !== 'ENDED' && timeInfo.statusText !== t('completed');
     });
 
   return (
@@ -173,9 +179,9 @@ const LiveMatches = () => {
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981', animation: 'pulse 1.5s infinite' }} />
-            Live <span style={{ color: 'var(--accent-orange)' }}>Matches</span>
+            {t('liveMatches').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('liveMatches').split(' ')[1] || ''}</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>Currently Active Gaming Arenas</p>
+          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>{t('currentlyActiveArenas')}</p>
         </div>
       </div>
 
@@ -183,13 +189,13 @@ const LiveMatches = () => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {liveTeams.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--glass-bg)', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 600 }}>No live or upcoming matches at the moment.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', fontWeight: 600 }}>{t('noLiveMatches')}</p>
           </div>
         ) : (
           liveTeams.map((team, index) => {
-            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status);
-            const isMatchLive = timeInfo.statusText === 'LIVE';
-            const isMatchUpcoming = timeInfo.statusText === 'UPCOMING';
+            const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status, t, language);
+            const isMatchLive = timeInfo.statusText === t('live') || timeInfo.statusText === 'LIVE';
+            const isMatchUpcoming = timeInfo.statusText === t('upcoming') || timeInfo.statusText === 'UPCOMING';
 
             return (
               <div 
@@ -218,12 +224,12 @@ const LiveMatches = () => {
                   >EDIT IN ADMIN</button>
                 )}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{team.entryType || 'Solo'} MATCH</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--accent-orange)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{team.entryType || 'Solo'} {language === 'bn' ? 'ম্যাচ' : 'MATCH'}</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: '0 2px 4px rgba(0,0,0,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.matchName}</div>
                   <div style={{ display: 'flex', alignItems: 'center', marginTop: '6px' }}>
                     <div style={{ background: 'rgba(255,255,255,0.06)', padding: '5px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
                       <span style={{ fontSize: '0.9rem' }}>👥</span>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{team.participantCount || team.currentParticipants}/{team.maxParticipants} Joined</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{team.participantCount || team.currentParticipants}/{team.maxParticipants} {t('joinedCount')}</span>
                     </div>
                   </div>
                 </div>
