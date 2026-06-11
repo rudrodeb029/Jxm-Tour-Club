@@ -2,10 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useCurrency } from '../context/CurrencyContext';
 
 const Winners = () => {
   const navigate = useNavigate();
   const { winners } = useAdminDashboard();
+  const { t } = useLanguage();
+  const { formatCurrency } = useCurrency();
 
   return (
     <div className="page-container" style={{ padding: '20px', minHeight: '100vh', background: 'var(--bg-dark)' }}>
@@ -22,9 +26,9 @@ const Winners = () => {
             <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '8px', borderRadius: '12px', color: '#FBBF24' }}>
               <Trophy size={24} />
             </div>
-            Recent <span style={{ color: 'var(--accent-orange)' }}>Winners</span>
+            {t('recentWinners').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('recentWinners').split(' ')[1] || ''}</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>Hall of Fame</p>
+          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>{t('hallOfFame')}</p>
         </div>
       </div>
 
@@ -65,8 +69,8 @@ const Winners = () => {
             </div>
 
             <div style={{ textAlign: 'right', background: 'rgba(251, 191, 36, 0.1)', padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', boxShadow: 'inset 0 2px 10px rgba(251, 191, 36, 0.1)' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>${winner.prize}</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.1em' }}>WON</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{formatCurrency(parseFloat(winner.prize) || 0)}</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.1em' }}>{t('won')}</div>
             </div>
           </div>
         ))}

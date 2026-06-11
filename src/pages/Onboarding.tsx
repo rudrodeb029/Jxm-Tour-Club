@@ -1,8 +1,191 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+
+/* ─────────────────────────────────────────
+   Animated Illustrations (pure CSS + SVG)
+   ───────────────────────────────────────── */
+
+const CrosshairAnimation = () => (
+  <div className="ob-anim-wrap">
+    {/* Floating particles */}
+    {Array.from({ length: 12 }).map((_, i) => (
+      <div
+        key={i}
+        className="ob-particle"
+        style={{
+          '--x': `${Math.random() * 100}%`,
+          '--y': `${Math.random() * 100}%`,
+          '--dur': `${2 + Math.random() * 3}s`,
+          '--delay': `${Math.random() * 2}s`,
+          '--size': `${3 + Math.random() * 5}px`,
+        } as React.CSSProperties}
+      />
+    ))}
+
+    {/* Outer rings */}
+    <div className="ob-ring ob-ring--outer" />
+    <div className="ob-ring ob-ring--mid" />
+
+    {/* Crosshair */}
+    <svg className="ob-crosshair" viewBox="0 0 200 200" width="160" height="160">
+      <circle cx="100" cy="100" r="60" fill="none" stroke="url(#grad1)" strokeWidth="2.5" className="ob-scope-ring" />
+      <circle cx="100" cy="100" r="38" fill="none" stroke="url(#grad1)" strokeWidth="1.5" strokeDasharray="6 8" className="ob-scope-inner" />
+      <line x1="100" y1="30" x2="100" y2="70" stroke="url(#grad1)" strokeWidth="2" className="ob-scope-line" />
+      <line x1="100" y1="130" x2="100" y2="170" stroke="url(#grad1)" strokeWidth="2" className="ob-scope-line" />
+      <line x1="30" y1="100" x2="70" y2="100" stroke="url(#grad1)" strokeWidth="2" className="ob-scope-line" />
+      <line x1="130" y1="100" x2="170" y2="100" stroke="url(#grad1)" strokeWidth="2" className="ob-scope-line" />
+      <circle cx="100" cy="100" r="4" fill="#F96F2E" className="ob-dot-pulse" />
+      {/* Corner brackets */}
+      <path d="M40 60 L40 40 L60 40" fill="none" stroke="#E34360" strokeWidth="2" />
+      <path d="M140 40 L160 40 L160 60" fill="none" stroke="#E34360" strokeWidth="2" />
+      <path d="M160 140 L160 160 L140 160" fill="none" stroke="#E34360" strokeWidth="2" />
+      <path d="M60 160 L40 160 L40 140" fill="none" stroke="#E34360" strokeWidth="2" />
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#F96F2E" />
+          <stop offset="100%" stopColor="#E34360" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    {/* Scan line */}
+    <div className="ob-scan-line" />
+  </div>
+);
+
+const ShieldAnimation = () => (
+  <div className="ob-anim-wrap">
+    {Array.from({ length: 10 }).map((_, i) => (
+      <div
+        key={i}
+        className="ob-particle ob-particle--blue"
+        style={{
+          '--x': `${Math.random() * 100}%`,
+          '--y': `${Math.random() * 100}%`,
+          '--dur': `${2 + Math.random() * 3}s`,
+          '--delay': `${Math.random() * 2}s`,
+          '--size': `${3 + Math.random() * 4}px`,
+        } as React.CSSProperties}
+      />
+    ))}
+
+    {/* Orbiting dots */}
+    <div className="ob-orbit ob-orbit--1"><div className="ob-orbit-dot" /></div>
+    <div className="ob-orbit ob-orbit--2"><div className="ob-orbit-dot ob-orbit-dot--pink" /></div>
+
+    <svg className="ob-shield" viewBox="0 0 200 240" width="150" height="180">
+      <defs>
+        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#F96F2E" />
+          <stop offset="100%" stopColor="#E34360" />
+        </linearGradient>
+        <linearGradient id="shieldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="rgba(249,111,46,0.15)" />
+          <stop offset="100%" stopColor="rgba(227,67,96,0.1)" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M100 20 L170 55 L170 120 Q170 180 100 220 Q30 180 30 120 L30 55 Z"
+        fill="url(#shieldFill)"
+        stroke="url(#shieldGrad)"
+        strokeWidth="2.5"
+        className="ob-shield-path"
+      />
+      {/* Inner shield lines */}
+      <path
+        d="M100 50 L145 72 L145 120 Q145 162 100 190 Q55 162 55 120 L55 72 Z"
+        fill="none"
+        stroke="url(#shieldGrad)"
+        strokeWidth="1"
+        strokeDasharray="5 5"
+        opacity="0.5"
+      />
+      {/* Swords / cross */}
+      <line x1="80" y1="90" x2="120" y2="150" stroke="#F96F2E" strokeWidth="3" strokeLinecap="round" />
+      <line x1="120" y1="90" x2="80" y2="150" stroke="#E34360" strokeWidth="3" strokeLinecap="round" />
+      {/* Star */}
+      <polygon
+        points="100,75 104,87 117,87 107,95 111,107 100,99 89,107 93,95 83,87 96,87"
+        fill="#F96F2E"
+        className="ob-star-pulse"
+      />
+    </svg>
+  </div>
+);
+
+const TrophyAnimation = () => (
+  <div className="ob-anim-wrap">
+    {/* Confetti particles */}
+    {Array.from({ length: 18 }).map((_, i) => (
+      <div
+        key={i}
+        className="ob-confetti"
+        style={{
+          '--x': `${10 + Math.random() * 80}%`,
+          '--dur': `${1.5 + Math.random() * 2}s`,
+          '--delay': `${Math.random() * 3}s`,
+          '--color': ['#F96F2E', '#E34360', '#FFD700', '#4ADE80', '#60A5FA'][Math.floor(Math.random() * 5)],
+          '--rot': `${Math.random() * 360}deg`,
+        } as React.CSSProperties}
+      />
+    ))}
+
+    <div className="ob-trophy-glow" />
+
+    <svg className="ob-trophy" viewBox="0 0 200 220" width="150" height="170">
+      <defs>
+        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFD700" />
+          <stop offset="50%" stopColor="#FFA500" />
+          <stop offset="100%" stopColor="#FF8C00" />
+        </linearGradient>
+        <linearGradient id="goldShineDark" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255,215,0,0.3)" />
+          <stop offset="100%" stopColor="rgba(255,140,0,0.05)" />
+        </linearGradient>
+      </defs>
+      {/* Cup body */}
+      <path
+        d="M60 50 L60 30 L140 30 L140 50 Q140 110 100 130 Q60 110 60 50 Z"
+        fill="url(#goldShineDark)"
+        stroke="url(#goldGrad)"
+        strokeWidth="2.5"
+        className="ob-trophy-body"
+      />
+      {/* Left handle */}
+      <path d="M60 50 Q30 50 30 80 Q30 105 60 100" fill="none" stroke="url(#goldGrad)" strokeWidth="2.5" />
+      {/* Right handle */}
+      <path d="M140 50 Q170 50 170 80 Q170 105 140 100" fill="none" stroke="url(#goldGrad)" strokeWidth="2.5" />
+      {/* Stem */}
+      <rect x="92" y="130" width="16" height="30" rx="3" fill="url(#goldGrad)" opacity="0.8" />
+      {/* Base */}
+      <rect x="70" y="160" width="60" height="12" rx="6" fill="url(#goldGrad)" opacity="0.7" />
+      {/* Star on trophy */}
+      <polygon
+        points="100,55 106,72 124,72 110,82 115,99 100,89 85,99 90,82 76,72 94,72"
+        fill="#FFD700"
+        className="ob-star-pulse"
+      />
+      {/* #1 text */}
+      <text x="100" y="120" textAnchor="middle" fill="#FFD700" fontSize="16" fontWeight="800" fontFamily="Outfit">#1</text>
+    </svg>
+
+    {/* Rays */}
+    <div className="ob-rays" />
+  </div>
+);
+
+/* ─── Component Map ─── */
+const AnimationMap: Record<string, React.FC> = {
+  crosshair: CrosshairAnimation,
+  shield: ShieldAnimation,
+  trophy: TrophyAnimation,
+};
 
 /* ─── Main Onboarding ─── */
 const Onboarding = () => {
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const navigate = useNavigate();
@@ -23,6 +206,24 @@ const Onboarding = () => {
       icon: 'trophy',
       title: t('obSlide3Title'),
       description: t('obSlide3Desc'),
+    },
+  ];
+
+  const slides = [
+    {
+      icon: 'crosshair',
+      titleKey: 'onboardingSlide1Title',
+      descKey: 'onboardingSlide1Desc',
+    },
+    {
+      icon: 'shield',
+      titleKey: 'onboardingSlide2Title',
+      descKey: 'onboardingSlide2Desc',
+    },
+    {
+      icon: 'trophy',
+      titleKey: 'onboardingSlide3Title',
+      descKey: 'onboardingSlide3Desc',
     },
   ];
 
@@ -50,7 +251,7 @@ const Onboarding = () => {
       <button className="ob-skip" onClick={() => {
         localStorage.setItem('hasSeenOnboarding', 'true');
         navigate('/auth');
-      }}>{t('obSkip')}</button>
+      }}>{t('skip')}</button>
 
       <div className="ob-content animate-fade-in" key={animKey}>
         {/* Animation area */}
@@ -71,11 +272,11 @@ const Onboarding = () => {
             ))}
           </div>
 
-          <h2 className="ob-title">{slide.title}</h2>
-          <p className="ob-desc">{slide.description}</p>
+          <h2 className="ob-title">{t(slide.titleKey)}</h2>
+          <p className="ob-desc">{t(slide.descKey)}</p>
 
           <button className="ob-cta" onClick={handleNext}>
-            {currentSlide === slides.length - 1 ? t('obStart') : t('obNext')}
+            {currentSlide === slides.length - 1 ? t('letsStart') : t('next')}
             <span className="ob-cta-arrow">→</span>
           </button>
         </div>

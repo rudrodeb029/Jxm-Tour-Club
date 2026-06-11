@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users } from 'lucide-react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useAdmin } from '../context/AdminContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Participants = () => {
   const navigate = useNavigate();
   const { adminUsers } = useAdminDashboard();
   const { isAdminMode } = useAdmin();
+  const { t } = useLanguage();
 
   return (
     <div className="page-container" style={{ padding: '20px', minHeight: '100vh', background: 'var(--bg-dark)' }}>
@@ -24,9 +26,9 @@ const Participants = () => {
             <div style={{ background: 'rgba(56, 189, 248, 0.2)', padding: '8px', borderRadius: '12px', color: '#38BDF8' }}>
               <Users size={24} />
             </div>
-            Top <span style={{ color: 'var(--accent-orange)' }}>Participants</span>
+            {t('topParticipants').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('topParticipants').split(' ')[1] || ''}</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>Most Active Players</p>
+          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>{t('mostActivePlayers')}</p>
         </div>
       </div>
 
@@ -69,13 +71,13 @@ const Participants = () => {
               <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}>
                 <span style={{ color: '#38BDF8' }}>@{player.username}</span> 
                 <span>•</span>
-                <span>Joined {new Date(player.joinDate).toLocaleDateString()}</span>
+                <span>{t('joined')} {new Date(player.joinDate).toLocaleDateString()}</span>
               </div>
             </div>
 
             <div style={{ textAlign: 'right', background: 'rgba(56, 189, 248, 0.1)', padding: '12px 16px', borderRadius: '16px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', lineHeight: 1 }}>{player.totalMatches}</div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.05em' }}>PLAYED</div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.05em' }}>{t('played')}</div>
             </div>
           </div>
         ))}

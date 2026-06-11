@@ -282,7 +282,7 @@ const Wallet = () => {
           <ChevronLeft size={20} strokeWidth={3} />
         </button>
         <h1 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 auto', transform: 'translateX(-20px)', letterSpacing: '-0.02em' }}>
-          {t('wallet').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('wallet').split(' ')[1] || ''}</span>
+          {t('myWallet').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('myWallet').split(' ')[1] || ''}</span>
         </h1>
       </div>
 
@@ -333,7 +333,7 @@ const Wallet = () => {
 
           {/* Card Middle: Balance */}
           <div style={{ zIndex: 1, marginTop: '10px' }}>
-            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('totalBalance') || 'Total Balance'}</div>
+            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('totalBalance')}</div>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
               <h2 style={{ fontSize: '2.5rem', fontWeight: 900, margin: 0, letterSpacing: '-0.02em', lineHeight: 1, color: 'white' }}>
                 {formatCurrency(balance)}
@@ -393,7 +393,7 @@ const Wallet = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
               {localGateways.length === 0 && !isAdminMode && (
                 <div style={{ gridColumn: 'span 3', textAlign: 'center', padding: '20px', background: 'var(--glass-bg)', borderRadius: '24px', color: 'var(--text-muted)', border: '1px solid var(--glass-border)' }}>
-                  {t('noPaymentMethods') || 'No payment methods available.'}
+                  {language === 'bn' ? 'কোনো পেমেন্ট পদ্ধতি উপলব্ধ নেই।' : 'No payment methods available.'}
                 </div>
               )}
 
@@ -447,7 +447,7 @@ const Wallet = () => {
                   type="number" 
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
-                  placeholder={t('enterAmount') || 'Enter amount'}
+                  placeholder={language === 'bn' ? 'পরিমাণ লিখুন' : 'Enter amount'} 
                   style={{
                     width: '100%',
                     background: 'transparent',
@@ -468,7 +468,7 @@ const Wallet = () => {
               className="btn btn-primary" 
               style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800, marginBottom: '48px', opacity: (!depositAmount || parseFloat(depositAmount) < 50 || !selectedGateway) ? 0.5 : 1 }}
             >
-              {!selectedGateway ? t('selectGateway').toUpperCase() : parseFloat(depositAmount) < 50 ? `${t('minimumDeposit')} ৳50` : t('addFunds').toUpperCase()}
+              {!selectedGateway ? (language === 'bn' ? 'গেটওয়ে নির্বাচন করুন' : 'SELECT GATEWAY') : t('addFunds').toUpperCase()}
             </button>
           </div>
         ) : (
@@ -476,7 +476,7 @@ const Wallet = () => {
             {/* Linked Accounts Section */}
             <div style={{ marginBottom: '32px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>{t('myLinkedAccounts')}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>{t('linkedAccounts')}</h3>
                 <button 
                   onClick={() => setShowAddMethod(true)}
                   style={{ 

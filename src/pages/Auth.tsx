@@ -27,7 +27,7 @@ const Auth = () => {
     setSuccessMsg('');
 
     if (!email || !password) {
-      setErrorMsg(t('enterEmailPassword'));
+      setErrorMsg(t('enterEmailPass'));
       return;
     }
 
@@ -36,12 +36,12 @@ const Auth = () => {
         if (!isLogin) {
           // Registration flow
           if (!isAgreed) {
-            setErrorMsg(t('agreeTermsWarn'));
+            setErrorMsg(t('agreeTerms'));
             setIsLoading(false);
             return;
           }
           if (!name) {
-            setErrorMsg(t('enterNameWarn'));
+            setErrorMsg(t('enterName'));
             setIsLoading(false);
             return;
           }
@@ -228,7 +228,7 @@ const Auth = () => {
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
               {isLogin 
-                ? t('loginSub')
+                ? t('loginSub') 
                 : t('registerSub')}
             </p>
           </div>
@@ -303,7 +303,7 @@ const Auth = () => {
                     onChange={(e) => setName(e.target.value)}
                     onFocus={() => setIsNameFocused(true)}
                     onBlur={() => setIsNameFocused(false)}
-                    placeholder={isNameFocused ? "John Doe" : ""}
+                    placeholder={isNameFocused ? t('fullName') : ""}
                     style={{
                       width: '100%',
                       background: 'transparent',
@@ -459,7 +459,7 @@ const Auth = () => {
                 cursor: 'pointer',
                 textAlign: 'left'
               }}>
-                {t('termsAgreement')}
+                {t('ageCertification')}
               </label>
             </div>
           )}
@@ -481,7 +481,7 @@ const Auth = () => {
               cursor: isLoading ? 'not-allowed' : 'pointer'
             }}
           >
-            {isLoading ? t('processing') : (isLogin ? t('loginNowBtn') : t('registerAccountBtn'))}
+            {isLoading ? t('processing') : (isLogin ? t('loginNow') : t('registerAccount'))}
             <ArrowRight size={20} />
           </button>
         </div>
