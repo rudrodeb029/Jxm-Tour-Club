@@ -12,9 +12,8 @@ const MyBets = () => {
   const { formatCurrency } = useCurrency();
   const { adminMatches, adminUsers } = useAdminDashboard();
   const { currentUser } = useAuth();
-  const { t } = useLanguage();
-  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const { t, language } = useLanguage();
+  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const navigate = useNavigate();
 
   // Filter matches that the user has joined
