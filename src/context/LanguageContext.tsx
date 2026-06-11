@@ -260,7 +260,8 @@ const translations: Record<Language, Record<string, string>> = {
     'bronzeContender': 'Bronze Contender',
     'claimed': 'CLAIMED',
     'dismissCeremony': 'DISMISS CEREMONY',
-    'supportBot': 'Support Bot'
+    'supportBot': 'Support Bot',
+    'myWallet': 'My Wallet'
   },
   bn: {
     'home': 'হোম',
@@ -513,13 +514,14 @@ const translations: Record<Language, Record<string, string>> = {
     'bronzeContender': 'ব্রোঞ্জ প্রতিযোগী',
     'claimed': 'দাবি করা হয়েছে',
     'dismissCeremony': 'অনুষ্ঠান শেষ করুন',
-    'supportBot': 'সাপোর্ট বট'
+    'supportBot': 'সাপোর্ট বট',
+    'myWallet': 'আমার ওয়ালেট'
   },
   hi: {
     'home': 'होम',
     'wallet': 'वॉलेट',
     'myBets': 'इतिहास',
-    'profile': 'प्रोफाइल',
+    'profile': 'प्रोफাইল',
     'live': 'लाइव',
     'join': 'शामिल हों',
     'joinNow': 'अभी शामिल हों',
@@ -553,7 +555,7 @@ const translations: Record<Language, Record<string, string>> = {
     'closesIn': 'समाप्ति समय:',
     'matchLive': 'मैच लाइव - खिलाड़ी शामिल हैं',
     'matchFull': 'मैच फुल - स्लॉट बंद',
-    'soloInstruction': 'सोलो मोड: कुल 48 सदस्य। प्रति प्रविष्टि केवल 1 सदस्य। 48 स्लॉट भरने पर कोई अन्य सदस्य शामिल नहीं हो सकता।',
+    'soloInstruction': 'सोলো मोड: कुल 48 सदस्य। प्रति प्रविष्टि केवल 1 सदस्य। 48 स्लॉट भरने पर कोई अन्य सदस्य शामिल नहीं हो सकता।',
     'duoInstruction': 'डुओ मोड: 24 टीमें (48 खिलाड़ी)। प्रति टीम 2 सदस्य। 24 टीमें शामिल होने पर कोई अन्य सदस्य शामिल नहीं हो सकता।',
     'squadInstruction': 'स्कवाद मोड: 12 टीमें (48 खिलाड़ी)। प्रति टीम 4 सदस्य। 12 टीमें शामिल होने पर कोई अन्य सदस्य शामिल नहीं हो सकता।',
     'settings': 'सेटिंग्स',
@@ -566,7 +568,7 @@ const translations: Record<Language, Record<string, string>> = {
     'logout': 'लॉगआउट',
     'matchesWon': 'मैच जीते',
     'matchesLost': 'मैच हारे',
-    'battleBuddy': 'बैटल बडी',
+    'battleBuddy': 'बैटল बडी',
     'connections': 'कनेक्शन',
     'viewAll': 'सभी देखें',
     'editProfile': 'प्रोफ़ाइल संपादित करें',
@@ -587,7 +589,8 @@ const translations: Record<Language, Record<string, string>> = {
     'userId': 'ইউজার আইডি',
     'confirmSelection': 'নির্বাচন নিশ্চিত করুন',
     'savePreferences': 'পছন্দগুলি সংরক্ষণ করুন',
-    'startTime': 'শুরু হবে'
+    'startTime': 'শুরু হবে',
+    'myWallet': 'मेरा वॉलेट'
   }
 };
 
