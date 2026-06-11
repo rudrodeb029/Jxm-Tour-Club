@@ -189,6 +189,25 @@ const Onboarding = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [animKey, setAnimKey] = useState(0);
   const navigate = useNavigate();
+  const { t } = useLanguage();
+
+  const slides = [
+    {
+      icon: 'crosshair',
+      title: t('obSlide1Title'),
+      description: t('obSlide1Desc'),
+    },
+    {
+      icon: 'shield',
+      title: t('obSlide2Title'),
+      description: t('obSlide2Desc'),
+    },
+    {
+      icon: 'trophy',
+      title: t('obSlide3Title'),
+      description: t('obSlide3Desc'),
+    },
+  ];
 
   const slides = [
     {

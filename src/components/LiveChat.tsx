@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChat } from '../context/ChatContext';
 import { useLocation } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const LiveChat = () => {
   const { isChatOpen, setIsChatOpen, messages, sendMessage, isTyping } = useChat();
+  const { t } = useLanguage();
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -67,8 +69,8 @@ const LiveChat = () => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Live Support</div>
-                <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 600 }}>Always Online</div>
+                <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>{t('liveSupport') || 'Live Support'}</div>
+                <div style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 600 }}>{t('alwaysOnline') || 'Always Online'}</div>
               </div>
             </div>
             <button 
@@ -118,7 +120,7 @@ const LiveChat = () => {
                       }} 
                     />
                     <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-                      {msg.userName || (isUser ? 'You' : 'Support')}
+                      {msg.userName || (isUser ? t('you') : t('support'))}
                     </span>
                   </div>
                   <div style={{ 
@@ -186,7 +188,7 @@ const LiveChat = () => {
                     }} 
                   />
                   <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-                    Support Bot
+                    {t('supportBot')}
                   </span>
                 </div>
                 <div style={{ 
@@ -222,7 +224,7 @@ const LiveChat = () => {
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={t('typeMessage')}
               style={{
                 flex: 1,
                 background: 'var(--input-bg)',

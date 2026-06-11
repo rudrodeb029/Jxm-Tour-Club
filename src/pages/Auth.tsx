@@ -72,7 +72,7 @@ const Auth = () => {
           balance: 0,
         });
 
-        setSuccessMsg('Registration successful! Logging you in...');
+        setSuccessMsg(t('registrationSuccess'));
         setTimeout(() => navigate('/home'), 1500);
       } else {
         // Login flow
@@ -82,13 +82,13 @@ const Auth = () => {
     } catch (error: any) {
       console.error(error);
       if (error.code === 'auth/email-already-in-use') {
-        setErrorMsg('This email is already registered.');
+        setErrorMsg(t('emailInUse'));
       } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        setErrorMsg('Invalid email or password.');
+        setErrorMsg(t('invalidCredentials'));
       } else if (error.code === 'auth/weak-password') {
-        setErrorMsg('Password should be at least 6 characters.');
+        setErrorMsg(t('weakPassword'));
       } else {
-        setErrorMsg(error.message || 'Authentication failed. Please try again.');
+        setErrorMsg(error.message || t('authFailed'));
       }
     } finally {
       setIsLoading(false);
@@ -326,7 +326,7 @@ const Auth = () => {
               border: `2px solid ${isEmailFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
               borderRadius: '12px',
               padding: '12px 16px',
-              display: 'flex',
+              display: 'center',
               alignItems: 'center',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: isEmailFocused ? '0 0 20px rgba(249, 115, 22, 0.15)' : 'none'
@@ -491,3 +491,4 @@ const Auth = () => {
 };
 
 export default Auth;
+

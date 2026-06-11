@@ -50,7 +50,6 @@ interface SliderCardProps {
   thirdPrize?: number;
   version?: string;
   perKillReward?: number;
-  perKillReward?: number;
   map?: string;
   image?: string;
   availableModes?: string[];
@@ -94,7 +93,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((diff % (1000 * 60)) / 1000);
-      const timeLeftStr = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      const timeLeftStr = `${t('startIn')} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
       return { status: 'upcoming', display: timeLeftStr };
     } else if (cardStatus === 'live') {
       const timeStr = card.startTime || time || '';
@@ -112,10 +111,10 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           const mm = mins.toString().padStart(2, '0');
           const ss = secs.toString().padStart(2, '0');
           const timeStrDisplay = hrs > 0 ? `${hrs}:${mm}:${ss}` : `${mm}:${ss}`;
-          return { status: 'live', display: `LIVE (${timeStrDisplay})` };
+          return { status: 'live', display: `${t('live')} (${timeStrDisplay})` };
         }
       }
-      return { status: 'live', display: 'LIVE' };
+      return { status: 'live', display: t('live') };
     } else {
       return { status: 'finished', display: defaultDisplay };
     }
@@ -186,13 +185,13 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           const mm = mins.toString().padStart(2, '0');
           const ss = secs.toString().padStart(2, '0');
           const timeStrDisplay = hrs > 0 ? `${hrs}:${mm}:${ss}` : `${mm}:${ss}`;
-          statusConfig = { status: 'live', display: `LIVE (${timeStrDisplay})` };
+          statusConfig = { status: 'live', display: `${t('live')} (${timeStrDisplay})` };
         }
       }
     }
     
     if (!statusConfig) {
-      statusConfig = { status: 'live', display: 'LIVE' };
+      statusConfig = { status: 'live', display: t('live') };
     }
   }
 
@@ -290,7 +289,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         }}>
           <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ fontSize: '0.55rem', fontWeight: 900, color: '#fde047', textTransform: 'uppercase', marginBottom: '4px', lineHeight: 1.1, textAlign: 'center' }}>
-              <span>💰 PRIZE POOL</span>
+              <span>💰 {t('prizePool')}</span>
             </div>
             <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#4ADE80', textShadow: 'var(--text-shadow-md)' }}>{formatCurrency(totalPrizePool)}</div>
           </div>
@@ -324,7 +323,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {soloCount} Match{soloCount !== 1 ? 'es' : ''}
+                {soloCount} {soloCount === 1 ? t('match') : t('matches')}
               </div>
             </div>
           </div>
@@ -358,7 +357,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {duoCount} Match{duoCount !== 1 ? 'es' : ''}
+                {duoCount} {duoCount === 1 ? t('match') : t('matches')}
               </div>
             </div>
           </div>
@@ -392,7 +391,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {squadCount} Match{squadCount !== 1 ? 'es' : ''}
+                {squadCount} {squadCount === 1 ? t('match') : t('matches')}
               </div>
             </div>
           </div>
@@ -446,7 +445,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
             <Users className="w-4 h-4" />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4ADE80' }}>{totalMatchCount} Match{totalMatchCount !== 1 ? 'es' : ''}</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4ADE80' }}>{totalMatchCount} {totalMatchCount === 1 ? t('match') : t('matches')}</span>
           </div>
         </div>
         
@@ -479,7 +478,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
             textShadow: isFull ? 'none' : '0 2px 4px rgba(0,0,0,0.5)'
           }}
         >
-          {isFull ? 'FULL' : 'JOIN'}
+          {isFull ? t('fullHouse').toUpperCase() : t('join').toUpperCase()}
         </button>
       </div>
     </div>

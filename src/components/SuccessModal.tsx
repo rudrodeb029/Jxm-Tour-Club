@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import ModalPortal from './ModalPortal';
+import { useLanguage } from '../context/LanguageContext';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -9,7 +10,8 @@ interface SuccessModalProps {
   message: string;
 }
 
-const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "Congratulations!", message }) => {
+const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title, message }) => {
+  const { t } = useLanguage();
   if (!isOpen) return null;
 
   return (
@@ -87,7 +89,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "C
             WebkitTextFillColor: 'transparent',
             letterSpacing: '-0.02em'
           }}>
-            {title}
+            {title || t('success')}
           </h3>
           
           <p style={{ 
@@ -118,7 +120,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title = "C
             onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
             onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            CONTINUE
+            {t('continue').toUpperCase()}
           </button>
         </div>
       </div>

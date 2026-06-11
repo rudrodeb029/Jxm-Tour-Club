@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ArrowLeft, Trophy, Calendar, Wallet, ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
-import { currentUser } from '../data/mockData';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -11,8 +10,9 @@ import { useNavigate } from 'react-router-dom';
 const MyBets = () => {
   const { transactions } = useBalance();
   const { formatCurrency } = useCurrency();
-  const { adminMatches } = useAdminDashboard();
+  const { adminMatches, adminUsers } = useAdminDashboard();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const { t, language } = useLanguage();
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const MyBets = () => {
       {/* Header */}
       <div style={{ padding: '16px 12px', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 10, background: 'var(--modal-bg)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--glass-border)' }}>
         <button 
-          onClick={() => window.history.back()}
+          onClick={() => navigate(-1)}
           style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', cursor: 'pointer', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <ArrowLeft size={20} />

@@ -2,12 +2,14 @@ import React, { useMemo } from 'react';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, UserPlus, Flame, Trophy, Zap, Star } from 'lucide-react';
 
 const GlobalActivityFeed: React.FC = () => {
   const { activities } = useAdminDashboard();
   const { formatCurrency, currency } = useCurrency();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const currentUserId = currentUser?.uid || 'USER123';
 
   const getIcon = (type: string) => {
@@ -27,28 +29,28 @@ const GlobalActivityFeed: React.FC = () => {
       case 'deposit': 
         return (
           <span className="flex items-center gap-1">
-            deposited <span className="text-emerald-400 font-bold" style={{ textShadow: '0 0 8px var(--color-success-bg-20)' }}>{amountStr}</span>
+            {t('deposited')} <span className="text-emerald-400 font-bold" style={{ textShadow: '0 0 8px var(--color-success-bg-20)' }}>{amountStr}</span>
           </span>
         );
       case 'withdrawal': 
         return (
           <span className="flex items-center gap-1">
-            withdrew <span className="text-rose-400 font-bold" style={{ textShadow: '0 0 8px var(--color-danger-bg-20)' }}>{amountStr}</span>
+            {t('withdrew')} <span className="text-rose-400 font-bold" style={{ textShadow: '0 0 8px var(--color-danger-bg-20)' }}>{amountStr}</span>
           </span>
         );
       case 'join': 
         return (
           <span>
-            joined <span className="text-blue-400 font-bold" style={{ textShadow: '0 0 8px var(--color-info-bg-20)' }}>{activity.matchName}</span>
+            {t('joined')} <span className="text-blue-400 font-bold" style={{ textShadow: '0 0 8px var(--color-info-bg-20)' }}>{activity.matchName}</span>
           </span>
         );
       case 'win': 
         return (
           <span>
-            won <span className="text-amber-400 font-bold" style={{ textShadow: '0 0 8px var(--color-warning-bg-20)' }}>{formatCurrency(activity.amount)}</span> in <span className="text-amber-400 font-semibold">{activity.matchName}</span>
+            {t('won')} <span className="text-amber-400 font-bold" style={{ textShadow: '0 0 8px var(--color-warning-bg-20)' }}>{formatCurrency(activity.amount)}</span> {t('in')} <span className="text-amber-400 font-semibold">{activity.matchName}</span>
           </span>
         );
-      default: return 'performed an action';
+      default: return t('performedAction');
     }
   };
 
@@ -77,7 +79,7 @@ const GlobalActivityFeed: React.FC = () => {
               <TrendingUp className="w-20 h-20 text-white/5" />
               <div className="absolute inset-0 bg-orange-500/5 blur-3xl rounded-full"></div>
             </div>
-            <p className="text-white/30 font-bold italic tracking-wide text-lg">Awaiting community moves...</p>
+            <p className="text-white/30 font-bold italic tracking-wide text-lg">{t('awaitingCommunity')}</p>
           </div>
         ) : (
           activities.map((activity, index) => {
@@ -85,7 +87,7 @@ const GlobalActivityFeed: React.FC = () => {
             const isMine = activity.userId === currentUserId;
             const isPrivate = isFinancial && !isMine;
             
-            const displayUserName = isPrivate ? 'A Player' : activity.userName;
+            const displayUserName = isPrivate ? t('player') : activity.userName;
             const displayAvatar = isPrivate 
               ? `https://api.dicebear.com/7.x/avataaars/svg?seed=Anonymous&backgroundColor=b6e3f4`
               : activity.userAvatar;
@@ -125,12 +127,12 @@ const GlobalActivityFeed: React.FC = () => {
                       </h4>
                       {isMine && (
                         <span style={{ fontSize: '8px', background: 'var(--accent-orange)', color: 'black', padding: '2px 6px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.02em', boxShadow: '0 0 10px rgba(249,115,22,0.3)' }}>
-                          YOU
+                          {t('you')}
                         </span>
                       )}
                       {isHighValue && (
                         <span style={{ fontSize: '8px', background: 'rgba(251,191,36,0.2)', color: '#FBBF24', border: '1px solid rgba(251,191,36,0.3)', padding: '2px 6px', borderRadius: '10px', textTransform: 'uppercase', fontWeight: 900 }}>
-                          High Roller
+                          {t('highRoller')}
                         </span>
                       )}
                     </div>

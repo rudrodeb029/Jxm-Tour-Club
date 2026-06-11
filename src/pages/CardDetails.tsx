@@ -9,6 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
 
 
@@ -20,6 +21,7 @@ const CardDetails = () => {
   const { formatCurrency } = useCurrency();
   const { currentUser } = useAuth();
   const { messages, sendMessage } = useChat();
+  const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'details' | 'rule' | 'gameId' | 'support'>('details');
   const [inputMessage, setInputMessage] = useState('');
@@ -72,9 +74,9 @@ const CardDetails = () => {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
-          <h2 style={{ fontWeight: 800, marginBottom: '8px' }}>Card Not Found</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>The match card you're looking for doesn't exist.</p>
-          <button className="btn btn-primary" onClick={() => navigate(-1)} style={{ maxWidth: '200px', margin: '0 auto' }}>Go Back</button>
+          <h2 style={{ fontWeight: 800, marginBottom: '8px' }}>{t('matchNotFound')}</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{t('matchNotFoundSub') || "The match card you're looking for doesn't exist."}</p>
+          <button className="btn btn-primary" onClick={() => navigate(-1)} style={{ maxWidth: '200px', margin: '0 auto' }}>{t('cancelGoBack')}</button>
         </div>
       </div>
     );
@@ -119,12 +121,12 @@ const CardDetails = () => {
     const h = Math.floor(diff / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const s = Math.floor((diff % (1000 * 60)) / 1000);
-    return `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${t('startIn')} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const getLiveTimeLeft = () => {
     const timeStr = card.startTime || match.time || '';
-    if (!timeStr || cardStatus !== 'live') return 'LIVE';
+    if (!timeStr || cardStatus !== 'live') return t('live').toUpperCase();
     const nowTime = new Date(now);
     const targetTime = getTargetDateTime(timeStr, nowTime);
     const elapsedMs = nowTime.getTime() - targetTime.getTime();
@@ -137,9 +139,9 @@ const CardDetails = () => {
       const secs = totalSeconds % 60;
       const mm = mins.toString().padStart(2, '0');
       const ss = secs.toString().padStart(2, '0');
-      return hrs > 0 ? `LIVE (${hrs}:${mm}:${ss})` : `LIVE (${mm}:${ss})`;
+      return hrs > 0 ? `${t('live').toUpperCase()} (${hrs}:${mm}:${ss})` : `${t('live').toUpperCase()} (${mm}:${ss})`;
     }
-    return 'LIVE';
+    return t('live').toUpperCase();
   };
 
   const isRoomIdVisible = () => {
@@ -187,7 +189,7 @@ const CardDetails = () => {
   const statusConfig = {
     live: { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.4)', label: getLiveTimeLeft(), icon: '🔴' },
     upcoming: { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.4)', label: getTimeLeft(), icon: '🕒' },
-    finished: { bg: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.4)', label: 'ENDED', icon: '🏁' },
+    finished: { bg: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.4)', label: t('ended'), icon: '🏁' },
   };
 
   const currentStatus = statusConfig[cardStatus as keyof typeof statusConfig] || statusConfig.upcoming;
@@ -355,7 +357,7 @@ const CardDetails = () => {
               padding: '12px 8px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '0.6rem', color: '#4ADE80', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Win Prize</div>
+              <div style={{ fontSize: '0.6rem', color: '#4ADE80', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{t('winPrize')}</div>
               <div style={{ fontSize: '1rem', fontWeight: 900, color: '#4ADE80' }}>{formatCurrency(dynamicPrizePool)}</div>
             </div>
             <div style={{
@@ -366,7 +368,7 @@ const CardDetails = () => {
               padding: '12px 8px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '0.6rem', color: '#F97316', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Entry Fee</div>
+              <div style={{ fontSize: '0.6rem', color: '#F97316', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{t('entryFee')}</div>
               <div style={{ fontSize: '1rem', fontWeight: 900, color: '#F97316' }}>{formatCurrency(dynamicEntryFee)}</div>
             </div>
             {/* Joined / Action Pill */}
@@ -379,8 +381,8 @@ const CardDetails = () => {
                 padding: '12px 8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: '#9CA3AF', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Ended</div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#9CA3AF' }}>{participantCount}/{maxCardParticipants} Joined</div>
+                <div style={{ fontSize: '0.6rem', color: '#9CA3AF', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{t('ended')}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#9CA3AF' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </div>
             ) : cardStatus === 'live' ? (
               <div style={{
@@ -391,8 +393,8 @@ const CardDetails = () => {
                 padding: '12px 8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Live</div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#EF4444' }}>{participantCount}/{maxCardParticipants} Joined</div>
+                <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{t('live')}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#EF4444' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </div>
             ) : hasJoined ? (
               <button
@@ -412,9 +414,9 @@ const CardDetails = () => {
                 }}
               >
                 <div style={{ fontSize: '0.6rem', color: '#10B981', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}>
-                  ✅ JOINED
+                  ✅ {t('joinedPill')}
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#10B981' }}>{participantCount}/{maxCardParticipants} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#10B981' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </button>
             ) : isFull ? (
               <div style={{
@@ -427,9 +429,9 @@ const CardDetails = () => {
                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.6)'
               }}>
                 <div style={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}>
-                  🔒 FULL
+                  🔒 {t('fullHouse').toUpperCase()}
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#94A3B8' }}>{participantCount}/{maxCardParticipants} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: '#94A3B8' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </div>
             ) : (
               <button
@@ -451,9 +453,9 @@ const CardDetails = () => {
                 }}
               >
                 <div style={{ fontSize: '0.6rem', color: 'white', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
-                  ⚔️ JOIN NOW
+                  ⚔️ {t('joinNowPill')}
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: 900, color: 'white' }}>{participantCount}/{maxCardParticipants} Joined</div>
+                <div style={{ fontSize: '1rem', fontWeight: 900, color: 'white' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </button>
             )}
           </div>
@@ -479,10 +481,10 @@ const CardDetails = () => {
           padding: '4px'
         }}>
           {[
-            { id: 'details', label: 'Details', icon: '📋' },
-            { id: 'rule', label: 'Rule', icon: '📜' },
-            { id: 'gameId', label: 'Game ID', icon: '🎮' },
-            { id: 'support', label: 'Support', icon: '💬' }
+            { id: 'details', label: t('details'), icon: '📋' },
+            { id: 'rule', label: t('rule'), icon: '📜' },
+            { id: 'gameId', label: t('gameId'), icon: '🎮' },
+            { id: 'support', label: t('support'), icon: '💬' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -524,13 +526,13 @@ const CardDetails = () => {
         {activeTab === 'details' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
              {[
-              { label: 'STARTS AT', value: formatTime(card.startTime) || 'N/A', icon: <Clock size={16} />, gradient: 'linear-gradient(135deg, #115e59, #134e4a)', border: '#2dd4bf', textColor: '#2dd4bf' },
-              { label: 'WIN PRIZE', value: formatCurrency(dynamicPrizePool), icon: <Trophy size={16} />, gradient: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', textColor: '#fde047' },
-              { label: 'ENTRY TYPE', value: dynamicEntryType, icon: <Users size={16} />, gradient: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', textColor: '#fef08a' },
-              { label: 'ENTRY FEE', value: formatCurrency(dynamicEntryFee), icon: <Coins size={16} />, gradient: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', textColor: '#f1f5f9' },
-              { label: 'PER KILL', value: formatCurrency(dynamicPerKill), icon: <Crosshair size={16} />, gradient: 'linear-gradient(135deg, #92400e, #5c2705)', border: '#fbbf24', textColor: '#fcd34d' },
-              { label: 'MAP', value: dynamicMap, icon: <Map size={16} />, gradient: 'linear-gradient(135deg, #1e3a8a, #172554)', border: '#93c5fd', textColor: '#93c5fd' },
-              { label: 'VERSION', value: dynamicVersion, icon: <Smartphone size={16} />, gradient: 'linear-gradient(135deg, #831843, #4c0519)', border: '#f9a8d4', textColor: '#f9a8d4' }
+              { label: t('startTime'), value: formatTime(card.startTime) || 'N/A', icon: <Clock size={16} />, gradient: 'linear-gradient(135deg, #115e59, #134e4a)', border: '#2dd4bf', textColor: '#2dd4bf' },
+              { label: t('winPrize'), value: formatCurrency(dynamicPrizePool), icon: <Trophy size={16} />, gradient: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', textColor: '#fde047' },
+              { label: t('entry') + ' TYPE', value: dynamicEntryType, icon: <Users size={16} />, gradient: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', textColor: '#fef08a' },
+              { label: t('entryFee'), value: formatCurrency(dynamicEntryFee), icon: <Coins size={16} />, gradient: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', textColor: '#f1f5f9' },
+              { label: t('perKill'), value: formatCurrency(dynamicPerKill), icon: <Crosshair size={16} />, gradient: 'linear-gradient(135deg, #92400e, #5c2705)', border: '#fbbf24', textColor: '#fcd34d' },
+              { label: t('map'), value: dynamicMap, icon: <Map size={16} />, gradient: 'linear-gradient(135deg, #1e3a8a, #172554)', border: '#93c5fd', textColor: '#93c5fd' },
+              { label: t('version'), value: dynamicVersion, icon: <Smartphone size={16} />, gradient: 'linear-gradient(135deg, #831843, #4c0519)', border: '#f9a8d4', textColor: '#f9a8d4' }
             ].map((item, idx) => (
               <div
                 key={item.label}
@@ -609,7 +611,7 @@ const CardDetails = () => {
                 }}>
                   <Shield size={18} style={{ color: '#F97316' }} />
                 </div>
-                <h4 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', margin: 0 }}>Match Rules</h4>
+                <h4 style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', margin: 0 }}>{t('matchRules')}</h4>
               </div>
               <ul style={{
                 paddingLeft: '0',
@@ -719,7 +721,7 @@ const CardDetails = () => {
                  <Unlock size={24} style={{ color: '#10B981' }} />}
               </div>
 
-              <h4 style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '8px', color: 'var(--text-primary)' }}>Game Room ID</h4>
+              <h4 style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: '8px', color: 'var(--text-primary)' }}>{t('gameRoomId')}</h4>
 
               {!hasJoined ? (
                 <div style={{
@@ -730,13 +732,13 @@ const CardDetails = () => {
                   fontSize: '0.85rem',
                   border: '1px solid rgba(239, 68, 68, 0.1)'
                 }}>
-                  <p style={{ margin: '0 0 12px 0' }}>You must join this match to get access to the Room ID and Password.</p>
+                  <p style={{ margin: '0 0 12px 0' }}>{t('gameRoomIdSub')}</p>
                   <button
                     className="btn btn-primary"
                     onClick={() => setIsBetModalOpen(true)}
                     style={{ maxWidth: '200px', margin: '0 auto', padding: '10px 20px' }}
                   >
-                    Join Now
+                    {t('joinNow')}
                   </button>
                 </div>
               ) : !isRoomIdVisible() ? (
@@ -761,7 +763,7 @@ const CardDetails = () => {
                   }}>
                     ⏳
                   </div>
-                  Room ID and Password will be revealed <strong style={{ color: '#f59e0b' }}>{dynamicRevealTime} minutes</strong> before the match begins.
+                  {t('revealTimeMsgPrefix')} <strong style={{ color: '#f59e0b' }}>{dynamicRevealTime} {t('revealTimeMsgSuffix')}</strong>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -773,7 +775,7 @@ const CardDetails = () => {
                     border: '1px solid rgba(16, 185, 129, 0.15)',
                     position: 'relative'
                   }}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>Room ID</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>{t('roomId')}</div>
                     <div style={{
                       fontSize: '1.4rem',
                       color: 'var(--text-primary)',
@@ -782,7 +784,7 @@ const CardDetails = () => {
                       userSelect: 'all',
                       fontFamily: 'monospace'
                     }}>
-                      {dynamicGameId || 'Pending...'}
+                      {dynamicGameId || t('pending')}
                     </div>
                     {dynamicGameId && (
                       <button
@@ -815,7 +817,7 @@ const CardDetails = () => {
                     border: '1px solid rgba(16, 185, 129, 0.15)',
                     position: 'relative'
                   }}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>Password</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: 700 }}>{t('password')}</div>
                     <div style={{
                       fontSize: '1.4rem',
                       color: 'var(--text-primary)',
@@ -824,7 +826,7 @@ const CardDetails = () => {
                       userSelect: 'all',
                       fontFamily: 'monospace'
                     }}>
-                      {dynamicGamePassword || 'Pending...'}
+                      {dynamicGamePassword || t('pending')}
                     </div>
                     {dynamicGamePassword && (
                       <button
@@ -870,8 +872,8 @@ const CardDetails = () => {
               overflow: 'hidden'
             }}>
               <div style={{ borderBottom: '1px solid var(--divider)', paddingBottom: '12px', marginBottom: '16px' }}>
-                <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>Match Discussion</h4>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Discuss strategies and gameplay live</p>
+                <h4 style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>{t('matchDiscussion')}</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{t('discussStrategies')}</p>
               </div>
 
               {/* Messages Area */}
@@ -960,7 +962,7 @@ const CardDetails = () => {
                   type="text"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Type your message..."
+                  placeholder={t('typeMessage')}
                   style={{
                     flex: 1,
                     background: 'var(--card-inner-bg)',
@@ -1005,8 +1007,8 @@ const CardDetails = () => {
       <SuccessModal
         isOpen={isSuccessOpen}
         onClose={() => setIsSuccessOpen(false)}
-        title="Match Joined!"
-        message={`You have successfully joined ${card.name}. Good luck!`}
+        title={t('joined') || "Match Joined!"}
+        message={`${t('success')}! ${t('joined')} ${card.name}.`}
       />
 
       {/* ===== INSUFFICIENT BALANCE MODAL ===== */}
@@ -1082,7 +1084,7 @@ const CardDetails = () => {
                     }}>
                       <img src={card.logo} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <h3 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 0 6px 0' }}>Confirm Entry</h3>
+                    <h3 style={{ fontSize: '1.4rem', fontWeight: 900, margin: '0 0 6px 0' }}>{t('confirmEntry')}</h3>
                     <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.85rem' }}>{card.name} • {dynamicEntryType}</p>
                   </div>
 
@@ -1101,18 +1103,18 @@ const CardDetails = () => {
                   }}>
                     {/* Left side: Entry Fee */}
                     <div style={{ borderRight: '1px solid rgba(249, 111, 46, 0.2)', paddingRight: '16px' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>Entry Fee</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>{t('entryFee')}</div>
                       <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{formatCurrency(dynamicEntryFee)}</div>
                     </div>
 
                     {/* Right side: Game ID Input */}
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                        Game ID Name <span style={{ color: '#ef4444' }}>*</span>
+                        {t('gameIdName')} <span style={{ color: '#ef4444' }}>*</span>
                       </div>
                       <input 
                         type="text" 
-                        placeholder="Enter Game ID Name" 
+                        placeholder={t('enterGameIdName')}
                         value={userGameId} 
                         onChange={e => {
                           setUserGameId(e.target.value);
@@ -1144,7 +1146,7 @@ const CardDetails = () => {
                     marginBottom: '24px',
                     fontSize: '0.85rem'
                   }}>
-                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Your Balance</span>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{t('yourBalance')}</span>
                     <span style={{
                       fontWeight: 900,
                       color: balance >= dynamicEntryFee ? '#4ADE80' : '#ef4444'
@@ -1163,7 +1165,7 @@ const CardDetails = () => {
                     }}
                     onClick={handleJoinMatch}
                   >
-                    Join Now — {formatCurrency(dynamicEntryFee)}
+                    {t('joinNowWithBet')} — {formatCurrency(dynamicEntryFee)}
                   </button>
 
                   <button
@@ -1180,7 +1182,7 @@ const CardDetails = () => {
                       fontSize: '0.85rem'
                     }}
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               ) : (
@@ -1201,16 +1203,16 @@ const CardDetails = () => {
                       <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h4 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>Joined Successfully!</h4>
+                  <h4 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>{t('joinedSuccessfully')}</h4>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', fontWeight: 500 }}>
-                    You have successfully joined <strong style={{ color: card.color }}>{card.name}</strong>!
+                    {t('success')}! {t('joined')} <strong style={{ color: card.color }}>{card.name}</strong>!
                   </p>
                   <button
                     className="btn btn-primary"
                     style={{ width: '80%', padding: '12px', borderRadius: '12px', marginTop: '24px', margin: '24px auto 0' }}
                     onClick={() => setIsBetModalOpen(false)}
                   >
-                    Continue
+                    {t('continue')}
                   </button>
                 </div>
               )}

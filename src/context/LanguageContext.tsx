@@ -5,7 +5,7 @@ type Language = 'en' | 'bn' | 'hi';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -262,7 +262,7 @@ const translations: Record<Language, Record<string, string>> = {
     'closesIn': 'বন্ধ হবে:',
     'matchLive': 'ম্যাচ লাইভ - অংশগ্রহণকারী খেলোয়াড়',
     'matchFull': 'ম্যাচ পূর্ণ - স্লট বন্ধ',
-    'soloInstruction': 'সোলো মোড: মোট ৪৮ জন সদস্য। প্রতি এন্ট্রিতে মাত্র ১ জন সদস্য। ৪৮টি স্লট পূর্ণ হলে অন্য কেউ যোগ দিতে পারবে না।',
+    'soloInstruction': 'সোলো মোড: মোট ৪৮ জন সদস্য। প্রতি এনট্রিতে মাত্র ১ জন সদস্য। ৪৮টি স্লট পূর্ণ হলে অন্য কেউ যোগ দিতে পারবে না।',
     'duoInstruction': 'ডুও মোড: ২৪টি দল (৪৮ জন খেলোয়াড়)। প্রতি দলে ২ জন সদস্য। ২৪টি দল যোগ দিলে অন্য কেউ যোগ দিতে পারবে না।',
     'squadInstruction': 'স্কোয়াড মোড: ১২টি দল (৪৮ জন খেলোয়াড়)। প্রতি দলে ৪ জন সদস্য। ১২টি দল যোগ দিলে অন্য কেউ যোগ দিতে পারবে না।',
     'settings': 'সেটিংস',
@@ -528,8 +528,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('appLanguage', lang);
   };
 
-  const t = (key: string) => {
-    return translations[language][key] || translations['en'][key] || key;
+  const t = (key: string, params?: Record<string, string>) => {
+    let text = translations[language][key] || translations['en'][key] || key;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, v);
+      });
+    }
+    return text;
   };
 
   return (

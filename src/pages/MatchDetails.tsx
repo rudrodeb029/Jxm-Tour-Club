@@ -9,6 +9,7 @@ import SuccessModal from '../components/SuccessModal';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal';
 import ModalPortal from '../components/ModalPortal';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getTargetDateTime } from '../utils/timeUtils';
 
 
@@ -20,6 +21,7 @@ const MatchDetails = () => {
   const { balance, deductBalance } = useBalance();
   const { formatCurrency } = useCurrency();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
 
 
 
@@ -115,7 +117,7 @@ const MatchDetails = () => {
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <span style={{ fontWeight: 700, fontSize: '1.2rem' }}>Match Details</span>
+        <span style={{ fontWeight: 700, fontSize: '1.2rem' }}>{t('matchDetails')}</span>
         <div style={{ width: '24px' }}></div>
       </div>
 
@@ -215,7 +217,7 @@ const MatchDetails = () => {
                     const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                     const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    cardTimeLeft = `START IN ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    cardTimeLeft = `${t('startIn')} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                   } else if (cardStatus === 'live') {
                     const timeStr = card.startTime || match.time || '';
                     if (timeStr) {
@@ -241,7 +243,7 @@ const MatchDetails = () => {
                       {cardStatus === 'live' && (
                         <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
                           <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                          LIVE{liveTimeLeft}
+                          {t('live')}{liveTimeLeft}
                         </div>
                       )}
                       {cardStatus === 'upcoming' && (
@@ -252,7 +254,7 @@ const MatchDetails = () => {
                       )}
                       {cardStatus === 'finished' && (
                         <div style={{ background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                          ENDED
+                          {t('ended')}
                         </div>
                       )}
                     </>
@@ -262,11 +264,11 @@ const MatchDetails = () => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', fontSize: '0.72rem', zIndex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                  <span>Entry Type</span>
+                  <span>{t('entry')} Type</span>
                   <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{card.entryType || 'Solo'}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                  <span>Entry Fee</span>
+                  <span>{t('entryFee')}</span>
                   <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(card.entryFee || entryFee)}</span>
                 </div>
               </div>
@@ -288,7 +290,7 @@ const MatchDetails = () => {
                         fontSize: '0.78rem'
                       }}
                     >
-                      {cardHasJoined ? '✅ JOINED' : 'JOIN'}
+                      {cardHasJoined ? `✅ ${t('joined').toUpperCase()}` : t('join').toUpperCase()}
                     </button>
                   );
                 })()
@@ -307,7 +309,7 @@ const MatchDetails = () => {
         <div style={{ padding: '24px', marginTop: '24px', background: 'rgba(249,111,46,0.1)', border: '1px solid rgba(249,111,46,0.2)', borderRadius: '24px', margin: '12px' }}>
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-5 h-5 text-yellow-500" />
-            <h3 className="font-bold text-white">Final Winners</h3>
+            <h3 className="font-bold text-white">{t('finalWinners')}</h3>
           </div>
           <div className="space-y-3">
             {match.winners.map((winner, idx) => (
@@ -377,12 +379,12 @@ const MatchDetails = () => {
             {!showJoinSuccess ? (
               <div className="animate-fade-in">
                 <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>Confirm Entry</h3>
-                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>{match.group} Arena</p>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>{t('confirmEntry')}</h3>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>{match.group} {t('arena')}</p>
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '10px' }}>Betting Team</p>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '10px' }}>{t('bettingTeam')}</p>
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     {cards.map(card => (
                       <button 
@@ -425,18 +427,18 @@ const MatchDetails = () => {
                 }}>
                   {/* Left side: Entry Fee */}
                   <div style={{ borderRight: '1px solid rgba(249, 111, 46, 0.2)', paddingRight: '16px' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>Entry Fee</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>{t('entryFee')}</div>
                     <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{formatCurrency(dynamicEntryFee)}</div>
                   </div>
 
                   {/* Right side: Game ID Input */}
                   <div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
-                      Game ID Name <span style={{ color: '#ef4444' }}>*</span>
+                      {t('gameIdName')} <span style={{ color: '#ef4444' }}>*</span>
                     </div>
                     <input 
                       type="text" 
-                      placeholder="Enter Game ID Name" 
+                      placeholder={t('enterGameIdName')}
                       value={userGameId} 
                       onChange={e => {
                         setUserGameId(e.target.value);
@@ -462,7 +464,7 @@ const MatchDetails = () => {
                   style={{ padding: '16px', borderRadius: '16px', fontSize: '1rem', letterSpacing: '0.05em' }}
                   onClick={handleJoinMatch}
                 >
-                  Join Now {selectedTeam ? `(Bet ${currentTeam?.name || ''})` : ''}
+                  {t('joinNowWithBet')} {selectedTeam ? `(${t('join')} ${currentTeam?.name || ''})` : ''}
                 </button>
                 
                 <button 
@@ -470,7 +472,7 @@ const MatchDetails = () => {
                   onClick={() => setIsBetModalOpen(false)}
                   style={{ width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', marginTop: '16px', fontWeight: 600, cursor: 'pointer' }}
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             ) : (
@@ -491,16 +493,16 @@ const MatchDetails = () => {
                     <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <h4 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>Joined Successfully!</h4>
+                <h4 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '12px', color: 'var(--text-primary)' }}>{t('joinedSuccessfully')}</h4>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', fontWeight: 500 }}>
-                  You have successfully joined the match!
+                  {t('success')}! {t('joined')}
                 </p>
                 <button 
                   className="btn btn-primary" 
                   style={{ width: '80%', padding: '12px', borderRadius: '12px', marginTop: '24px', margin: '24px auto 0' }}
                   onClick={() => setIsBetModalOpen(false)}
                 >
-                  Dismiss
+                  {t('dismiss')}
                 </button>
               </div>
             )}
