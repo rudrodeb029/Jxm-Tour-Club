@@ -14,7 +14,7 @@ const MyBets = () => {
   const { currentUser } = useAuth();
   const { t, language } = useLanguage();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
-  const  const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // Filter and flatten all sub-matches the user has joined
   const myJoinedEntries = adminMatches.reduce((acc, match) => {
@@ -47,7 +47,11 @@ const MyBets = () => {
       });
     }
     return acc;
-  }, [] as any[]);
+  }, [] as any[]).sort((a, b) => {
+    // Sort status: Live (0), Upcoming (1), Finished (2)
+    const rank = { 'live': 0, 'upcoming': 1, 'finished': 2 };
+    return (rank[a.status] ?? 1) - (rank[b.status] ?? 1);
+  });
   
   // Filter transactions
   const historyTransactions = transactions.filter(tx => ['Deposit', 'Withdraw', 'Withdrawal'].includes(tx.type));

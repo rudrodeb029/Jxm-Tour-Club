@@ -61,7 +61,15 @@ const MatchDetails = () => {
   }, [isBetModalOpen]);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
-  const cards = match?.innerSections || [];
+
+  // Sort sub-matches: Live first, then Upcoming, then Finished
+  const cards = [...(match?.innerSections || [])].sort((a, b) => {
+    const statusA = getCardStatusFromUtil(a, match.status);
+    const statusB = getCardStatusFromUtil(b, match.status);
+
+    const rank = { 'live': 0, 'upcoming': 1, 'revealed': 1, 'idle': 2, 'finished': 3 };
+    return (rank[statusA] ?? 2) - (rank[statusB] ?? 2);
+  });
   
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
