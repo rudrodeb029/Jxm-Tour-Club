@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, UserPlus, Flame, Trophy, Zap, Star } from 'lucide-react';
 
 const GlobalActivityFeed: React.FC = () => {
-  const { activities } = useAdminDashboard();
+  const { activities = [] } = useAdminDashboard();
   const { formatCurrency, currency } = useCurrency();
   const { currentUser } = useAuth();
   const { t } = useLanguage();
@@ -23,7 +23,8 @@ const GlobalActivityFeed: React.FC = () => {
   };
 
   const getMessage = (activity: any, isPrivate: boolean) => {
-    const amountStr = isPrivate ? (currency === 'BDT' ? '৳***' : '$***') : formatCurrency(activity.amount);
+    if (!activity) return '';
+    const amountStr = isPrivate ? (currency === 'BDT' ? '৳***' : '$***') : formatCurrency(activity.amount || 0);
     
     switch (activity.type) {
       case 'deposit': 
@@ -41,13 +42,13 @@ const GlobalActivityFeed: React.FC = () => {
       case 'join': 
         return (
           <span>
-            {t('joined')} <span className="text-blue-400 font-bold" style={{ textShadow: '0 0 8px var(--color-info-bg-20)' }}>{activity.matchName}</span>
+            {t('joined')} <span className="text-blue-400 font-bold" style={{ textShadow: '0 0 8px var(--color-info-bg-20)' }}>{activity.matchName || 'Match'}</span>
           </span>
         );
       case 'win': 
         return (
           <span>
-            {t('won')} <span className="text-amber-400 font-bold" style={{ textShadow: '0 0 8px var(--color-warning-bg-20)' }}>{formatCurrency(activity.amount)}</span> {t('in')} <span className="text-amber-400 font-semibold">{activity.matchName}</span>
+            {t('won')} <span className="text-amber-400 font-bold" style={{ textShadow: '0 0 8px var(--color-warning-bg-20)' }}>{formatCurrency(activity.amount || 0)}</span> {t('in')} <span className="text-amber-400 font-semibold">{activity.matchName || 'Match'}</span>
           </span>
         );
       default: return t('performedAction');

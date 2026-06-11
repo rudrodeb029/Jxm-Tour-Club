@@ -28,13 +28,13 @@ import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 const Wallet = () => {
   const { isDarkMode } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatCurrency, currency } = useCurrency();
   const { isAdminMode } = useAdmin();
-  const { balance, addBalance, deductBalance, transactions: localTransactions } = useBalance();
-  const { paymentRequests, withdrawalRequests, paymentSettings } = useAdminDashboard();
+  const { balance, addBalance, deductBalance, transactions: localTransactions = [] } = useBalance();
+  const { paymentRequests = [], withdrawalRequests = [], paymentSettings = {} as any } = useAdminDashboard();
   const { currentUser } = useAuth();
-  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser.id);
+  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser?.id || 'USER123');
   const [profileUsername, setProfileUsername] = useState<string>('');
 
   useEffect(() => {
@@ -904,13 +904,13 @@ const Wallet = () => {
                   width: '100%', 
                   padding: '15px 20px', 
                   borderRadius: '14px', 
-                  background: localGateways.find((g: any) => g.id === selectedGateway)?.color, 
+                  background: localGateways.find((g: any) => g.id === selectedGateway)?.color || 'var(--accent-orange)',
                   border: 'none', 
                   color: 'white', 
                   fontWeight: 800, 
                   fontSize: '1rem', 
                   cursor: 'pointer', 
-                  boxShadow: `0 8px 20px ${localGateways.find((g: any) => g.id === selectedGateway)?.color}33` 
+                  boxShadow: `0 8px 20px ${localGateways.find((g: any) => g.id === selectedGateway)?.color || 'rgba(249,111,46,0.3)'}`
                 }}
               >
                 {t('confirmAndAddNow').toUpperCase()}
@@ -970,7 +970,7 @@ const Wallet = () => {
               margin: '0 auto 24px',
               border: `1px solid ${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || '#f97316'}33`
             }}>
-              <img src={savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.icon} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
+              <img src={savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.icon || 'https://cdn-icons-png.flaticon.com/512/4021/4021708.png'} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
             <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmWithdrawal')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
