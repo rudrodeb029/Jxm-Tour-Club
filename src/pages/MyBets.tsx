@@ -14,10 +14,40 @@ const MyBets = () => {
   const { currentUser } = useAuth();
   const { t, language } = useLanguage();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
-  const navigate = useNavigate();
+  const  const navigate = useNavigate();
 
-  // Filter matches that the user has joined
-  const myMatches = adminMatches.filter(match => currentUser && (match.participantIds || []).includes(currentUser.uid));
+  // Filter and flatten all sub-matches the user has joined
+  const myJoinedEntries = adminMatches.reduce((acc, match) => {
+    const joinedCards = (match.innerSections || []).filter(c =>
+      currentUser && (c.participantIds || []).includes(currentUser.uid)
+    );
+
+    if (joinedCards.length > 0) {
+      joinedCards.forEach(card => {
+        acc.push({
+          id: `${match.id}-${card.id}`,
+          originalMatchId: match.id,
+          name: card.name,
+          matchCategory: match.name,
+          mode: card.entryType,
+          time: card.startTime || match.time,
+          status: match.status
+        });
+      });
+    } else if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
+      // User joined main match directly (fallback for older matches)
+      acc.push({
+        id: match.id,
+        originalMatchId: match.id,
+        name: match.name,
+        matchCategory: match.group,
+        mode: match.group,
+        time: match.time,
+        status: match.status
+      });
+    }
+    return acc;
+  }, [] as any[]);
   
   // Filter transactions
   const historyTransactions = transactions.filter(tx => ['Deposit', 'Withdraw', 'Withdrawal'].includes(tx.type));
@@ -39,7 +69,7 @@ const MyBets = () => {
 
       <div style={{ padding: '24px 12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         
-        {myMatches.length === 0 && historyTransactions.length === 0 && (
+        {myJoinedEntries.length === 0 && historyTransactions.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>{language === 'bn' ? 'কোনো ইতিহাস নেই' : 'No History Yet'}</h3>
             <p>{language === 'bn' ? 'আপনার সমস্ত লেনদেন এবং ম্যাচ এখানে দেখাবে।' : 'Your matches and transactions will appear here.'}</p>
@@ -47,14 +77,11 @@ const MyBets = () => {
         )}
 
         {/* Matches List */}
-        {myMatches.map((match) => {
-          const joinedCard = (match.innerSections || []).find(c => c.participantIds?.includes(currentUser?.uid || ''));
-          const cardMode = joinedCard ? joinedCard.entryType : undefined;
-
+        {myJoinedEntries.map((entry) => {
           return (
             <div 
-              key={match.id}
-              onClick={() => navigate(`/match/${match.id}`)}
+              key={entry.id}
+              onClick={() => navigate(`/match/${entry.originalMatchId}`)}
               style={{ 
                 background: 'var(--glass-bg)', 
                 borderRadius: '16px', 
@@ -77,16 +104,19 @@ const MyBets = () => {
 
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{match.name}</h3>
-                  {cardMode && (
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.name}</h3>
+                  {entry.mode && (
                     <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                      {cardMode.toUpperCase()}
+                      {entry.mode.toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                   <Calendar size={14} />
-                  <span>{language === 'bn' ? 'জয়েন করেছেন' : 'Joined on'} {match.time}</span>
+                  <span>{language === 'bn' ? 'জয়েন করেছেন' : 'Joined on'} {entry.time}</span>
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px', fontWeight: 600 }}>
+                  {entry.matchCategory}
                 </div>
               </div>
 
