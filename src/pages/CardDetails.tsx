@@ -418,7 +418,7 @@ const CardDetails = () => {
                 }}
               >
                 <div style={{ fontSize: '0.6rem', color: '#10B981', fontWeight: 900, textTransform: 'uppercase', marginBottom: '4px' }}>
-                  ✅ {t('joinedPill')}
+                  ✅ {cardStatus === 'finished' ? t('joinedEnd') : t('joinedPill')}
                 </div>
                 <div style={{ fontSize: '1rem', fontWeight: 900, color: '#10B981' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </button>
