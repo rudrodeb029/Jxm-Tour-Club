@@ -343,12 +343,12 @@ const Profile = () => {
                 trend: `${winRate}% Rate` 
               },
               { 
-                label: t('matchesLost'), 
-                value: totalLosses.toString(), 
+                label: t('totalJoiningMatch'),
+                value: totalMatches.toString(),
                 bg: 'linear-gradient(135deg, #94a3b8, #475569)', 
                 border: '#f1f5f9', 
                 text: '#f1f5f9',
-                trend: `${lossRate}% Rate` 
+                trend: `Played ${totalMatches}`
               }
             ].map((stat, i) => (
               <div 
