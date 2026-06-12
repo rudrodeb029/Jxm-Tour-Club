@@ -250,9 +250,30 @@ const MatchDetails = () => {
                       }
                     }
                   }
-                  
+
+                  const currentUserSlot = currentUser && (card.participantIds || []).indexOf(currentUser.uid) !== -1
+                    ? (card.participantIds || []).indexOf(currentUser.uid) + 1
+                    : null;
+
                   return (
                     <>
+                      {currentUserSlot && (
+                        <div style={{
+                          background: 'rgba(249, 111, 46, 0.15)',
+                          color: 'var(--accent-orange)',
+                          border: '1px solid rgba(249, 111, 46, 0.3)',
+                          padding: '2px 6px',
+                          borderRadius: '8px',
+                          fontSize: '0.62rem',
+                          fontWeight: 900,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          marginTop: '2px'
+                        }}>
+                          {t('slotNumber').toUpperCase()}: #{currentUserSlot}
+                        </div>
+                      )}
                       {cardStatus === 'live' && (
                         <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
                           <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>

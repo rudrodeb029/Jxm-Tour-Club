@@ -592,7 +592,20 @@ const InnerSectionsTab = () => {
                       background: 'var(--input-bg)', borderRadius: '12px', padding: '10px 14px',
                       border: kw.kills > 0 ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent'
                     }}>
-                      <img 
+                      <div style={{
+                        background: 'rgba(249, 111, 46, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(249, 111, 46, 0.2)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        minWidth: '35px'
+                      }}>
+                        <span style={{ fontSize: '0.45rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', lineHeight: 1 }}>SLOT</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--accent-orange)' }}>#{idx + 1}</span>
+                      </div>
+                      <img
                         src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${kw.userId}`}
                         alt=""
                         style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.3)' }}
@@ -723,7 +736,19 @@ const InnerSectionsTab = () => {
                         background: 'var(--input-bg)', borderRadius: '14px', padding: '12px 16px',
                         border: '1px solid var(--glass-border)'
                       }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', minWidth: '20px' }}>{idx + 1}</span>
+                        <div style={{
+                          background: 'rgba(249, 111, 46, 0.1)',
+                          padding: '4px 8px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(249, 111, 46, 0.2)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          minWidth: '45px'
+                        }}>
+                          <span style={{ fontSize: '0.5rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', lineHeight: 1 }}>SLOT</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--accent-orange)' }}>#{idx + 1}</span>
+                        </div>
                         <img 
                           src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${pid}`}
                           alt=""

@@ -198,6 +198,10 @@ const CardDetails = () => {
 
   const currentStatus = statusConfig[cardStatus as keyof typeof statusConfig] || statusConfig.upcoming;
 
+  const currentUserSlot = currentUser && (card.participantIds || []).indexOf(currentUser.uid) !== -1
+    ? (card.participantIds || []).indexOf(currentUser.uid) + 1
+    : null;
+
   return (
     <div style={{ minHeight: '100vh', position: 'relative', color: 'var(--text-primary)' }}>
       
@@ -529,6 +533,54 @@ const CardDetails = () => {
         {/* DETAILS TAB */}
         {activeTab === 'details' && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+             {currentUserSlot && (
+                <div
+                  className="hover-scale animate-slide-up"
+                  style={{
+                    background: 'linear-gradient(135deg, #F97316, #9A3412)',
+                    border: '1px solid #FDBA74',
+                    borderRadius: '14px',
+                    boxShadow: '0 8px 20px rgba(249, 115, 22, 0.25)',
+                    margin: '0 4px',
+                    animationDelay: '0s',
+                    opacity: 0,
+                    animationFillMode: 'forwards'
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '16px 20px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      <div style={{ color: '#fff', opacity: 0.9 }}><Users size={16} /></div>
+                      <span style={{
+                        fontSize: '0.85rem',
+                        color: '#fff',
+                        fontWeight: 900,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        textShadow: 'var(--text-shadow-sm)'
+                      }}>
+                        {t('assignedSlot')}
+                      </span>
+                    </div>
+                    <span style={{
+                      fontSize: '1.4rem',
+                      fontWeight: 900,
+                      color: '#fff',
+                      textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                    }}>
+                      #{currentUserSlot}
+                    </span>
+                  </div>
+                </div>
+             )}
              {[
               { label: t('startTime'), value: formatTime(card.startTime) || 'N/A', icon: <Clock size={16} />, gradient: 'linear-gradient(135deg, #115e59, #134e4a)', border: '#2dd4bf', textColor: '#2dd4bf' },
               { label: t('winPrize'), value: formatCurrency(dynamicPrizePool), icon: <Trophy size={16} />, gradient: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', textColor: '#fde047' },
