@@ -33,7 +33,7 @@ const Winners = () => {
       </div>
 
       {/* Winners List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {winners.map((winner, index) => (
           <div 
             key={winner.id} 
@@ -43,34 +43,34 @@ const Winners = () => {
               opacity: 0,
               animationFillMode: 'forwards',
               background: 'linear-gradient(145deg, var(--glass-bg), rgba(30, 41, 59, 0.4))', 
-              padding: '24px', 
-              borderRadius: '24px', 
+              padding: '16px',
+              borderRadius: '20px',
               border: '1px solid var(--glass-border)', 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '20px',
+              gap: '16px',
               position: 'relative',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+              boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
             }}
           >
             <div style={{ position: 'relative' }}>
-              <img src={winner.avatar} alt={winner.name} style={{ width: '70px', height: '70px', borderRadius: '20px', border: '2px solid #FBBF24', boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)' }} />
-              <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#FBBF24', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(251, 191, 36, 0.5)' }}>
-                <Trophy size={16} color="#000" />
+              <img src={winner.avatar} alt={winner.name} style={{ width: '50px', height: '50px', borderRadius: '14px', border: '1.5px solid #FBBF24', boxShadow: '0 4px 10px rgba(251, 191, 36, 0.2)' }} />
+              <div style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#FBBF24', borderRadius: '50%', padding: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(251, 191, 36, 0.4)' }}>
+                <Trophy size={12} color="#000" />
               </div>
             </div>
             
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--text-primary)', marginBottom: '4px' }}>{winner.name}</div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: 600 }}>
-                <div style={{ color: '#FBBF24', fontWeight: 800 }}>{winner.match || winner.matchName}</div>
-                <div style={{ fontSize: '0.8rem' }}>{winner.time || winner.date}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{winner.name}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '2px', fontWeight: 600 }}>
+                <div style={{ color: '#FBBF24', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{winner.match || winner.matchName}</div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.7 }}>{winner.time || winner.date}</div>
               </div>
             </div>
 
-            <div style={{ textAlign: 'right', background: 'rgba(251, 191, 36, 0.1)', padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', boxShadow: 'inset 0 2px 10px rgba(251, 191, 36, 0.1)' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{formatCurrency(winner.amount || winner.prize || 0)}</div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.1em' }}>{t('won')}</div>
+            <div style={{ textAlign: 'right', background: 'rgba(251, 191, 36, 0.08)', padding: '10px 14px', borderRadius: '16px', border: '1px solid rgba(251, 191, 36, 0.2)', flexShrink: 0 }}>
+              <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{formatCurrency(winner.amount || winner.prize || 0)}</div>
+              <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.05em' }}>{t('won')}</div>
             </div>
           </div>
         ))}
