@@ -1083,7 +1083,11 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0),
     totalWinners: winners.length,
-    totalJoins: adminMatches.reduce((sum, m) => sum + (m.participantIds?.length || 0), 0),
+    totalJoins: adminMatches.reduce((sum, m) => {
+      const mainJoins = m.participantIds?.length || 0;
+      const sectionJoins = (m.innerSections || []).reduce((sSum, section) => sSum + (section.participantIds?.length || 0), 0);
+      return sum + mainJoins + sectionJoins;
+    }, 0),
   };
 
   return (
