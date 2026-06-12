@@ -64,7 +64,7 @@ const Profile = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const { adminUsers } = useAdminDashboard();
+  const { adminUsers, adminMatches } = useAdminDashboard();
   const { currentUser, logout } = useAuth();
   const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
   
@@ -325,8 +325,24 @@ const Profile = () => {
 
       {/* Stats Cards */}
       {(() => {
-        const totalMatches = user.totalMatches || 0;
         const totalWins = user.totalWins || 0;
+
+        // Calculate dynamic total matches joined from the adminMatches list
+        // This ensures consistency with the History section
+        const totalMatches = adminMatches.reduce((acc, match) => {
+          const joinedCardsCount = (match.innerSections || []).filter(c =>
+            currentUser && (c.participantIds || []).includes(currentUser.uid)
+          ).length;
+
+          if (joinedCardsCount > 0) {
+            return acc + joinedCardsCount;
+          } else if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
+            // User joined main match directly (fallback)
+            return acc + 1;
+          }
+          return acc;
+        }, 0);
+
         const totalLosses = totalMatches >= totalWins ? totalMatches - totalWins : 0;
         const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
         const lossRate = totalMatches > 0 ? Math.round((totalLosses / totalMatches) * 100) : 0;
