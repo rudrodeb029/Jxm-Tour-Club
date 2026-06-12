@@ -1071,6 +1071,12 @@ const CardDetails = () => {
 
               {!showJoinSuccess ? (
                 <div className="animate-fade-in" style={{ position: 'relative', zIndex: 1 }}>
+                  {/* Close Button */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+                    <button onClick={() => setIsBetModalOpen(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                      <X size={18} />
+                    </button>
+                  </div>
                   {/* Card Info */}
                   <div style={{ textAlign: 'center', marginBottom: '28px' }}>
                     <div style={{

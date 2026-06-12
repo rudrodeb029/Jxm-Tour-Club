@@ -561,6 +561,11 @@ const Home = () => {
             
             {!showJoinSuccess ? (
               <div className="animate-fade-in">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+                  <button onClick={() => setSelectedMatch(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                    <X size={18} />
+                  </button>
+                </div>
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                   <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>{t('confirmEntry')}</h3>
                   <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>{selectedMatch.group} {t('arena') || 'Arena'}</p>
@@ -677,7 +682,13 @@ const Home = () => {
             {/* Background Glow */}
             <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '250px', height: '250px', background: 'radial-gradient(circle, rgba(249, 111, 46, 0.15) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
 
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '32px', letterSpacing: '-0.02em' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', position: 'relative', zIndex: 10 }}>
+              <button onClick={() => setIsAddBalanceOpen(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, textAlign: 'center', marginBottom: '32px', letterSpacing: '-0.02em', position: 'relative', zIndex: 1 }}>
               {t('addFundsTitle').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('addFundsTitle').split(' ')[1]}</span>
             </h3>
             
@@ -841,7 +852,12 @@ const Home = () => {
         <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingStat(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '400px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>{editingStat.label}</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>Edit <span style={{ color: 'var(--accent-orange)' }}>{editingStat.label}</span></h3>
+              <button onClick={() => setEditingStat(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
             <div style={{ marginBottom: '24px' }}>
               <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700 }}>STAT VALUE</label>
               <input 
@@ -876,7 +892,12 @@ const Home = () => {
         <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingMatch(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '450px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Match</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Match</span></h3>
+              <button onClick={() => setEditingMatch(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '32px' }}>
               <div>
@@ -1002,7 +1023,12 @@ const Home = () => {
         <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingWinner(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '400px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Winner</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Winner</span></h3>
+              <button onClick={() => setEditingWinner(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '32px' }}>
               <div>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700 }}>NAME</label>
@@ -1039,7 +1065,12 @@ const Home = () => {
         <ModalPortal>
         <div className="animate-fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(16px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }} onClick={() => setEditingParticipant(null)}>
           <div className="animate-scale-up" style={{ background: 'var(--modal-bg)', width: '100%', maxWidth: '400px', borderRadius: '32px', padding: '24px 16px', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '24px', textAlign: 'center' }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Participant</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0 }}>Edit <span style={{ color: 'var(--accent-orange)' }}>Participant</span></h3>
+              <button onClick={() => setEditingParticipant(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '32px' }}>
               <div>
                 <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700 }}>NAME</label>

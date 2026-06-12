@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, X } from 'lucide-react';
 import ModalPortal from './ModalPortal';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -50,6 +50,11 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, title, mes
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px', position: 'relative', zIndex: 10 }}>
+          <button onClick={onClose} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+            <X size={18} />
+          </button>
+        </div>
         {/* Decorative background glow */}
         <div style={{
           position: 'absolute',

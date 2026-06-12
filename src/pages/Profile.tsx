@@ -672,7 +672,12 @@ const Profile = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '28px' }}>{t('editProfile').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('editProfile').split(' ')[1]}</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0 }}>{t('editProfile').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('editProfile').split(' ')[1]}</span></h3>
+              <button onClick={() => setShowEditProfile(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '10px', borderRadius: '14px', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
             
             {/* Profile Icon Preview */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
@@ -998,7 +1003,12 @@ const Profile = () => {
             border: '1px solid var(--glass-border)',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>{t('notifications')} <span style={{ color: 'var(--accent-orange)' }}>{t('settings')}</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0 }}>{t('notifications')} <span style={{ color: 'var(--accent-orange)' }}>{t('settings')}</span></h3>
+              <button onClick={() => setShowNotifications(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '10px', borderRadius: '14px', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>{t('notificationSettingsSub') || 'Control how you receive alerts and updates.'}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -1101,7 +1111,12 @@ const Profile = () => {
             border: '1px solid var(--glass-border)',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>{t('languageRegion').split('&')[0]} & <span style={{ color: 'var(--accent-orange)' }}>{t('languageRegion').split('&')[1]}</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0 }}>{t('languageRegion').split('&')[0]} & <span style={{ color: 'var(--accent-orange)' }}>{t('languageRegion').split('&')[1]}</span></h3>
+              <button onClick={() => setShowLanguage(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '10px', borderRadius: '14px', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>{t('selectLanguageSub') || 'Select your preferred language for the interface.'}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1207,7 +1222,12 @@ const Profile = () => {
             overflowY: 'auto',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>{t('helpCenter').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('helpCenter').split(' ')[1]}</span></h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <h3 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0 }}>{t('helpCenter').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('helpCenter').split(' ')[1]}</span></h3>
+              <button onClick={() => setShowHelp(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '10px', borderRadius: '14px', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '0.95rem', fontWeight: 500 }}>{t('helpCenterSub') || 'Find answers or contact our support team.'}</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -1330,7 +1350,12 @@ const Profile = () => {
             onClick={(e) => e.stopPropagation()}
           >
 
-            <div style={{ 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-20px' }}>
+              <button onClick={() => setDeleteConfirmation(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '10px', borderRadius: '14px', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{
               width: '100px', 
               height: '100px', 
               borderRadius: '35px', 

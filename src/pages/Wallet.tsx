@@ -786,7 +786,12 @@ const Wallet = () => {
             onClick={(e) => e.stopPropagation()}
           >
 
-            <div style={{ 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+              <button onClick={() => setIsConfirming(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{
               width: '90px', 
               height: '90px', 
               borderRadius: '50%', 
@@ -959,7 +964,12 @@ const Wallet = () => {
             onClick={(e) => e.stopPropagation()}
           >
 
-            <div style={{ 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+              <button onClick={() => setIsWithdrawConfirming(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{
               width: '90px', 
               height: '90px', 
               borderRadius: '50%', 
@@ -1042,6 +1052,11 @@ const Wallet = () => {
             onClick={(e) => e.stopPropagation()}
           >
 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+              <button onClick={() => setShowAddMethod(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
             <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('linkAccountTitle')}</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>{t('linkAccountSub')}</p>
             
@@ -1118,7 +1133,12 @@ const Wallet = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ 
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+              <button onClick={() => setDeleteConfirmation(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{
               width: '80px', 
               height: '80px', 
               borderRadius: '50%', 

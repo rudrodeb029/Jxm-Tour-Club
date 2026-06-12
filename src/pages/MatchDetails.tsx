@@ -398,6 +398,11 @@ const MatchDetails = () => {
 
             {!showJoinSuccess ? (
               <div className="animate-fade-in">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
+                  <button onClick={() => setIsBetModalOpen(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
+                    <X size={18} />
+                  </button>
+                </div>
                 <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                   <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>{t('confirmEntry')}</h3>
                   <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>{match.group} {t('arena')}</p>
