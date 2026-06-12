@@ -137,8 +137,9 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const upcomingSubMatches = (innerSections || []).filter(c => getCardStatusFromUtil(c, status) === 'upcoming');
   const upcomingPrizeSum = upcomingSubMatches.reduce((sum, c) => sum + (c.winPrize || 0), 0);
 
-  const cardPrizeSum = (team1?.winPrize || 0) + (team2?.winPrize || 0) + (team3?.winPrize || 0);
-  const totalPrizePool = upcomingPrizeSum > 0 ? upcomingPrizeSum : (cardPrizeSum > 0 ? cardPrizeSum : (prizePool !== undefined && prizePool > 0 ? prizePool : (parsedTotalBids > 0 ? parsedTotalBids : count * entryFee * 1.8)));
+  // Prize Pool should strictly be the sum of win prizes of all upcoming sub-matches in this category.
+  // If no upcoming sub-matches exist, the prize pool should show as 0.
+  const totalPrizePool = upcomingPrizeSum;
   
   const firstPrizeValue = Math.round((firstPrize !== undefined && firstPrize > 0 ? firstPrize : totalPrizePool * 0.5) * 100) / 100;
   const secondPrizeValue = Math.round((secondPrize !== undefined && secondPrize > 0 ? secondPrize : totalPrizePool * 0.3) * 100) / 100;
