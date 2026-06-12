@@ -315,20 +315,25 @@ const MatchDetails = () => {
                   let buttonLabel = t('join').toUpperCase();
                   if (cardHasJoined) {
                     buttonLabel = cardStatus === 'finished' ? `✅ ${t('joinedEnd').toUpperCase()}` : `✅ ${t('joined').toUpperCase()}`;
+                  } else if (cardStatus === 'live' || cardStatus === 'finished') {
+                    buttonLabel = t('timeExpired').toUpperCase();
                   }
 
                   return (
                     <button
                       type="button"
-                      className={`btn ${cardHasJoined ? 'btn-joined' : 'btn-primary'}`}
+                      className={`btn ${cardHasJoined ? 'btn-joined' : (cardStatus === 'live' || cardStatus === 'finished') ? 'btn-disabled' : 'btn-primary'}`}
+                      disabled={!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')}
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')) return;
                         navigate(`/match/${match.id}/card/${card.id}`);
                       }}
                       style={{
                         marginTop: '6px',
                         padding: '6px 12px',
-                        fontSize: '0.78rem'
+                        fontSize: '0.78rem',
+                        opacity: (!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')) ? 0.6 : 1
                       }}
                     >
                       {buttonLabel}

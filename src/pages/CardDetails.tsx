@@ -389,7 +389,9 @@ const CardDetails = () => {
                 padding: '12px 8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: '#9CA3AF', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{t('ended')}</div>
+                <div style={{ fontSize: '0.6rem', color: '#9CA3AF', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>
+                  {hasJoined ? t('ended') : t('timeExpired')}
+                </div>
                 <div style={{ fontSize: '1rem', fontWeight: 900, color: '#9CA3AF' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </div>
             ) : cardStatus === 'live' ? (
@@ -401,7 +403,9 @@ const CardDetails = () => {
                 padding: '12px 8px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{t('live')}</div>
+                <div style={{ fontSize: '0.6rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>
+                  {hasJoined ? t('live') : t('timeExpired')}
+                </div>
                 <div style={{ fontSize: '1rem', fontWeight: 900, color: '#EF4444' }}>{participantCount}/{maxCardParticipants} {t('joinedPill')}</div>
               </div>
             ) : hasJoined ? (

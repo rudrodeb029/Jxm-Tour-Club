@@ -459,33 +459,33 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         {/* Giant Physical 3D Button */}
         <button 
           onClick={(e) => { e.stopPropagation(); onJoin?.(e); }}
-          disabled={isFull}
+          disabled={isFull || (totalMatchCount === 0 && status !== 'upcoming')}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => { setIsHovered(false); setIsPressed(false); }}
           onMouseDown={() => setIsPressed(true)}
           onMouseUp={() => setIsPressed(false)}
           style={{ 
-            background: isFull ? '#334155' : 'linear-gradient(180deg, #F97316 0%, #c2410c 100%)', 
+            background: (isFull || (totalMatchCount === 0 && status !== 'upcoming')) ? '#334155' : 'linear-gradient(180deg, #F97316 0%, #c2410c 100%)',
             padding: '8px 20px', 
             borderRadius: '10px', 
             border: 'none', 
-            borderTop: isFull ? '1px solid #475569' : '1px solid #fdba74',
-            color: isFull ? '#94a3b8' : 'white', 
+            borderTop: (isFull || (totalMatchCount === 0 && status !== 'upcoming')) ? '1px solid #475569' : '1px solid #fdba74',
+            color: (isFull || (totalMatchCount === 0 && status !== 'upcoming')) ? '#94a3b8' : 'white',
             fontWeight: 900, 
             fontSize: '0.9rem',
             letterSpacing: '0.05em',
-            boxShadow: isFull 
+            boxShadow: (isFull || (totalMatchCount === 0 && status !== 'upcoming'))
               ? 'inset 0 4px 6px rgba(0,0,0,0.6)'
               : (isPressed 
                   ? '0 0 0 #7c2d12, inset 0 4px 8px rgba(0,0,0,0.6)' 
                   : '0 4px 0 #7c2d12, 0 8px 15px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3)'),
             transform: isPressed ? 'translateY(4px)' : 'translateY(0)',
-            cursor: isFull ? 'not-allowed' : 'pointer',
+            cursor: (isFull || (totalMatchCount === 0 && status !== 'upcoming')) ? 'not-allowed' : 'pointer',
             transition: 'all 0.1s ease',
-            textShadow: isFull ? 'none' : '0 2px 4px rgba(0,0,0,0.5)'
+            textShadow: (isFull || (totalMatchCount === 0 && status !== 'upcoming')) ? 'none' : '0 2px 4px rgba(0,0,0,0.5)'
           }}
         >
-          {isFull ? t('fullHouse').toUpperCase() : t('join').toUpperCase()}
+          {isFull ? t('fullHouse').toUpperCase() : (totalMatchCount === 0 && status !== 'upcoming') ? t('timeExpired').toUpperCase() : t('join').toUpperCase()}
         </button>
       </div>
     </div>
