@@ -152,26 +152,12 @@ const MatchDetails = () => {
 
       {/* Match Overview: Two Team Cards */}
       <div style={{ padding: '0 12px', marginBottom: '32px' }}>
-        {cards.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '60px 20px',
-            background: 'var(--glass-bg)',
-            borderRadius: '24px',
-            border: '1px solid var(--glass-border)',
-            margin: '0 8px'
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏟️</div>
-            <h3 style={{ fontWeight: 800, marginBottom: '8px' }}>Arena Under Construction</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No sub-matches or cards have been scheduled for this category yet. Please check back later!</p>
-          </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr',
-            gap: '12px'
-          }}>
-            {cards.map((card) => (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr',
+          gap: '12px'
+        }}>
+          {cards.map((card) => (
             <div 
               key={card.id}
               onClick={() => {
@@ -372,7 +358,6 @@ const MatchDetails = () => {
             </div>
           ))}
         </div>
-      )}
       </div>
 
 
