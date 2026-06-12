@@ -3,7 +3,7 @@ import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
-import { isCardLive, parseTime } from '../utils/timeUtils';
+import { isCardLive, parseTime, getCardStatus } from '../utils/timeUtils';
 
 
 // ============ TYPES ============
@@ -1065,18 +1065,22 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     totalBalance: adminUsers.reduce((sum, u) => sum + u.balance, 0),
     activeMatches: adminMatches.reduce((total, m) => {
       if (m.status === 'finished') return total;
-      let count = 0;
-      if (m.team1 && isCardLive(m.team1, m.status)) count++;
-      if (m.team2 && isCardLive(m.team2, m.status)) count++;
-      if (m.team3 && isCardLive(m.team3, m.status)) count++;
-      
-      // Fallback if match status is explicitly live but it doesn't have startTimes
-      if (count === 0 && m.status === 'live') {
-        const hasStartTimes = (m.team1?.startTime) || (m.team2?.startTime) || (m.team3?.startTime);
-        if (!hasStartTimes) {
-          count = (m.team1 ? 1 : 0) + (m.team2 ? 1 : 0) + (m.team3 ? 1 : 0);
-        }
+
+      const cards = m.innerSections || [];
+      if (cards.length > 0) {
+        const activeCount = cards.filter(c => {
+          const s = getCardStatus(c, m.status);
+          return s === 'live' || s === 'upcoming';
+        }).length;
+        return total + activeCount;
       }
+
+      // Fallback for older match structure
+      let count = 0;
+      if (m.team1 && (getCardStatus(m.team1, m.status) === 'live' || getCardStatus(m.team1, m.status) === 'upcoming')) count++;
+      if (m.team2 && (getCardStatus(m.team2, m.status) === 'live' || getCardStatus(m.team2, m.status) === 'upcoming')) count++;
+      if (m.team3 && (getCardStatus(m.team3, m.status) === 'live' || getCardStatus(m.team3, m.status) === 'upcoming')) count++;
+
       return total + count;
     }, 0),
     pendingPayments: paymentRequests.filter(p => p.status === 'pending').length,
