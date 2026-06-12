@@ -24,6 +24,10 @@ const MyBets = () => {
 
     if (joinedCards.length > 0) {
       joinedCards.forEach(card => {
+        // Find the user's slot number (index in participantIds + 1)
+        const slotIndex = (card.participantIds || []).indexOf(currentUser?.uid || '');
+        const slotNumber = slotIndex !== -1 ? slotIndex + 1 : null;
+
         acc.push({
           id: `${match.id}-${card.id}`,
           originalMatchId: match.id,
@@ -31,11 +35,15 @@ const MyBets = () => {
           matchCategory: match.name,
           mode: card.entryType,
           time: card.startTime || match.time,
-          status: match.status
+          status: match.status,
+          slotNumber: slotNumber
         });
       });
     } else if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
       // User joined main match directly (fallback for older matches)
+      const slotIndex = (match.participantIds || []).indexOf(currentUser.uid);
+      const slotNumber = slotIndex !== -1 ? slotIndex + 1 : null;
+
       acc.push({
         id: match.id,
         originalMatchId: match.id,
@@ -43,7 +51,8 @@ const MyBets = () => {
         matchCategory: match.group,
         mode: match.group,
         time: match.time,
-        status: match.status
+        status: match.status,
+        slotNumber: slotNumber
       });
     }
     return acc;
@@ -107,12 +116,29 @@ const MyBets = () => {
               </div>
 
               <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.name}</h3>
-                  {entry.mode && (
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
-                      {entry.mode.toUpperCase()}
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{entry.name}</h3>
+                    {entry.mode && (
+                      <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, flexShrink: 0 }}>
+                        {entry.mode.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  {entry.slotNumber && (
+                    <div style={{
+                      background: 'rgba(249, 111, 46, 0.1)',
+                      padding: '4px 8px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(249, 111, 46, 0.2)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      flexShrink: 0
+                    }}>
+                      <span style={{ fontSize: '0.55rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', lineHeight: 1 }}>{t('slotNumber')}</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 900, color: 'var(--accent-orange)' }}>#{entry.slotNumber}</span>
+                    </div>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
