@@ -63,13 +63,13 @@ const Winners = () => {
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--text-primary)', marginBottom: '4px' }}>{winner.name}</div>
               <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: 600 }}>
-                <div style={{ color: '#FBBF24', fontWeight: 800 }}>{winner.matchName}</div>
-                <div style={{ fontSize: '0.8rem' }}>{winner.date}</div>
+                <div style={{ color: '#FBBF24', fontWeight: 800 }}>{winner.match || winner.matchName}</div>
+                <div style={{ fontSize: '0.8rem' }}>{winner.time || winner.date}</div>
               </div>
             </div>
 
             <div style={{ textAlign: 'right', background: 'rgba(251, 191, 36, 0.1)', padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', boxShadow: 'inset 0 2px 10px rgba(251, 191, 36, 0.1)' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{formatCurrency(parseFloat(winner.prize) || 0)}</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{formatCurrency(winner.amount || winner.prize || 0)}</div>
               <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.1em' }}>{t('won')}</div>
             </div>
           </div>
