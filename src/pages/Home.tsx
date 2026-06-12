@@ -52,8 +52,6 @@ const Home = () => {
   const [transactionId, setTransactionId] = useState('');
   const [announcement, setAnnouncement] = useState<{ text: string; title?: string } | null>(null);
   const [showAnnouncement, setShowAnnouncement] = useState(false);
-  const [showCommunityActivity, setShowCommunityActivity] = useState(false);
-  const [activityTab, setActivityTab] = useState<'personal' | 'community'>('community');
 
   // Listen to global announcement from Firestore
   useEffect(() => {
@@ -237,7 +235,7 @@ const Home = () => {
 
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   
-  const isAnyHomeModalOpen = selectedMatch !== null || isMenuOpen || isAddBalanceOpen || isInsufficientBalanceOpen || editingStat !== null || editingMatch !== null || editingWinner !== null || editingParticipant !== null || successConfig.isOpen || showCommunityActivity;
+  const isAnyHomeModalOpen = selectedMatch !== null || isMenuOpen || isAddBalanceOpen || isInsufficientBalanceOpen || editingStat !== null || editingMatch !== null || editingWinner !== null || editingParticipant !== null || successConfig.isOpen;
   useLockBodyScroll(isAnyHomeModalOpen);
 
   const handleDeposit = async () => {
@@ -443,7 +441,7 @@ const Home = () => {
         customStats={displayStats as any}
         onStatClick={(type) => {
           if (type === 'live') navigate('/live-matches');
-          if (type === 'participants') setShowCommunityActivity(true);
+          if (type === 'participants') navigate('/activity');
           if (type === 'winners') navigate('/winners');
         }} 
         onEdit={(stat) => setEditingStat(stat)}
@@ -1141,195 +1139,6 @@ const Home = () => {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           RESET DATA
         </button>
-      )}
-
-      {/* Community Activity Modal */}
-      {showCommunityActivity && (
-        <ModalPortal>
-          <div
-            className="animate-fade-in"
-            style={{
-              position: 'fixed',
-              top: 0, left: 0, right: 0, bottom: 0,
-              background: 'rgba(0,0,0,0.9)',
-              backdropFilter: 'blur(20px)',
-              zIndex: 150,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px'
-            }}
-            onClick={() => setShowCommunityActivity(false)}
-          >
-            <div
-              className="animate-scale-up"
-              style={{
-                background: 'var(--modal-bg)',
-                width: '100%',
-                maxWidth: '450px',
-                maxHeight: '85vh',
-                borderRadius: '32px',
-                padding: '24px',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--glass-border)',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '10px', borderRadius: '14px' }}>
-                    <Activity size={24} color="#38BDF8" />
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>
-                      {t('activity')}
-                    </h3>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowCommunityActivity(false)}
-                  style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '10px', borderRadius: '14px', cursor: 'pointer' }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Tabs */}
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
-                <button
-                  onClick={() => setActivityTab('personal')}
-                  className={activityTab === 'personal' ? 'btn btn-primary' : 'btn btn-outline'}
-                  style={{ flex: 1, padding: '10px', fontSize: '0.85rem' }}
-                >
-                  {t('personal').toUpperCase()}
-                </button>
-                <button
-                  onClick={() => setActivityTab('community')}
-                  className={activityTab === 'community' ? 'btn btn-primary' : 'btn btn-outline'}
-                  style={{ flex: 1, padding: '10px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <Globe size={14} />
-                  {t('community').toUpperCase()}
-                </button>
-              </div>
-
-              <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
-                {activityTab === 'community' ? (
-                  <GlobalActivityFeed />
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {(() => {
-                      const { paymentRequests = [], withdrawalRequests = [] } = useAdminDashboard();
-                      const { transactions: localTransactions = [] } = useBalance();
-
-                      const userPayments = paymentRequests
-                        .filter(p => currentUser && p.userId === currentUser.uid)
-                        .map(p => ({
-                          id: p.id,
-                          type: 'Deposit' as const,
-                          amount: p.isRaw ? p.amount : p.amount * 126,
-                          date: p.timestamp,
-                          status: (p.status || 'Pending').charAt(0).toUpperCase() + (p.status || 'Pending').slice(1) as any
-                        }));
-
-                      const userWithdrawals = withdrawalRequests
-                        .filter(w => currentUser && w.userId === currentUser.uid)
-                        .map(w => ({
-                          id: w.id,
-                          type: 'Withdraw' as const,
-                          amount: -(w.isRaw ? w.amount : w.amount * 126),
-                          date: w.timestamp,
-                          status: (w.status || 'Pending').charAt(0).toUpperCase() + (w.status || 'Pending').slice(1) as any
-                        }));
-
-                      const allTxs = [...userPayments, ...userWithdrawals, ...localTransactions]
-                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-                      return allTxs.length > 0 ? allTxs.map((tx) => (
-                        <div key={tx.id} className="card-skewed" style={{
-                          padding: '16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          background: 'rgba(255,255,255,0.02)',
-                          border: '1px solid rgba(255,255,255,0.05)',
-                          borderRadius: '16px'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '12px',
-                              background: tx.amount > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}>
-                              {tx.amount > 0 ? <Plus size={18} color="#10B981" /> : <Minus size={18} color="#EF4444" />}
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{tx.type}</div>
-                              <div style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', fontWeight: 600 }}>{new Date(tx.date).toLocaleDateString()}</div>
-                            </div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{
-                              fontWeight: 900,
-                              fontSize: '1rem',
-                              color: tx.amount > 0 ? '#10B981' : 'var(--text-primary)'
-                            }}>
-                              {tx.amount > 0 ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
-                            </div>
-                            <div style={{
-                              color: tx.status === 'Completed' || tx.status === 'Approved' ? '#10B981' : tx.status === 'Rejected' ? '#EF4444' : '#F59E0B',
-                              fontSize: '0.6rem',
-                              fontWeight: 800,
-                              textTransform: 'uppercase'
-                            }}>
-                              {tx.status}
-                            </div>
-                          </div>
-                        </div>
-                      )) : (
-                        <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                          {t('noTransactions')}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => {
-                  setShowCommunityActivity(false);
-                  navigate('/participants');
-                }}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '16px',
-                  background: 'rgba(56, 189, 248, 0.1)',
-                  border: '1px solid rgba(56, 189, 248, 0.2)',
-                  color: '#38BDF8',
-                  fontWeight: 800,
-                  fontSize: '0.9rem',
-                  marginTop: '20px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                {t('viewAll').toUpperCase()} <ArrowRight size={16} />
-              </button>
-            </div>
-          </div>
-        </ModalPortal>
       )}
 
       {/* Global Announcement Popup Modal */}

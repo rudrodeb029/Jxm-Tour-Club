@@ -5,6 +5,7 @@ import { useBalance } from '../context/BalanceContext';
 import { useAdmin } from '../context/AdminContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect } from 'react';
@@ -20,7 +21,8 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
   const { isAdminMode, toggleAdminMode } = useAdmin();
   const { formatCurrency } = useCurrency();
   const { currentUser, logout } = useAuth();
-  
+  const { t } = useLanguage();
+
   const [profileData, setProfileData] = useState({
     name: 'Player',
     username: '@player',
@@ -128,10 +130,10 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
             <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-3d-sm)', letterSpacing: '0.01em' }}>Wallet</span>
           </button>
 
-          {/* My Bets */}
+          {/* My Bets (History) */}
           <button onClick={() => { navigate('/my-bets'); onClose(); }} style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)', padding: '8px 16px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', width: '100%', boxShadow: 'var(--card-shadow)' }}>
-            <img src="/images/3d_poker_chips.png" alt="My Bets" style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.8))' }} />
-            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-3d-sm)', letterSpacing: '0.01em' }}>My Bets</span>
+            <img src="/images/3d_poker_chips.png" alt="History" style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.8))' }} />
+            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--text-primary)', textShadow: 'var(--text-shadow-3d-sm)', letterSpacing: '0.01em' }}>{t('myBets')}</span>
           </button>
 
           {/* Support */}
