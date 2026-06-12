@@ -132,8 +132,13 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const parsedTotalBids = totalBids ? parseFloat(totalBids.replace(/[^0-9.-]+/g, '')) || 0 : 0;
   const entryFee = bids && bids.length > 0 ? parseFloat(bids[0].replace(/[^0-9.-]+/g, '')) || 10 : 10;
   const count = currentParticipants > 0 ? currentParticipants : 12;
+
+  // Sum up win prize of all upcoming sub-matches
+  const upcomingSubMatches = (innerSections || []).filter(c => getCardStatusFromUtil(c, status) === 'upcoming');
+  const upcomingPrizeSum = upcomingSubMatches.reduce((sum, c) => sum + (c.winPrize || 0), 0);
+
   const cardPrizeSum = (team1?.winPrize || 0) + (team2?.winPrize || 0) + (team3?.winPrize || 0);
-  const totalPrizePool = cardPrizeSum > 0 ? cardPrizeSum : (prizePool !== undefined && prizePool > 0 ? prizePool : (parsedTotalBids > 0 ? parsedTotalBids : count * entryFee * 1.8));
+  const totalPrizePool = upcomingPrizeSum > 0 ? upcomingPrizeSum : (cardPrizeSum > 0 ? cardPrizeSum : (prizePool !== undefined && prizePool > 0 ? prizePool : (parsedTotalBids > 0 ? parsedTotalBids : count * entryFee * 1.8)));
   
   const firstPrizeValue = Math.round((firstPrize !== undefined && firstPrize > 0 ? firstPrize : totalPrizePool * 0.5) * 100) / 100;
   const secondPrizeValue = Math.round((secondPrize !== undefined && secondPrize > 0 ? secondPrize : totalPrizePool * 0.3) * 100) / 100;
