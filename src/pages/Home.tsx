@@ -455,9 +455,9 @@ const Home = () => {
         padding: '0 12px',
         paddingBottom: '24px',
       }}>
-        {localMatches.filter(isMatchLive).length > 0 && (
+        {localMatches.filter(m => isMatchLive(m) && (m.innerSections?.some(c => getCardStatusFromUtil(c, m.status) !== 'finished') ?? false)).length > 0 && (
           <>
-            {localMatches.filter(isMatchLive).map((match, index) => (
+            {localMatches.filter(m => isMatchLive(m) && (m.innerSections?.some(c => getCardStatusFromUtil(c, m.status) !== 'finished') ?? false)).map((match, index) => (
               <div 
                 key={match.id} 
                 className="animate-slide-up" 
@@ -483,9 +483,9 @@ const Home = () => {
           </>
         )}
 
-        {localMatches.filter(m => !isMatchLive(m) && getEffectiveMatchStatus(m) !== 'finished').length > 0 && (
+        {localMatches.filter(m => !isMatchLive(m) && getEffectiveMatchStatus(m) !== 'finished' && (m.innerSections?.some(c => getCardStatusFromUtil(c, m.status) !== 'finished') ?? false)).length > 0 && (
           <>
-            {localMatches.filter(m => !isMatchLive(m) && getEffectiveMatchStatus(m) !== 'finished').map((match, index) => (
+            {localMatches.filter(m => !isMatchLive(m) && getEffectiveMatchStatus(m) !== 'finished' && (m.innerSections?.some(c => getCardStatusFromUtil(c, m.status) !== 'finished') ?? false)).map((match, index) => (
               <div 
                 key={match.id} 
                 className="animate-slide-up" 
