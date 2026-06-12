@@ -271,7 +271,7 @@ const MatchDetails = () => {
                           gap: '3px',
                           marginTop: '2px'
                         }}>
-                          {t('slotNumber').toUpperCase()}: #{currentUserSlot}
+                          #{currentUserSlot}
                         </div>
                       )}
                       {cardStatus === 'live' && (
