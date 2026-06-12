@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
-import { ArrowLeft, Users, Trophy } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, X } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from '../components/AnimatedCounter';
 import { useBalance } from '../context/BalanceContext';
@@ -29,15 +29,27 @@ const MatchDetails = () => {
 
   
   const match = adminMatches.find(m => m.id === id) || adminMatches[0];
-  const participants = (match.participantIds || []).map(pid => 
+
+  if (!match) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', background: 'var(--bg-gradient)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏳</div>
+          <h2 style={{ fontWeight: 800, marginBottom: '8px' }}>{t('loading') || 'Loading Match...'}</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Please wait while we fetch the latest arena data.</p>
+          <button className="btn btn-primary" onClick={() => navigate('/home')} style={{ maxWidth: '200px', margin: '0 auto' }}>{t('back') || 'Go Back'}</button>
+        </div>
+      </div>
+    );
+  }
+
+  const participants = (match.participantIds || []).map(pid =>
     adminUsers.find(u => u.id === pid)
   ).filter(Boolean);
 
-  if (!match) return <div>Match not found</div>;
-
-  const entryFee = match.bids && match.bids.length > 0 ? parseFloat(match.bids[0].replace(/[^0-9.-]+/g, '')) || 10 : 10;
-  const count = match.currentParticipants > 0 ? match.currentParticipants : 12;
-  const cardPrizeSum = (match.team1?.winPrize || 0) + (match.team2?.winPrize || 0) + (match.team3?.winPrize || 0);
+  const entryFee = (match.bids && match.bids.length > 0) ? parseFloat(match.bids[0].replace(/[^0-9.-]+/g, '')) || 10 : 10;
+  const count = (match.currentParticipants || 0) > 0 ? match.currentParticipants : 12;
+  const cardPrizeSum = ((match.team1?.winPrize || 0) + (match.team2?.winPrize || 0) + (match.team3?.winPrize || 0));
   const totalPrizePool = cardPrizeSum > 0 ? cardPrizeSum : (match.prizePool !== undefined && match.prizePool > 0 ? match.prizePool : count * entryFee * 1.8);
   
   const firstPrizeValue = match.firstPrize !== undefined && match.firstPrize > 0 ? match.firstPrize : totalPrizePool * 0.5;

@@ -19,7 +19,8 @@ import {
   ChevronLeft,
   Edit2,
   Minus,
-  Globe
+  Globe,
+  X
 } from 'lucide-react';
 import GlobalActivityFeed from '../components/GlobalActivityFeed';
 import SuccessModal from '../components/SuccessModal';
