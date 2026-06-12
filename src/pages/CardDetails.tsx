@@ -72,23 +72,23 @@ const CardDetails = () => {
 
   if (!match || !card) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>
-        <div style={{ textAlign: 'center' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', background: 'var(--bg-gradient)' }}>
+        <div style={{ textAlign: 'center', padding: '20px' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div>
           <h2 style={{ fontWeight: 800, marginBottom: '8px' }}>{t('matchNotFound')}</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{t('matchNotFoundSub') || "The match card you're looking for doesn't exist."}</p>
-          <button className="btn btn-primary" onClick={() => navigate(-1)} style={{ maxWidth: '200px', margin: '0 auto' }}>{t('cancelGoBack')}</button>
+          <button className="btn btn-primary" onClick={() => navigate('/home')} style={{ maxWidth: '200px', margin: '0 auto' }}>{t('back') || 'Go Back'}</button>
         </div>
       </div>
     );
   }
 
   // Dynamic values from card
-  const entryFee = card.entryFee || 10;
+  const entryFee = Number(card.entryFee) || 10;
   const dynamicEntryType = card.entryType || 'Solo';
-  const dynamicEntryFee = card.entryFee || 10;
-  const dynamicPrizePool = card.winPrize || 0;
-  const dynamicPerKill = card.perKill || match.perKillReward || 0;
+  const dynamicEntryFee = Number(card.entryFee) || 10;
+  const dynamicPrizePool = Number(card.winPrize) || 0;
+  const dynamicPerKill = Number(card.perKill || match.perKillReward || 0);
   const dynamicMap = card.map || match.map || 'Bermuda';
   const dynamicVersion = card.version || match.version || 'MOBILE';
   const dynamicRules = card.rules || match.rules || [];

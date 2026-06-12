@@ -47,7 +47,9 @@ const MatchDetails = () => {
     adminUsers.find(u => u.id === pid)
   ).filter(Boolean);
 
-  const entryFee = (match.bids && match.bids.length > 0) ? parseFloat(match.bids[0].replace(/[^0-9.-]+/g, '')) || 10 : 10;
+  const entryFee = (match.bids && match.bids.length > 0)
+    ? (typeof match.bids[0] === 'string' ? parseFloat(match.bids[0].replace(/[^0-9.-]+/g, '')) : Number(match.bids[0])) || 10
+    : 10;
   const count = (match.currentParticipants || 0) > 0 ? match.currentParticipants : 12;
   const cardPrizeSum = ((match.team1?.winPrize || 0) + (match.team2?.winPrize || 0) + (match.team3?.winPrize || 0));
   const totalPrizePool = cardPrizeSum > 0 ? cardPrizeSum : (match.prizePool !== undefined && match.prizePool > 0 ? match.prizePool : count * entryFee * 1.8);
@@ -136,7 +138,7 @@ const MatchDetails = () => {
 
   return (
 
-    <div style={{ minHeight: '100vh', position: 'relative', color: 'var(--text-primary)' }}>
+    <div style={{ minHeight: '100vh', position: 'relative', color: 'var(--text-primary)', background: 'var(--bg-gradient)' }}>
       {/* Header */}
       <div style={{ padding: '16px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
@@ -150,12 +152,26 @@ const MatchDetails = () => {
 
       {/* Match Overview: Two Team Cards */}
       <div style={{ padding: '0 12px', marginBottom: '32px' }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr', 
-          gap: '12px' 
-        }}>
-          {cards.map((card) => (
+        {cards.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            background: 'var(--glass-bg)',
+            borderRadius: '24px',
+            border: '1px solid var(--glass-border)',
+            margin: '0 8px'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏟️</div>
+            <h3 style={{ fontWeight: 800, marginBottom: '8px' }}>Arena Under Construction</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No sub-matches or cards have been scheduled for this category yet. Please check back later!</p>
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr',
+            gap: '12px'
+          }}>
+            {cards.map((card) => (
             <div 
               key={card.id}
               onClick={() => {
@@ -356,7 +372,9 @@ const MatchDetails = () => {
             </div>
           ))}
         </div>
+      )}
       </div>
+
 
 
 
