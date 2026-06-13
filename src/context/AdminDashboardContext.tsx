@@ -98,7 +98,12 @@ export interface PaymentSettings {
   binanceInstructions?: string;
 }
 
-
+export interface SupportSettings {
+  autoReplyText: string;
+  welcomeMessage: string;
+  discordLink: string;
+  telegramLink: string;
+}
 
 interface AdminDashboardContextType {
   // Matches
@@ -159,6 +164,10 @@ interface AdminDashboardContextType {
   // Payment Settings
   paymentSettings: PaymentSettings;
   updatePaymentSettings: (settings: PaymentSettings) => Promise<void>;
+
+  // Support Settings
+  supportSettings: SupportSettings;
+  updateSupportSettings: (settings: SupportSettings) => Promise<void>;
 }
 
 // ============ CONTEXT ============
@@ -196,6 +205,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     bkashInstructions: 'Send money to this Bkash personal number and enter your Transaction ID below.',
     nagadInstructions: 'Send money to this Nagad personal number and enter your Transaction ID below.',
     binanceInstructions: 'Transfer USDT to this Binance BEP-20 address and enter your TXN hash.'
+  });
+  const [supportSettings, setSupportSettings] = useState<SupportSettings>({
+    autoReplyText: "Your support ticket is live! If you're asking about prize pool drops, please upload a screenshot of the post-match results screen.",
+    welcomeMessage: "Welcome to JXM Support! How can we help you today?",
+    discordLink: "discord.gg/jxmtourclub",
+    telegramLink: "t.me/jxmtourclub"
   });
 
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
@@ -320,7 +335,20 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       }
     }, (error) => console.error('Error fetching payment settings:', error));
 
-
+    // Support Settings Listener
+    const unsubscribeSupportSettings = onSnapshot(doc(db, 'support_settings', 'config'), (docSnap) => {
+      if (docSnap.exists()) {
+        setSupportSettings(docSnap.data() as SupportSettings);
+      } else {
+        const defaults: SupportSettings = {
+          autoReplyText: "Your support ticket is live! If you're asking about prize pool drops, please upload a screenshot of the post-match results screen.",
+          welcomeMessage: "Welcome to JXM Support! How can we help you today?",
+          discordLink: "discord.gg/jxmtourclub",
+          telegramLink: "t.me/jxmtourclub"
+        };
+        setDoc(doc(db, 'support_settings', 'config'), defaults);
+      }
+    });
 
     return () => {
       unsubscribeUsers();
@@ -330,6 +358,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       unsubscribeMatches();
       unsubscribeWinners();
       unsubscribePaymentSettings();
+      unsubscribeSupportSettings();
     };
 
   }, []);
@@ -991,6 +1020,13 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const updateSupportSettings = async (settings: SupportSettings) => {
+    try {
+      await setDoc(doc(db, 'support_settings', 'config'), settings);
+    } catch (e) {
+      console.error('Error updating support settings:', e);
+    }
+  };
 
 
   // Stats
@@ -1048,7 +1084,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       activities,
       logActivity,
       paymentSettings,
-      updatePaymentSettings
+      updatePaymentSettings,
+      supportSettings,
+      updateSupportSettings
     }}>
       {children}
     </AdminDashboardContext.Provider>

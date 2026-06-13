@@ -18,7 +18,8 @@ const AdminDashboard = () => {
     withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal,
     adminUsers, updateUserBalance, toggleUserStatus, stats, setMatchWinners,
     winners,
-    paymentSettings, updatePaymentSettings
+    paymentSettings, updatePaymentSettings,
+    supportSettings, updateSupportSettings
   } = useAdminDashboard();
   const { currency, formatCurrency } = useCurrency();
   
@@ -68,6 +69,15 @@ const AdminDashboard = () => {
     }
   }, [paymentSettings]);
 
+  useEffect(() => {
+    if (supportSettings) {
+      setAutoReplyText(supportSettings.autoReplyText || '');
+      setWelcomeMessage(supportSettings.welcomeMessage || '');
+      setDiscordLink(supportSettings.discordLink || '');
+      setTelegramLink(supportSettings.telegramLink || '');
+    }
+  }, [supportSettings]);
+
   const [showCreateMatch, setShowCreateMatch] = useState(false);
   const [newMatch, setNewMatch] = useState({ name: '', group: 'Squad Match', maxParticipants: 12, time: '21:00', bids: ['$5','$10','$25','$50'], prizePool: '', firstPrize: '', secondPrize: '', thirdPrize: '' });
   const [editBalanceUser, setEditBalanceUser] = useState<string | null>(null);
@@ -85,6 +95,13 @@ const AdminDashboard = () => {
   const [adminBkashInstructions, setAdminBkashInstructions] = useState('');
   const [adminNagadInstructions, setAdminNagadInstructions] = useState('');
   const [adminBinanceInstructions, setAdminBinanceInstructions] = useState('');
+
+  // Support Settings form states
+  const [autoReplyText, setAutoReplyText] = useState('');
+  const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [discordLink, setDiscordLink] = useState('');
+  const [telegramLink, setTelegramLink] = useState('');
+  const [showSupportSettings, setShowSupportSettings] = useState(false);
 
   // Date filtering state for Revenue Analytics
   const [rangeType, setRangeType] = useState<'today' | 'month' | 'year' | 'all' | 'custom'>('all');
@@ -1866,7 +1883,16 @@ const AdminDashboard = () => {
               gap: '16px',
               overflowY: 'auto'
             }}>
-              <h3 style={{ fontWeight: 800, marginBottom: '4px', fontSize: '1rem' }}>Active Conversations</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <h3 style={{ fontWeight: 800, margin: 0, fontSize: '1rem' }}>Active Conversations</h3>
+                <button
+                  onClick={() => setShowSupportSettings(true)}
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', padding: '6px', borderRadius: '8px', cursor: 'pointer' }}
+                  title="Support Settings"
+                >
+                  ⚙️
+                </button>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {activeChats.length === 0 ? (
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', padding: '20px' }}>
@@ -2027,6 +2053,79 @@ const AdminDashboard = () => {
                   <div style={{ fontSize: '0.85rem', textAlign: 'center', maxWidth: '300px' }}>Select an active conversation from the sidebar or click "Chat" next to a user in the Users list to send a message.</div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* SUPPORT SETTINGS MODAL */}
+        {showSupportSettings && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 4000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)', padding: '20px' }}>
+            <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '28px', padding: isMobile ? '24px' : '36px', width: '100%', maxWidth: '500px', boxShadow: 'var(--card-shadow)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 900, margin: 0 }}>⚙️ Support Settings</h3>
+                <button onClick={() => setShowSupportSettings(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '1.2rem' }}>✕</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Welcome Message (Empty Chat)</label>
+                  <textarea
+                    value={welcomeMessage}
+                    onChange={e => setWelcomeMessage(e.target.value)}
+                    placeholder="Message shown when chat is empty..."
+                    rows={2}
+                    style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Auto-Reply Text (First Message)</label>
+                  <textarea
+                    value={autoReplyText}
+                    onChange={e => setAutoReplyText(e.target.value)}
+                    placeholder="Message sent automatically after user's first text..."
+                    rows={3}
+                    style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'vertical', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Discord Link</label>
+                    <input
+                      type="text"
+                      value={discordLink}
+                      onChange={e => setDiscordLink(e.target.value)}
+                      placeholder="discord.gg/..."
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700, boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Telegram Link</label>
+                    <input
+                      type="text"
+                      value={telegramLink}
+                      onChange={e => setTelegramLink(e.target.value)}
+                      placeholder="t.me/..."
+                      style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '12px', color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', fontWeight: 700, boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <Btn style={{ flex: 1 }} onClick={async () => {
+                  await updateSupportSettings({
+                    autoReplyText,
+                    welcomeMessage,
+                    discordLink,
+                    telegramLink
+                  });
+                  setShowSupportSettings(false);
+                  alert('Support settings saved successfully!');
+                }}>Save Settings</Btn>
+                <Btn variant="ghost" style={{ flex: 1 }} onClick={() => setShowSupportSettings(false)}>Cancel</Btn>
+              </div>
             </div>
           </div>
         )}

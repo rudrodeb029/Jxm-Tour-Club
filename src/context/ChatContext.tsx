@@ -30,6 +30,22 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [autoReplied, setAutoReplied] = useState(false);
+  const [supportConfig, setSupportConfig] = useState({
+    autoReplyText: "Your support ticket is live! If you're asking about prize pool drops, please upload a screenshot of the post-match results screen.",
+    welcomeMessage: "Welcome to Esports Support! Could you please provide your in-game name or Match ID so we can assist you faster?",
+    discordLink: "discord.gg/jxmtourclub",
+    telegramLink: "t.me/jxmtourclub"
+  });
+
+  // Listen to Support Config
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'support_settings', 'config'), (docSnap) => {
+      if (docSnap.exists()) {
+        setSupportConfig(docSnap.data() as any);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Check if auto-reply was already sent for this user
   useEffect(() => {
@@ -85,7 +101,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (msgs.length === 0) {
         msgs.push({
           id: 'welcome-msg',
-          text: 'Welcome to Esports Support! Could you please provide your in-game name or Match ID so we can assist you faster?',
+          text: supportConfig.welcomeMessage || 'Welcome to Esports Support! Could you please provide your in-game name or Match ID so we can assist you faster?',
           sender: 'support',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           userName: 'Support Bot',
@@ -98,19 +114,21 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, supportConfig.welcomeMessage]);
 
   const botReplies = [
     "Thanks for reaching out! A live admin is grabbing their gear and will join your lobby shortly.",
     "Got it. Let me pull up your player profile. Could you drop your in-game name or registered email?",
     "Our servers are currently optimizing for faster payouts. Are you checking on a deposit or tournament winnings?",
-    "Your support ticket is live! If you're asking about prize pool drops, please upload a screenshot of the post-match results screen.",
+    supportConfig.autoReplyText || "Your support ticket is live! If you're asking about prize pool drops, please upload a screenshot of the post-match results screen.",
     "To keep your account safe from hackers, never share your password in chat. Official admins will never ask for your login credentials!"
   ];
 
   const getSmartReply = (userText: string): string => {
     const text = userText.toLowerCase();
-    const links = "\n\nJoin our community:\n🎮 Discord: discord.gg/jxmtourclub\n📱 Telegram: t.me/jxmtourclub";
+    const discord = supportConfig.discordLink || "discord.gg/jxmtourclub";
+    const telegram = supportConfig.telegramLink || "t.me/jxmtourclub";
+    const links = `\n\nJoin our community:\n🎮 Discord: ${discord}\n📱 Telegram: ${telegram}`;
     
     if (text.includes('wallet') || text.includes('deposit') || text.includes('withdraw') || text.includes('money') || text.includes('balance') || text.includes('add fund')) {
       return "Wallet transactions and payouts usually hit your account within 5-15 minutes. If it's been longer, please drop your Transaction ID so we can trace it!" + links;
@@ -121,7 +139,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (text.includes('admin') || text.includes('owner') || text.includes('live') || text.includes('human') || text.includes('help')) {
       return "Copy that! I'm calling in a live admin to assist you. Hold tight in the lobby..." + links;
     }
-    return botReplies[Math.floor(Math.random() * botReplies.length)] + links;
+    return (supportConfig.autoReplyText || botReplies[Math.floor(Math.random() * botReplies.length)]) + links;
   };
 
   const sendMessage = async (text: string, sender: 'user' | 'support') => {
