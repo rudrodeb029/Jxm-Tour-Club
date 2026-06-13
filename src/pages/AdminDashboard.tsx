@@ -866,7 +866,6 @@ const AdminDashboard = () => {
                       <div style={{ fontWeight: 900, fontSize: '1.2rem', color: 'var(--text-primary)', marginBottom: '4px' }}>{match.name}</div>
                       <div style={{ color: '#F96F2E', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{(match.availableModes || []).join(' | ')}</div>
                     </div>
-                    <StatusBadge status={getEffectiveMatchStatus(match)} />
                   </div>
                   
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
