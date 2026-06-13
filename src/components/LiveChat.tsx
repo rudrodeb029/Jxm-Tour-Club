@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useChat } from '../context/ChatContext';
 import { useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { X } from 'lucide-react';
+import { X, MessageSquare } from 'lucide-react';
 
 const LiveChat = () => {
   const { isChatOpen, setIsChatOpen, messages, sendMessage, isTyping } = useChat();
@@ -29,13 +29,55 @@ const LiveChat = () => {
   };
 
   const location = useLocation();
-  const hiddenPaths = ['/', '/onboarding', '/auth', '/admin', '/admin/dashboard'];
-  const isHidden = hiddenPaths.some(path => location.pathname === path || (path !== '/' && location.pathname.startsWith(path)));
+  const hiddenPaths = ['/', '/onboarding'];
+  const isHidden = hiddenPaths.some(path => location.pathname === path);
 
   if (isHidden) return null;
 
   return (
     <>
+      {/* Global Floating Support Button */}
+      {!isChatOpen && (
+        <button
+          onClick={() => setIsChatOpen(true)}
+          style={{
+            position: 'fixed',
+            bottom: '100px',
+            right: '20px',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'var(--accent-gradient)',
+            border: 'none',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 8px 25px rgba(249, 111, 46, 0.4)',
+            cursor: 'pointer',
+            zIndex: 998,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            padding: 0
+          }}
+          className="hover-scale animate-bounce-subtle"
+        >
+          <div style={{ position: 'relative' }}>
+            <MessageSquare size={28} strokeWidth={2.5} />
+            <div style={{
+              position: 'absolute',
+              top: '-5px',
+              right: '-5px',
+              width: '14px',
+              height: '14px',
+              background: '#10B981',
+              borderRadius: '50%',
+              border: '2px solid var(--bg-dark)',
+              boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)'
+            }} />
+          </div>
+        </button>
+      )}
+
       {/* Chat Window */}
       {isChatOpen && (
         <div

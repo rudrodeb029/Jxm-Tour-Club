@@ -57,17 +57,21 @@ export const getTargetDateTime = (startTimeStr: string, now = new Date()): Date 
   const diffToday = todayTarget.getTime() - now.getTime();
   
   if (diffToday <= 0) {
-    // Today's target has passed. If elapsed time is less than 12 hours, assume it was today's match.
-    // Otherwise, it represents tomorrow's upcoming match.
-    if (Math.abs(diffToday) < 12 * 60 * 60 * 1000) {
+    // Today's target has passed.
+    // We only roll to tomorrow if it's VERY close (e.g. within 2 hours of a new day)
+    // or if the match was explicitly intended for the next day.
+    // For now, let's strictly return todayTarget unless it's been more than 12 hours.
+    // Actually, to prevent auto-restart, we should be more strict.
+    if (Math.abs(diffToday) < 14 * 60 * 60 * 1000) {
       return todayTarget;
     } else {
-      return tomorrowTarget;
+      // If it's more than 14 hours in the past, it stays in the past (as yesterday's match)
+      // and doesn't roll forward to tomorrow.
+      return yesterdayTarget;
     }
   } else {
-    // Today's target is in the future. If it starts in less than 18 hours, assume it is today's match.
-    // Otherwise, assume it was yesterday's match.
-    if (diffToday < 18 * 60 * 60 * 1000) {
+    // Today's target is in the future.
+    if (diffToday < 20 * 60 * 60 * 1000) {
       return todayTarget;
     } else {
       return yesterdayTarget;
@@ -76,12 +80,12 @@ export const getTargetDateTime = (startTimeStr: string, now = new Date()): Date 
 };
 
 export const getCardStatus = (
-  card: { startTime?: string; liveDuration?: number } | undefined,
+  card: { startTime?: string; liveDuration?: number; isConcluded?: boolean } | undefined,
   matchStatus: string | undefined
 ): 'live' | 'upcoming' | 'finished' | 'idle' => {
   if (!card) return 'idle';
   const mStatus = matchStatus || 'upcoming';
-  if (mStatus === 'finished') return 'finished';
+  if (mStatus === 'finished' || card.isConcluded) return 'finished';
   if (!card.startTime) return mStatus === 'live' ? 'live' : 'idle';
 
   try {
