@@ -67,7 +67,8 @@ const MyBets = () => {
         matchCategory: entry.matchName,
         mode: entry.entryType,
         time: entry.startTime,
-        status: liveMatch ? liveMatch.status : 'finished',
+        // If user is no longer in current participants list, treat it as finished/past join
+        status: (liveMatch && currentSlot) ? liveMatch.status : 'finished',
         slotNumber: currentSlot || null,
         sortTime: new Date(entry.timestamp).getTime()
       });
