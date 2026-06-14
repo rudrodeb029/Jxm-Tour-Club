@@ -1231,11 +1231,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + (p.isRaw ? p.amount : p.amount * 126), 0),
     totalWinners: winners.length,
-    totalJoins: Math.max(persistentCommunityCount, globalJoinsCount, adminMatches.reduce((sum, m) => {
-      const mainJoins = (m.participantIds || []).length || m.currentParticipants || 0;
-      const sectionJoins = (m.innerSections || []).reduce((sSum, section) => sSum + ((section.participantIds || []).length || 0), 0);
-      return sum + mainJoins + sectionJoins;
-    }, 0)),
+    totalJoins: Math.max(persistentCommunityCount, globalJoinsCount, 0),
   };
 
   return (

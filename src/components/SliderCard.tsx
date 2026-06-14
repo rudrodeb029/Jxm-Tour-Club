@@ -153,18 +153,26 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   const status3 = getCardStatusAndDisplay(team3);
 
   // Filter out finished sub-matches from innerSections for counting
-  const activeSubMatches = (innerSections || []).filter(c => getCardStatusFromUtil(c, status) !== 'finished');
+  const activeSubMatches = (innerSections || []).filter(c => {
+    const s = getCardStatusFromUtil(c, status);
+    return s === 'live' || s === 'upcoming' || s === 'revealed';
+  });
 
-  // Count players joined in active sub-matches
-  const soloPlayers = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'solo').reduce((sum, c) => sum + (c.participantIds?.length || 0), 0);
-  const duoPlayers = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'duo').reduce((sum, c) => sum + (c.participantIds?.length || 0), 0);
-  const squadPlayers = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'squad').reduce((sum, c) => sum + (c.participantIds?.length || 0), 0);
+  // Count players joined in active sub-matches with safety checks
+  const soloPlayers = activeSubMatches
+    .filter(c => (c.entryType || '').toLowerCase() === 'solo')
+    .reduce((sum, c) => sum + (Array.isArray(c.participantIds) ? c.participantIds.length : (Number(c.currentParticipants) || 0)), 0);
 
-  const soloCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'solo').length;
-  const duoCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'duo').length;
-  const squadCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'squad').length;
+  const duoPlayers = activeSubMatches
+    .filter(c => (c.entryType || '').toLowerCase() === 'duo')
+    .reduce((sum, c) => sum + (Array.isArray(c.participantIds) ? c.participantIds.length : (Number(c.currentParticipants) || 0)), 0);
+
+  const squadPlayers = activeSubMatches
+    .filter(c => (c.entryType || '').toLowerCase() === 'squad')
+    .reduce((sum, c) => sum + (Array.isArray(c.participantIds) ? c.participantIds.length : (Number(c.currentParticipants) || 0)), 0);
+
+  const totalPlayerCount = soloPlayers + duoPlayers + squadPlayers;
   const totalMatchCount = activeSubMatches.length;
-  const totalPlayerCount = activeSubMatches.reduce((sum, c) => sum + (c.participantIds?.length || 0), 0);
 
   // Compute overall match live status and remaining duration
   let statusConfig: { status: 'live' | 'upcoming' | 'finished' | 'idle'; display: string } | null = null;
