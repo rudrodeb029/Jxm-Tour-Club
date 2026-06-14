@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Trophy, Calendar, Wallet, ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { useBalance } from '../context/BalanceContext';
 import { useAdminDashboard } from '../context/AdminDashboardContext';
@@ -6,60 +6,76 @@ import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const MyBets = () => {
   const { transactions } = useBalance();
   const { formatCurrency } = useCurrency();
-  const { adminMatches, adminUsers } = useAdminDashboard();
+  const { adminMatches } = useAdminDashboard();
   const { currentUser } = useAuth();
   const { t, language } = useLanguage();
-  const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const navigate = useNavigate();
 
-  // Filter and flatten all sub-matches the user has joined
-  const myJoinedEntries = adminMatches.reduce((acc, match) => {
-    const joinedCards = (match.innerSections || []).filter(c =>
-      currentUser && (c.participantIds || []).includes(currentUser.uid)
+  const [joinedEntries, setJoinedEntries] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const q = query(
+      collection(db, 'user_joins'),
+      where('userId', '==', currentUser.uid),
+      orderBy('timestamp', 'desc')
     );
 
-    if (joinedCards.length > 0) {
-      joinedCards.forEach(card => {
-        // Find the user's slot number (index in participantIds + 1)
-        const slotIndex = (card.participantIds || []).indexOf(currentUser?.uid || '');
-        const slotNumber = slotIndex !== -1 ? slotIndex + 1 : null;
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const entries = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setJoinedEntries(entries);
+    });
 
-        acc.push({
-          id: `${match.id}-${card.id}`,
-          originalMatchId: match.id,
-          name: card.name,
-          matchCategory: match.name,
-          mode: card.entryType,
-          time: card.startTime || match.time,
-          status: match.status,
-          slotNumber: slotNumber
-        });
-      });
-    } else if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
-      // User joined main match directly (fallback for older matches)
-      const slotIndex = (match.participantIds || []).indexOf(currentUser.uid);
-      const slotNumber = slotIndex !== -1 ? slotIndex + 1 : null;
+    return () => unsubscribe();
+  }, [currentUser]);
 
-      acc.push({
-        id: match.id,
-        originalMatchId: match.id,
-        name: match.name,
-        matchCategory: match.group,
-        mode: match.group,
-        time: match.time,
-        status: match.status,
-        slotNumber: slotNumber
-      });
+  // Merge entries from Firebase with local slot numbers if possible,
+  // but primary source is now 'user_joins' collection to survive deletion.
+  const myJoinedEntries = joinedEntries.map(entry => {
+    const liveMatch = adminMatches.find(m => m.id === entry.matchId);
+
+    // Attempt to find current slot number if match still exists
+    let currentSlot = null;
+    if (liveMatch) {
+      if (entry.cardId) {
+        const card = (liveMatch.innerSections || []).find(c => c.id === entry.cardId);
+        if (card) {
+          const idx = (card.participantIds || []).indexOf(currentUser?.uid || '');
+          if (idx !== -1) currentSlot = idx + 1;
+        }
+      } else {
+        const idx = (liveMatch.participantIds || []).indexOf(currentUser?.uid || '');
+        if (idx !== -1) currentSlot = idx + 1;
+      }
     }
-    return acc;
-  }, [] as any[]).sort((a, b) => {
+
+    return {
+      ...entry,
+      originalMatchId: entry.matchId,
+      name: entry.cardName || entry.matchName,
+      matchCategory: entry.matchName,
+      mode: entry.entryType,
+      time: entry.startTime,
+      status: liveMatch ? liveMatch.status : 'finished', // Default to finished if match deleted
+      slotNumber: currentSlot || null // We might not have slot history if match deleted, but user requested data retention.
+    };
+  }).sort((a, b) => {
     // Sort status: Live (0), Upcoming (1), Finished (2)
     const rank = { 'live': 0, 'upcoming': 1, 'finished': 2 };
-    return (rank[a.status] ?? 1) - (rank[b.status] ?? 1);
+    const statusDiff = (rank[a.status as keyof typeof rank] ?? 2) - (rank[b.status as keyof typeof rank] ?? 2);
+    if (statusDiff !== 0) return statusDiff;
+    // Secondary sort by timestamp desc
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
   });
   
   // Filter transactions

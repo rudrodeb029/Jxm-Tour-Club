@@ -646,7 +646,24 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           team2: innerSections[1] || null,
           team3: innerSections[2] || null
         }, { merge: true });
-        
+
+        // Record Join in a permanent collection so it survives match/card deletion
+        const card = cardId ? (m.innerSections || []).find(c => c.id === cardId) : null;
+        await addDoc(collection(db, 'user_joins'), {
+          userId,
+          matchId,
+          cardId: cardId || null,
+          matchName: m.name,
+          cardName: card?.name || m.name,
+          entryType: card?.entryType || m.group || 'Solo',
+          entryFee: card?.entryFee || (m.bids && m.bids.length > 0 ? parseFloat(m.bids[0].replace(/[^0-9.-]+/g, '')) : 0),
+          gameId: gameId || '',
+          timestamp: new Date().toISOString(),
+          status: 'joined',
+          startDate: card?.startDate || '',
+          startTime: card?.startTime || m.time || ''
+        });
+
         const user = adminUsers.find(u => u.id === userId);
         if (user) {
           await logActivity({

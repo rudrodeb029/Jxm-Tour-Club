@@ -269,6 +269,19 @@ const AdminDashboard = () => {
 
   const breakdownRows = getBreakdowns();
 
+  const formatDateTime = (ts: any) => {
+    if (!ts) return 'N/A';
+    const d = parseToDate(ts);
+    if (!d) return ts;
+    return d.toLocaleString([], {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const [winnersData, setWinnersData] = useState<{ rank: 1|2|3; userId: string; reward: string }[]>([
     { rank: 1, userId: '', reward: '100' },
     { rank: 2, userId: '', reward: '50' },
@@ -951,7 +964,7 @@ const AdminDashboard = () => {
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{realName}</div>
                           <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {realUsername}</div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{p.timestamp}</div>
+                          <div style={{ color: 'var(--accent-orange)', fontSize: '0.7rem', marginTop: '2px', fontWeight: 700 }}>{formatDateTime(p.timestamp)}</div>
                         </div>
                         <StatusBadge status={p.status} />
                       </div>
@@ -1013,7 +1026,7 @@ const AdminDashboard = () => {
                           <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</td>
                           <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', color: '#F96F2E' }}>{p.transactionId}</code></td>
                           <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{p.paymentMethod}</td>
-                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{p.timestamp}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>{formatDateTime(p.timestamp)}</td>
                           <td style={{ padding: '16px 20px' }}><StatusBadge status={p.status} /></td>
                           <td style={{ padding: '16px 20px' }}>
                             {p.status === 'pending' && (
@@ -1056,7 +1069,7 @@ const AdminDashboard = () => {
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>{realName}</div>
                           <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>ID: {realUsername}</div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '2px' }}>{w.timestamp}</div>
+                          <div style={{ color: 'var(--accent-orange)', fontSize: '0.7rem', marginTop: '2px', fontWeight: 700 }}>{formatDateTime(w.timestamp)}</div>
                         </div>
                         <StatusBadge status={w.status} />
                       </div>
@@ -1091,7 +1104,7 @@ const AdminDashboard = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--divider)' }}>
-                      {['User', 'Amount', 'Method', 'Account', 'Account Name', 'Status', 'Actions'].map(h => (
+                      {['User', 'Amount', 'Method', 'Account', 'Time', 'Status', 'Actions'].map(h => (
                         <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>{h}</th>
                       ))}
                     </tr>
@@ -1116,8 +1129,13 @@ const AdminDashboard = () => {
                           </td>
                           <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</td>
                           <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.withdrawMethod}</td>
-                          <td style={{ padding: '16px 20px' }}><code style={{ background: 'rgba(255,255,255,0.06)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem' }}>{w.accountNumber}</code></td>
-                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</td>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <code style={{ background: 'rgba(255,255,255,0.06)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.8rem', width: 'fit-content', marginBottom: '4px' }}>{w.accountNumber}</code>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>{formatDateTime(w.timestamp)}</td>
                           <td style={{ padding: '16px 20px' }}><StatusBadge status={w.status} /></td>
                           <td style={{ padding: '16px 20px' }}>
                             <div style={{ display: 'flex', gap: '8px' }}>
