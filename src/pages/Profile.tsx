@@ -64,7 +64,7 @@ const Profile = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const { adminUsers, adminMatches } = useAdminDashboard();
+  const { adminUsers, adminMatches, stats: adminStats } = useAdminDashboard();
   const { currentUser, logout } = useAuth();
   const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
 
@@ -75,19 +75,34 @@ const Profile = () => {
 
   useEffect(() => {
     if (!currentUser) return;
-    // Count user joins from permanent collection to survive deletions
+
+    // 1. Calculate from active adminMatches (real-time/legacy)
+    const fromAdminMatches = (adminMatches || []).reduce((acc, match) => {
+      const joinedInSections = (match.innerSections || []).filter(c =>
+        currentUser && (c.participantIds || []).includes(currentUser.uid)
+      ).length;
+      const joinedInMain = (currentUser && (match.participantIds || []).includes(currentUser.uid)) ? 1 : 0;
+      return acc + joinedInSections + joinedInMain;
+    }, 0);
+
+    // 2. Listen to permanent user_joins collection
     try {
       const q = query(collection(db, 'user_joins'), where('userId', '==', currentUser.uid));
       const unsub = onSnapshot(q, (snapshot) => {
-        setTotalJoinsCount(snapshot.size);
+        // We use Math.max or Set to deduplicate if we had unique IDs,
+        // but simple sum with careful logic is often enough if we assume user_joins
+        // eventually contains everything. For now, Math.max is safest.
+        setTotalJoinsCount(Math.max(fromAdminMatches, snapshot.size));
       }, (error) => {
         console.error("Error fetching user joins in Profile:", error);
+        setTotalJoinsCount(fromAdminMatches); // Fallback
       });
       return () => unsub();
     } catch (e) {
       console.error("Query setup error in Profile:", e);
+      setTotalJoinsCount(fromAdminMatches);
     }
-  }, [currentUser]);
+  }, [currentUser, adminMatches]);
 
   const fallbackAvatar = 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4';
 
@@ -347,11 +362,11 @@ const Profile = () => {
       {/* Stats Cards */}
       {(() => {
         const totalWins = user?.totalWins || 0;
-        const totalMatches = totalJoinsCount;
+        const personalMatches = totalJoinsCount;
+        const globalCommunity = adminStats.totalJoins || 0;
 
-        const totalLosses = totalMatches >= totalWins ? totalMatches - totalWins : 0;
-        const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;
-        const lossRate = totalMatches > 0 ? Math.round((totalLosses / totalMatches) * 100) : 0;
+        const totalLosses = personalMatches >= totalWins ? personalMatches - totalWins : 0;
+        const winRate = personalMatches > 0 ? Math.round((totalWins / personalMatches) * 100) : 0;
 
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
@@ -366,11 +381,11 @@ const Profile = () => {
               },
               { 
                 label: t('totalJoiningMatch'),
-                value: totalMatches.toString(),
+                value: globalCommunity.toLocaleString(),
                 bg: 'linear-gradient(135deg, #94a3b8, #475569)', 
                 border: '#f1f5f9', 
                 text: '#f1f5f9',
-                trend: `Played ${totalMatches}`
+                trend: `Played ${personalMatches}`
               }
             ].map((stat, i) => (
               <div 
