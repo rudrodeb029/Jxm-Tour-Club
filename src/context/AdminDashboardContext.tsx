@@ -215,6 +215,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
   const [globalJoinsCount, setGlobalJoinsCount] = useState(0);
+  const [persistentCommunityCount, setPersistentCommunityCount] = useState(0);
 
   const clearWinnerCeremony = () => setActiveWinnerCeremony(null);
 
@@ -356,6 +357,13 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       setGlobalJoinsCount(snapshot.size);
     });
 
+    // Persistent Global Stats Listener
+    const unsubscribeGlobalStats = onSnapshot(doc(db, 'stats', 'global'), (docSnap) => {
+      if (docSnap.exists()) {
+        setPersistentCommunityCount(docSnap.data().totalJoins || 0);
+      }
+    });
+
     return () => {
       unsubscribeUsers();
       unsubscribePayments();
@@ -366,6 +374,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       unsubscribePaymentSettings();
       unsubscribeSupportSettings();
       unsubscribeJoins();
+      unsubscribeGlobalStats();
     };
 
   }, []);
@@ -553,17 +562,6 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const matchGroup = m.group;
       const participants = m.participantIds || [];
       
-      // Update participants totalMatches
-      for (const pId of participants) {
-        await runTransaction(db, async (t) => {
-          const userRef = doc(db, 'users', pId);
-          const uDoc = await t.get(userRef);
-          if (uDoc.exists()) {
-            t.update(userRef, { totalMatches: (uDoc.data().totalMatches || 0) + 1 });
-          }
-        });
-      }
-
       // Update winners
       for (const winner of winnersList) {
         await runTransaction(db, async (t) => {
@@ -682,6 +680,26 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
         const user = adminUsers.find(u => u.id === userId);
         if (user) {
+          // Update user's totalMatches count in Firestore immediately
+          const userRef = doc(db, 'users', userId);
+          runTransaction(db, async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            if (userDoc.exists()) {
+              transaction.update(userRef, { totalMatches: (userDoc.data().totalMatches || 0) + 1 });
+            }
+          }).catch(err => console.error("Error updating user totalMatches:", err));
+
+          // Increment global community joins counter
+          const statsRef = doc(db, 'stats', 'global');
+          runTransaction(db, async (transaction) => {
+            const statsDoc = await transaction.get(statsRef);
+            if (statsDoc.exists()) {
+              transaction.update(statsRef, { totalJoins: (statsDoc.data().totalJoins || 0) + 1 });
+            } else {
+              transaction.set(statsRef, { totalJoins: 1 });
+            }
+          }).catch(err => console.error("Error updating global joins stat:", err));
+
           await logActivity({
             type: 'join',
             userId: user.id,
@@ -722,12 +740,78 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
       // Handle match winner
       if (winnerId && winPrize > 0) {
-        // ... (existing code for updating user balance and earnings)
+        await runTransaction(db, async (t) => {
+          const userRef = doc(db, 'users', winnerId);
+          const uDoc = await t.get(userRef);
+          if (uDoc.exists()) {
+            const data = uDoc.data();
+            t.update(userRef, {
+              totalWins: (data.totalWins || 0) + 1,
+              balance: (data.balance || 0) + winPrize,
+              totalEarnings: (data.totalEarnings || 0) + winPrize
+            });
+          }
+        });
+
+        const userObj = adminUsers.find(u => u.id === winnerId);
+        if (userObj) {
+          await addDoc(collection(db, 'winners'), {
+            id: 'w' + Date.now() + Math.random(),
+            name: userObj.name,
+            avatar: userObj.avatar,
+            amount: `${winPrize}`,
+            match: `${card.name} - ${matchName}`,
+            time: new Date().toISOString(),
+            type: 'win_prize'
+          });
+
+          await logActivity({
+            type: 'win',
+            userId: winnerId,
+            userName: userObj.name,
+            userAvatar: userObj.avatar || '',
+            amount: winPrize,
+            matchName: `${m.name} (${card.name})`
+          });
+        }
       }
 
       // Handle kill prizes
       for (const kw of killWinners) {
-        // ... (existing code for kill rewards)
+        const totalKillReward = perKillReward * kw.kills;
+        if (totalKillReward > 0) {
+          await runTransaction(db, async (t) => {
+            const userRef = doc(db, 'users', kw.userId);
+            const uDoc = await t.get(userRef);
+            if (uDoc.exists()) {
+              const data = uDoc.data();
+              t.update(userRef, {
+                balance: (data.balance || 0) + totalKillReward,
+                totalEarnings: (data.totalEarnings || 0) + totalKillReward
+              });
+            }
+          });
+
+          const userObj = adminUsers.find(u => u.id === kw.userId);
+          if (userObj) {
+            await addDoc(collection(db, 'transactions'), {
+              userId: kw.userId,
+              type: 'Winning',
+              amount: totalKillReward,
+              date: new Date().toISOString(),
+              status: 'Completed'
+            });
+
+            await logActivity({
+              type: 'win',
+              userId: kw.userId,
+              userName: userObj.name,
+              userAvatar: userObj.avatar || '',
+              amount: totalKillReward,
+              matchName: `${m.name} (${card.name}) Kill Prize`
+            });
+          }
+        }
       }
 
       // Mark the card as concluded so it doesn't auto-restart
@@ -1137,13 +1221,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }, 0),
     pendingPayments: paymentRequests.filter(p => p.status === 'pending').length,
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
-    totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0),
+    totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + (p.isRaw ? p.amount : p.amount * 126), 0),
     totalWinners: winners.length,
-    totalJoins: Math.max(globalJoinsCount, adminMatches.reduce((sum, m) => {
-      const mainJoins = m.participantIds?.length || m.currentParticipants || 0;
-      const sectionJoins = (m.innerSections || []).reduce((sSum, section) => sSum + (section.participantIds?.length || 0), 0);
-      return sum + mainJoins + sectionJoins;
-    }, 0)),
+    totalJoins: Math.max(persistentCommunityCount, globalJoinsCount),
   };
 
   return (
