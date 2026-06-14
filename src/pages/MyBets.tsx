@@ -41,11 +41,13 @@ const MyBets = () => {
 
   // Combine data from user_joins collection and live adminMatches for maximum coverage
   const myJoinedEntries = (() => {
+    // We use a Map keyed by the unique join ID to deduplicate
     const entriesMap = new Map();
 
-    // 1. Add entries from the permanent user_joins collection
+    // 1. Add entries from the permanent user_joins collection (Survives deletion/reset)
     joinedEntries.forEach(entry => {
       const liveMatch = adminMatches.find(m => m.id === entry.matchId);
+
       let currentSlot = null;
       if (liveMatch) {
         if (entry.cardId) {
@@ -67,14 +69,15 @@ const MyBets = () => {
         matchCategory: entry.matchName,
         mode: entry.entryType,
         time: entry.startTime,
-        // If user is no longer in current participants list, treat it as finished/past join
+        // If user is no longer in current participants list of a live match,
+        // it means the match was reset or they were removed, so mark as finished.
         status: (liveMatch && currentSlot) ? liveMatch.status : 'finished',
         slotNumber: currentSlot || null,
         sortTime: new Date(entry.timestamp).getTime()
       });
     });
 
-    // 2. Add entries from live matches (legacy fallback for matches joined before permanent logging)
+    // 2. Add entries from currently active arena (Legacy fallback)
     adminMatches.forEach(match => {
       const joinedCards = (match.innerSections || []).filter(c =>
         currentUser && (c.participantIds || []).includes(currentUser.uid)
@@ -82,11 +85,13 @@ const MyBets = () => {
 
       if (joinedCards.length > 0) {
         joinedCards.forEach(card => {
-          const id = `${match.id}-${card.id}`;
-          if (!entriesMap.has(id)) {
+          const fallbackId = `legacy-${match.id}-${card.id}`;
+          // Only add if not already in user_joins
+          const alreadyExists = joinedEntries.some(e => e.matchId === match.id && e.cardId === card.id);
+          if (!alreadyExists) {
             const slotIndex = (card.participantIds || []).indexOf(currentUser?.uid || '');
-            entriesMap.set(id, {
-              id,
+            entriesMap.set(fallbackId, {
+              id: fallbackId,
               originalMatchId: match.id,
               name: card.name,
               matchCategory: match.name,
@@ -94,15 +99,17 @@ const MyBets = () => {
               time: card.startTime || match.time,
               status: match.status,
               slotNumber: slotIndex !== -1 ? slotIndex + 1 : null,
-              sortTime: 0 // Old ones at the bottom
+              sortTime: 0
             });
           }
         });
       } else if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
-        if (!entriesMap.has(match.id)) {
+        const fallbackId = `legacy-${match.id}`;
+        const alreadyExists = joinedEntries.some(e => e.matchId === match.id && !e.cardId);
+        if (!alreadyExists) {
           const slotIndex = (match.participantIds || []).indexOf(currentUser.uid);
-          entriesMap.set(match.id, {
-            id: match.id,
+          entriesMap.set(fallbackId, {
+            id: fallbackId,
             originalMatchId: match.id,
             name: match.name,
             matchCategory: match.group,

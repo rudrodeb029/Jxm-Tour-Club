@@ -361,6 +361,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     const unsubscribeGlobalStats = onSnapshot(doc(db, 'stats', 'global'), (docSnap) => {
       if (docSnap.exists()) {
         setPersistentCommunityCount(docSnap.data().totalJoins || 0);
+      } else {
+        // Initialize global stats doc if it doesn't exist
+        setDoc(doc(db, 'stats', 'global'), { totalJoins: 0 }, { merge: true });
       }
     });
 
@@ -1233,11 +1236,11 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + (p.isRaw ? p.amount : p.amount * 126), 0),
     totalWinners: winners.length,
-    totalJoins: Math.max(persistentCommunityCount, globalJoinsCount, adminMatches.reduce((sum, m) => {
-      const mainJoins = (m.participantIds || []).length || m.currentParticipants || 0;
-      const sectionJoins = (m.innerSections || []).reduce((sSum, section) => sSum + ((section.participantIds || []).length || 0), 0);
-      return sum + mainJoins + sectionJoins;
-    }, 0)),
+    totalJoins: Math.max(
+      persistentCommunityCount,
+      globalJoinsCount,
+      adminUsers.reduce((sum, u) => sum + (u.totalMatches || 0), 0)
+    ),
   };
 
   return (

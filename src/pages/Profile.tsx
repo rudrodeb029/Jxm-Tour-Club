@@ -362,7 +362,7 @@ const Profile = () => {
       {/* Stats Cards */}
       {(() => {
         const totalWins = user?.totalWins || 0;
-        const personalMatches = totalJoinsCount;
+        const personalMatches = user?.totalMatches || 0;
         const globalCommunity = adminStats.totalJoins || 0;
 
         const totalLosses = personalMatches >= totalWins ? personalMatches - totalWins : 0;
