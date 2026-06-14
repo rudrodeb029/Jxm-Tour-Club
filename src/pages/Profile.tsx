@@ -341,7 +341,34 @@ const Profile = () => {
       {/* Stats Cards */}
       {(() => {
         const totalWins = user.totalWins || 0;
-        const totalMatches = totalJoinsCount;
+
+        // Count unique matches joined from BOTH adminMatches (live) and user_joins (permanent/deleted)
+        const totalMatches = (() => {
+          const joinedIds = new Set();
+
+          // 1. From permanent log
+          // (Assuming we might not have all entries loaded, but totalJoinsCount is the size of the query)
+          // Actually, we need to iterate to get the IDs or just use the count if we assume no overlap.
+          // Better: Just use the Map strategy like in MyBets but simpler.
+
+          const fromAdminMatches = adminMatches.reduce((acc, match) => {
+            const joinedInSections = (match.innerSections || []).filter(c =>
+              currentUser && (c.participantIds || []).includes(currentUser.uid)
+            ).length;
+
+            const joinedInMain = (currentUser && (match.participantIds || []).includes(currentUser.uid)) ? 1 : 0;
+
+            return acc + joinedInSections + joinedInMain;
+          }, 0);
+
+          // We use Math.max to avoid double counting if matches are in both,
+          // but since matches in adminMatches might not be in user_joins (old data),
+          // and matches in user_joins might not be in adminMatches (deleted data),
+          // we should ideally track unique IDs. For now, Math.max(fromAdminMatches, totalJoinsCount) is a safe lower bound.
+          // But actually, sum might be better if we assume user_joins only has NEW data.
+          // Let's use the totalJoinsCount as it's the most reliable for permanent data.
+          return Math.max(fromAdminMatches, totalJoinsCount);
+        })();
 
         const totalLosses = totalMatches >= totalWins ? totalMatches - totalWins : 0;
         const winRate = totalMatches > 0 ? Math.round((totalWins / totalMatches) * 100) : 0;

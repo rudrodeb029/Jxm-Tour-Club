@@ -214,6 +214,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   });
 
   const [activeWinnerCeremony, setActiveWinnerCeremony] = useState<WinnerCeremony | null>(null);
+  const [globalJoinsCount, setGlobalJoinsCount] = useState(0);
 
   const clearWinnerCeremony = () => setActiveWinnerCeremony(null);
 
@@ -350,6 +351,11 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       }
     });
 
+    // Global Joins Listener
+    const unsubscribeJoins = onSnapshot(collection(db, 'user_joins'), (snapshot) => {
+      setGlobalJoinsCount(snapshot.size);
+    });
+
     return () => {
       unsubscribeUsers();
       unsubscribePayments();
@@ -359,6 +365,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       unsubscribeWinners();
       unsubscribePaymentSettings();
       unsubscribeSupportSettings();
+      unsubscribeJoins();
     };
 
   }, []);
@@ -1123,11 +1130,11 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     pendingWithdrawals: withdrawalRequests.filter(w => w.status === 'pending' || w.status === 'processing').length,
     totalRevenue: paymentRequests.filter(p => p.status === 'approved').reduce((sum, p) => sum + p.amount, 0),
     totalWinners: winners.length,
-    totalJoins: adminMatches.reduce((sum, m) => {
-      const mainJoins = m.participantIds?.length || 0;
+    totalJoins: Math.max(globalJoinsCount, adminMatches.reduce((sum, m) => {
+      const mainJoins = m.participantIds?.length || m.currentParticipants || 0;
       const sectionJoins = (m.innerSections || []).reduce((sSum, section) => sSum + (section.participantIds?.length || 0), 0);
       return sum + mainJoins + sectionJoins;
-    }, 0),
+    }, 0)),
   };
 
   return (
