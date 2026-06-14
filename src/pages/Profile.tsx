@@ -362,7 +362,22 @@ const Profile = () => {
       {/* Stats Cards */}
       {(() => {
         const totalWins = user?.totalWins || 0;
-        const personalMatches = user?.totalMatches || 0;
+
+        // 1. Get from user object directly (Permanent/Persistent)
+        // 2. Count from active matches (Real-time)
+        // 3. Count from user_joins listener (Independent)
+        const personalMatches = Math.max(
+          user?.totalMatches || 0,
+          totalJoinsCount,
+          (adminMatches || []).reduce((acc, match) => {
+            const joinedInSections = (match.innerSections || []).filter(c =>
+              currentUser && (c.participantIds || []).includes(currentUser.uid)
+            ).length;
+            const joinedInMain = (currentUser && (match.participantIds || []).includes(currentUser.uid)) ? 1 : 0;
+            return acc + joinedInSections + joinedInMain;
+          }, 0)
+        );
+
         const globalCommunity = adminStats.totalJoins || 0;
 
         const totalLosses = personalMatches >= totalWins ? personalMatches - totalWins : 0;

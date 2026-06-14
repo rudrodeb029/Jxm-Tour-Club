@@ -1239,7 +1239,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     totalJoins: Math.max(
       persistentCommunityCount,
       globalJoinsCount,
-      adminUsers.reduce((sum, u) => sum + (u.totalMatches || 0), 0)
+      adminUsers.reduce((sum, u) => sum + (u.totalMatches || 0), 0),
+      adminMatches.reduce((sum, m) => sum + (m.currentParticipants || 0), 0)
     ),
   };
 
