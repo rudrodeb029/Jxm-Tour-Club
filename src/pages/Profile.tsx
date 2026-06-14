@@ -83,10 +83,6 @@ const Profile = () => {
     return () => unsub();
   }, [currentUser]);
 
-
-  // Sync with Admin Dashboard user data
-  const adminUser = adminUsers.find(u => u.id === displayUserId);
-
   const fallbackAvatar = 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4';
 
   const [user, setUser] = useState(() => ({
