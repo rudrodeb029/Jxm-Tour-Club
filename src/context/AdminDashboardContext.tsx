@@ -683,37 +683,35 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           startTime: card?.startTime || m.time || ''
         });
 
-        const user = adminUsers.find(u => u.id === userId);
-        if (user) {
-          // Update user's totalMatches count in Firestore immediately
-          const userRef = doc(db, 'users', userId);
-          runTransaction(db, async (transaction) => {
-            const userDoc = await transaction.get(userRef);
-            if (userDoc.exists()) {
-              transaction.update(userRef, { totalMatches: (userDoc.data().totalMatches || 0) + 1 });
-            }
-          }).catch(err => console.error("Error updating user totalMatches:", err));
+        // Update user's totalMatches count in Firestore immediately
+        const userRef = doc(db, 'users', userId);
+        runTransaction(db, async (transaction) => {
+          const userDoc = await transaction.get(userRef);
+          if (userDoc.exists()) {
+            transaction.update(userRef, { totalMatches: (userDoc.data().totalMatches || 0) + 1 });
+          }
+        }).catch(err => console.error("Error updating user totalMatches:", err));
 
-          // Increment global community joins counter
-          const statsRef = doc(db, 'stats', 'global');
-          runTransaction(db, async (transaction) => {
-            const statsDoc = await transaction.get(statsRef);
-            if (statsDoc.exists()) {
-              transaction.update(statsRef, { totalJoins: (statsDoc.data().totalJoins || 0) + 1 });
-            } else {
-              transaction.set(statsRef, { totalJoins: 1 });
-            }
-          }).catch(err => console.error("Error updating global joins stat:", err));
+        // Increment global community joins counter
+        const statsRef = doc(db, 'stats', 'global');
+        runTransaction(db, async (transaction) => {
+          const statsDoc = await transaction.get(statsRef);
+          if (statsDoc.exists()) {
+            transaction.update(statsRef, { totalJoins: (statsDoc.data().totalJoins || 0) + 1 });
+          } else {
+            transaction.set(statsRef, { totalJoins: 1 });
+          }
+        }).catch(err => console.error("Error updating global joins stat:", err));
 
-          await logActivity({
-            type: 'join',
-            userId: user.id,
-            userName: user.name,
-            userAvatar: user.avatar,
-            amount: joinEntryFee,
-            matchName: m.name
-          });
-        }
+        const userObj = adminUsers.find(u => u.id === userId);
+        await logActivity({
+          type: 'join',
+          userId: userId,
+          userName: userObj?.name || 'A Player',
+          userAvatar: userObj?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`,
+          amount: joinEntryFee,
+          matchName: m.name
+        });
       }
     } catch (e) {
       console.error('Error adding participant', e);
@@ -1239,7 +1237,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     totalJoins: Math.max(
       persistentCommunityCount,
       globalJoinsCount,
-      adminUsers.reduce((sum, u) => sum + (u.totalMatches || 0), 0),
+      winners.length,
       adminMatches.reduce((sum, m) => sum + (m.currentParticipants || 0), 0)
     ),
   };

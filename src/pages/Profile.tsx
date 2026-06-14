@@ -363,9 +363,9 @@ const Profile = () => {
       {(() => {
         const totalWins = user?.totalWins || 0;
 
-        // 1. Get from user object directly (Permanent/Persistent)
-        // 2. Count from active matches (Real-time)
-        // 3. Count from user_joins listener (Independent)
+        // 1. Get from user object directly (Permanent/Persistent Profile doc)
+        // 2. Count from user_joins collection listener (Backup)
+        // 3. Count from active matches arena list (Real-time live)
         const personalMatches = Math.max(
           user?.totalMatches || 0,
           totalJoinsCount,
