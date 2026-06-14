@@ -22,10 +22,10 @@ const MyBets = () => {
   useEffect(() => {
     if (!currentUser) return;
 
+    // Use a simple query first to avoid index requirements
     const q = query(
       collection(db, 'user_joins'),
-      where('userId', '==', currentUser.uid),
-      orderBy('timestamp', 'desc')
+      where('userId', '==', currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -39,47 +39,94 @@ const MyBets = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
-  // Merge entries from Firebase with local slot numbers if possible,
-  // but primary source is now 'user_joins' collection to survive deletion.
-  const myJoinedEntries = joinedEntries.map(entry => {
-    const liveMatch = adminMatches.find(m => m.id === entry.matchId);
+  // Combine data from user_joins collection and live adminMatches for maximum coverage
+  const myJoinedEntries = (() => {
+    const entriesMap = new Map();
 
-    // Attempt to find current slot number if match still exists
-    let currentSlot = null;
-    if (liveMatch) {
-      if (entry.cardId) {
-        const card = (liveMatch.innerSections || []).find(c => c.id === entry.cardId);
-        if (card) {
-          const idx = (card.participantIds || []).indexOf(currentUser?.uid || '');
+    // 1. Add entries from the permanent user_joins collection
+    joinedEntries.forEach(entry => {
+      const liveMatch = adminMatches.find(m => m.id === entry.matchId);
+      let currentSlot = null;
+      if (liveMatch) {
+        if (entry.cardId) {
+          const card = (liveMatch.innerSections || []).find(c => c.id === entry.cardId);
+          if (card) {
+            const idx = (card.participantIds || []).indexOf(currentUser?.uid || '');
+            if (idx !== -1) currentSlot = idx + 1;
+          }
+        } else {
+          const idx = (liveMatch.participantIds || []).indexOf(currentUser?.uid || '');
           if (idx !== -1) currentSlot = idx + 1;
         }
-      } else {
-        const idx = (liveMatch.participantIds || []).indexOf(currentUser?.uid || '');
-        if (idx !== -1) currentSlot = idx + 1;
       }
-    }
 
-    return {
-      ...entry,
-      originalMatchId: entry.matchId,
-      name: entry.cardName || entry.matchName,
-      matchCategory: entry.matchName,
-      mode: entry.entryType,
-      time: entry.startTime,
-      status: liveMatch ? liveMatch.status : 'finished', // Default to finished if match deleted
-      slotNumber: currentSlot || null // We might not have slot history if match deleted, but user requested data retention.
-    };
-  }).sort((a, b) => {
-    // Sort status: Live (0), Upcoming (1), Finished (2)
-    const rank = { 'live': 0, 'upcoming': 1, 'finished': 2 };
-    const statusDiff = (rank[a.status as keyof typeof rank] ?? 2) - (rank[b.status as keyof typeof rank] ?? 2);
-    if (statusDiff !== 0) return statusDiff;
-    // Secondary sort by timestamp desc
-    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-  });
+      entriesMap.set(entry.id, {
+        ...entry,
+        originalMatchId: entry.matchId,
+        name: entry.cardName || entry.matchName,
+        matchCategory: entry.matchName,
+        mode: entry.entryType,
+        time: entry.startTime,
+        status: liveMatch ? liveMatch.status : 'finished',
+        slotNumber: currentSlot || null,
+        sortTime: new Date(entry.timestamp).getTime()
+      });
+    });
+
+    // 2. Add entries from live matches (legacy fallback for matches joined before permanent logging)
+    adminMatches.forEach(match => {
+      const joinedCards = (match.innerSections || []).filter(c =>
+        currentUser && (c.participantIds || []).includes(currentUser.uid)
+      );
+
+      if (joinedCards.length > 0) {
+        joinedCards.forEach(card => {
+          const id = `${match.id}-${card.id}`;
+          if (!entriesMap.has(id)) {
+            const slotIndex = (card.participantIds || []).indexOf(currentUser?.uid || '');
+            entriesMap.set(id, {
+              id,
+              originalMatchId: match.id,
+              name: card.name,
+              matchCategory: match.name,
+              mode: card.entryType,
+              time: card.startTime || match.time,
+              status: match.status,
+              slotNumber: slotIndex !== -1 ? slotIndex + 1 : null,
+              sortTime: 0 // Old ones at the bottom
+            });
+          }
+        });
+      } else if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
+        if (!entriesMap.has(match.id)) {
+          const slotIndex = (match.participantIds || []).indexOf(currentUser.uid);
+          entriesMap.set(match.id, {
+            id: match.id,
+            originalMatchId: match.id,
+            name: match.name,
+            matchCategory: match.group,
+            mode: match.group,
+            time: match.time,
+            status: match.status,
+            slotNumber: slotIndex !== -1 ? slotIndex + 1 : null,
+            sortTime: 0
+          });
+        }
+      }
+    });
+
+    return Array.from(entriesMap.values()).sort((a, b) => {
+      const rank = { 'live': 0, 'upcoming': 1, 'finished': 2 };
+      const statusDiff = (rank[a.status as keyof typeof rank] ?? 2) - (rank[b.status as keyof typeof rank] ?? 2);
+      if (statusDiff !== 0) return statusDiff;
+      return b.sortTime - a.sortTime;
+    });
+  })();
   
-  // Filter transactions
-  const historyTransactions = transactions.filter(tx => ['Deposit', 'Withdraw', 'Withdrawal'].includes(tx.type));
+  // Show ALL relevant transaction types in history
+  const historyTransactions = transactions.filter(tx =>
+    ['Deposit', 'Withdraw', 'Withdrawal', 'Match Join', 'Winning', 'Refund'].includes(tx.type)
+  );
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative', background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
