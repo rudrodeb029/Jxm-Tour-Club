@@ -104,7 +104,7 @@ const Activity = () => {
               const userJoins = personalJoins.map(j => ({
                 id: j.id,
                 type: 'Join' as const,
-                amount: -j.entryFee,
+                amount: -(Number(j.entryFee) || 0),
                 date: j.timestamp,
                 status: 'Completed' as const,
                 matchName: j.cardName || j.matchName
@@ -116,7 +116,7 @@ const Activity = () => {
                 .map(act => ({
                    id: act.id,
                    type: (act.type.charAt(0).toUpperCase() + act.type.slice(1)) as any,
-                   amount: act.type === 'win' ? act.amount : (act.amount ? -act.amount : 0),
+                   amount: act.type === 'win' ? (Number(act.amount) || 0) : (act.amount ? -Number(act.amount) : 0),
                    date: act.timestamp,
                    status: (act.status || 'Completed').charAt(0).toUpperCase() + (act.status || 'Completed').slice(1) as any,
                    matchName: act.matchName

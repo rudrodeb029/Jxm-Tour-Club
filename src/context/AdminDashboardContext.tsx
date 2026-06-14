@@ -656,6 +656,15 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
         // Record Join in a permanent collection so it survives match/card deletion
         const card = cardId ? (m.innerSections || []).find(c => c.id === cardId) : null;
+
+        let joinEntryFee = 0;
+        if (card && card.entryFee !== undefined) {
+          joinEntryFee = Number(card.entryFee);
+        } else if (m.bids && m.bids.length > 0) {
+          const firstBid = m.bids[0];
+          joinEntryFee = typeof firstBid === 'number' ? firstBid : parseFloat(String(firstBid).replace(/[^0-9.-]+/g, '')) || 0;
+        }
+
         await addDoc(collection(db, 'user_joins'), {
           userId,
           matchId,
@@ -663,7 +672,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           matchName: m.name,
           cardName: card?.name || m.name,
           entryType: card?.entryType || m.group || 'Solo',
-          entryFee: card?.entryFee || (m.bids && m.bids.length > 0 ? parseFloat(m.bids[0].replace(/[^0-9.-]+/g, '')) : 0),
+          entryFee: joinEntryFee,
           gameId: gameId || '',
           timestamp: new Date().toISOString(),
           status: 'joined',
