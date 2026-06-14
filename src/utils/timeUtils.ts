@@ -39,9 +39,16 @@ export const to24hTime = (timeStr: string | undefined) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 };
 
-export const getTargetDateTime = (startTimeStr: string, now = new Date()): Date => {
+export const getTargetDateTime = (startTimeStr: string, now = new Date(), startDateStr?: string): Date => {
   const { hours, minutes, seconds } = parseTime(startTimeStr);
   
+  if (startDateStr) {
+    // If explicit startDate is provided (e.g. "2026-06-12")
+    const [year, month, day] = startDateStr.split('-').map(Number);
+    const target = new Date(year, month - 1, day, hours, minutes, seconds, 0);
+    return target;
+  }
+
   // Try today
   const todayTarget = new Date(now);
   todayTarget.setHours(hours, minutes, seconds, 0);
@@ -76,7 +83,7 @@ export const getTargetDateTime = (startTimeStr: string, now = new Date()): Date 
 };
 
 export const getCardStatus = (
-  card: { startTime?: string; liveDuration?: number; isConcluded?: boolean } | undefined,
+  card: { startTime?: string; startDate?: string; liveDuration?: number; isConcluded?: boolean } | undefined,
   matchStatus: string | undefined
 ): 'live' | 'upcoming' | 'finished' | 'idle' => {
   if (!card) return 'idle';
@@ -86,7 +93,7 @@ export const getCardStatus = (
 
   try {
     const nowTime = new Date();
-    const targetTime = getTargetDateTime(card.startTime, nowTime);
+    const targetTime = getTargetDateTime(card.startTime, nowTime, card.startDate);
     const diff = targetTime.getTime() - nowTime.getTime();
 
     if (diff <= 0) {

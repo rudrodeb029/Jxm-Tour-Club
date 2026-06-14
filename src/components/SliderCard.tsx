@@ -14,6 +14,7 @@ interface TeamInfo {
   entryFee?: number;
   winPrize?: number;
   startTime?: string;
+  startDate?: string;
   liveDuration?: number;
   roomDetailsRevealTime?: number;
 }
@@ -76,7 +77,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     
     if (cardStatus === 'upcoming') {
       const nowTime = new Date(now);
-      const targetTime = getTargetDateTime(card.startTime, nowTime);
+      const targetTime = getTargetDateTime(card.startTime, nowTime, card.startDate);
       let diff = targetTime.getTime() - nowTime.getTime();
       if (diff <= 0) {
         const tomorrow = new Date(targetTime);
@@ -99,7 +100,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       const timeStr = card.startTime || time || '';
       if (timeStr) {
         const nowTime = new Date(now);
-        const targetTime = getTargetDateTime(timeStr, nowTime);
+        const targetTime = getTargetDateTime(timeStr, nowTime, card.startDate);
         const elapsedMs = nowTime.getTime() - targetTime.getTime();
         const liveDurationMins = Number(card.liveDuration) || 60;
         const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
@@ -180,7 +181,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       const timeStr = activeLiveCard.startTime || time || '';
       if (timeStr) {
         const nowTime = new Date(now);
-        const targetTime = getTargetDateTime(timeStr, nowTime);
+        const targetTime = getTargetDateTime(timeStr, nowTime, activeLiveCard.startDate);
         const elapsedMs = nowTime.getTime() - targetTime.getTime();
         const liveDurationMins = Number(activeLiveCard.liveDuration) || 60;
         const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;

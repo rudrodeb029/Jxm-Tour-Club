@@ -234,7 +234,7 @@ const MatchDetails = () => {
                   
                   if (card.startTime && cardStatus === 'upcoming') {
                     const nowTime = new Date(now);
-                    const targetTime = getTargetDateTime(card.startTime, nowTime);
+                    const targetTime = getTargetDateTime(card.startTime, nowTime, card.startDate);
                     let diff = targetTime.getTime() - nowTime.getTime();
                     if (diff <= 0) {
                       const tomorrow = new Date(targetTime);
@@ -249,7 +249,7 @@ const MatchDetails = () => {
                     const timeStr = card.startTime || match.time || '';
                     if (timeStr) {
                       const nowTime = new Date(now);
-                      const targetTime = getTargetDateTime(timeStr, nowTime);
+                      const targetTime = getTargetDateTime(timeStr, nowTime, card.startDate);
                       const elapsedMs = nowTime.getTime() - targetTime.getTime();
                       const liveDurationMins = Number(card.liveDuration) || 60;
                       const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
@@ -319,6 +319,12 @@ const MatchDetails = () => {
                   <span>{t('entryFee')}</span>
                   <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(card.entryFee || entryFee)}</span>
                 </div>
+                {card.startDate && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                    <span>Date</span>
+                    <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{new Date(card.startDate).toLocaleDateString()}</span>
+                  </div>
+                )}
               </div>
 
               {match.status !== 'finished' && (

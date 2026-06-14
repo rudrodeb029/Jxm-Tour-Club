@@ -27,6 +27,7 @@ const InnerSectionsTab = () => {
   const defaultEmptyCard: Partial<Team> = {
     name: '', logo: '', color: '#DC2626', entryType: 'Solo', mainCategory: 'Full Map Match',
     entryFee: '' as any, winPrize: '' as any, perKill: '' as any, map: '', version: '', startTime: '',
+    startDate: new Date().toISOString().split('T')[0],
     liveDuration: '' as any, gameId: '', gamePassword: '', roomDetailsRevealTime: '' as any, maxParticipants: '' as any, rules: [],
     percentage: '50%', kills: 0, damage: 0, headshots: 0, rank: 0
   };
@@ -307,8 +308,9 @@ const InnerSectionsTab = () => {
                 </div>
 
                 {/* Extra Info Row */}
-                {(card.startTime || card.map) && (
-                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {(card.startTime || card.startDate || card.map) && (
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', fontSize: '0.75rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                    {card.startDate && <span>📅 {new Date(card.startDate).toLocaleDateString()}</span>}
                     {card.startTime && <span>⏰ {formatTime(card.startTime)}</span>}
                     {card.map && <span>🗺️ {card.map}</span>}
                     {card.version && <span>📱 {card.version}</span>}
@@ -445,6 +447,12 @@ const InnerSectionsTab = () => {
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Start Time</label>
                   <input type="time" step="1" value={to24hTime(cardForm.startTime) || ''} onChange={e => setCardForm({...cardForm, startTime: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
                 </div>
+                <div>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Start Date</label>
+                  <input type="date" value={cardForm.startDate || ''} onChange={e => setCardForm({...cardForm, startDate: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'var(--input-bg)', border: '1px solid var(--glass-border)', color: 'white', marginTop: '4px' }} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Live Duration (mins)</label>
                   <input 

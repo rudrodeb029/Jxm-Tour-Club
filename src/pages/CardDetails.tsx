@@ -111,7 +111,7 @@ const CardDetails = () => {
   const getTimeLeft = () => {
     if (!card.startTime || cardStatus !== 'upcoming') return '';
     const nowTime = new Date(now);
-    const targetTime = getTargetDateTime(card.startTime, nowTime);
+    const targetTime = getTargetDateTime(card.startTime, nowTime, card.startDate);
     let diff = targetTime.getTime() - nowTime.getTime();
     if (diff <= 0) {
       // Fallback in case of tiny delay/offset issues, though getTargetDateTime handles date rolling
@@ -129,7 +129,7 @@ const CardDetails = () => {
     const timeStr = card.startTime || match.time || '';
     if (!timeStr || cardStatus !== 'live') return t('live').toUpperCase();
     const nowTime = new Date(now);
-    const targetTime = getTargetDateTime(timeStr, nowTime);
+    const targetTime = getTargetDateTime(timeStr, nowTime, card.startDate);
     const elapsedMs = nowTime.getTime() - targetTime.getTime();
     const liveDurationMins = Number(card.liveDuration) || 60;
     const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
@@ -151,7 +151,7 @@ const CardDetails = () => {
     const targetTimeString = card.startTime || match.time;
     if (targetTimeString) {
       const nowTime = new Date();
-      const targetTime = getTargetDateTime(targetTimeString, nowTime);
+      const targetTime = getTargetDateTime(targetTimeString, nowTime, card.startDate);
       const diffMinutes = (targetTime.getTime() - nowTime.getTime()) / (1000 * 60);
       if (diffMinutes <= dynamicRevealTime && diffMinutes >= -120) return true;
     }
@@ -586,7 +586,7 @@ const CardDetails = () => {
                 </div>
              )}
              {[
-              { label: t('startTime'), value: formatTime(card.startTime) || 'N/A', icon: <Clock size={16} />, gradient: 'linear-gradient(135deg, #115e59, #134e4a)', border: '#2dd4bf', textColor: '#2dd4bf' },
+              { label: t('startTime'), value: (card.startDate ? new Date(card.startDate).toLocaleDateString() + ' ' : '') + (formatTime(card.startTime) || 'N/A'), icon: <Clock size={16} />, gradient: 'linear-gradient(135deg, #115e59, #134e4a)', border: '#2dd4bf', textColor: '#2dd4bf' },
               { label: t('winPrize'), value: formatCurrency(dynamicPrizePool), icon: <Trophy size={16} />, gradient: 'linear-gradient(135deg, #0d5f66, #053338)', border: '#fde047', textColor: '#fde047' },
               { label: t('entry') + ' TYPE', value: dynamicEntryType, icon: <Users size={16} />, gradient: 'linear-gradient(135deg, #d4af37, #8b6b17)', border: '#fef08a', textColor: '#fef08a' },
               { label: t('entryFee'), value: formatCurrency(dynamicEntryFee), icon: <Coins size={16} />, gradient: 'linear-gradient(135deg, #94a3b8, #475569)', border: '#f1f5f9', textColor: '#f1f5f9' },

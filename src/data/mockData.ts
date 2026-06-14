@@ -17,6 +17,7 @@ export interface Team {
   map?: string;
   version?: string;
   startTime?: string;
+  startDate?: string;
   liveDuration?: number;
   rules?: string[];
   gameId?: string;

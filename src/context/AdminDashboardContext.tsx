@@ -740,8 +740,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         const innerSections = (m.innerSections || []).map(c => {
           if (c.id === cardId) {
             const updated = { ...c, ...cardUpdates };
-            // If start time was changed, reset conclusion state
-            if (cardUpdates.startTime && cardUpdates.startTime !== c.startTime) {
+            // If start time or date was changed, reset conclusion state
+            if ((cardUpdates.startTime && cardUpdates.startTime !== c.startTime) ||
+                (cardUpdates.startDate && cardUpdates.startDate !== c.startDate)) {
               updated.isConcluded = false;
             }
             return updated;
