@@ -1118,7 +1118,7 @@ const AdminDashboard = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--divider)' }}>
-                      {['User', 'Amount', 'Method', 'Account', 'Time', 'Status', 'Actions'].map(h => (
+                      {['User', 'Amount', 'Method', 'Account', 'Account Name', 'Status', 'Time', 'Actions'].map(h => (
                         <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>{h}</th>
                       ))}
                     </tr>
@@ -1144,13 +1144,11 @@ const AdminDashboard = () => {
                           <td style={{ padding: '16px 20px', fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</td>
                           <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>{w.withdrawMethod}</td>
                           <td style={{ padding: '16px 20px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <code style={{ background: 'rgba(255,255,255,0.06)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.8rem', width: 'fit-content', marginBottom: '4px' }}>{w.accountNumber}</code>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</span>
-                            </div>
+                            <code style={{ background: 'rgba(255,255,255,0.06)', padding: '4px 8px', borderRadius: '8px', fontSize: '0.8rem' }}>{w.accountNumber}</code>
                           </td>
-                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>{formatDateTime(w.timestamp)}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontWeight: 500 }}>{w.accountName}</td>
                           <td style={{ padding: '16px 20px' }}><StatusBadge status={w.status} /></td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>{formatDateTime(w.timestamp)}</td>
                           <td style={{ padding: '16px 20px' }}>
                             <div style={{ display: 'flex', gap: '8px' }}>
                               {w.status === 'pending' && <Btn small variant="primary" onClick={() => processWithdrawal(w.id)}>Process</Btn>}
