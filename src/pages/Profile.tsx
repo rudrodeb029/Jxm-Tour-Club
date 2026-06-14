@@ -121,9 +121,9 @@ const Profile = () => {
   });
 
   const [editData, setEditData] = useState({ 
-    name: user.name, 
-    username: user.username, 
-    avatar: user.avatar || fallbackAvatar 
+    name: user?.name || 'User',
+    username: user?.username || '@user',
+    avatar: user?.avatar || fallbackAvatar
   });
 
   // Listen to Firestore profile updates in real-time
@@ -133,17 +133,19 @@ const Profile = () => {
     const unsubscribe = onSnapshot(doc(db, 'users', currentUser.uid), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setUser(prev => {
-          const newState = {
-            ...prev,
-            name: data.name || currentUser.displayName || prev.name,
-            username: data.username || prev.username,
-            avatar: data.avatar || currentUser.photoURL || prev.avatar || fallbackAvatar,
-            totalWins: data.totalWins || 0,
-            totalMatches: data.totalMatches || 0
-          };
-          setEditData({ name: newState.name, username: newState.username, avatar: newState.avatar });
-          return newState;
+        const updatedUser = {
+          id: currentUser.uid,
+          name: data.name || currentUser.displayName || 'User',
+          username: data.username || '',
+          avatar: data.avatar || currentUser.photoURL || fallbackAvatar,
+          totalWins: data.totalWins || 0,
+          totalMatches: data.totalMatches || 0
+        };
+        setUser(prev => ({ ...prev, ...updatedUser }));
+        setEditData({
+          name: updatedUser.name,
+          username: updatedUser.username,
+          avatar: updatedUser.avatar
         });
       }
     }, (error) => {
