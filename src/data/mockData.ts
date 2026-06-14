@@ -204,6 +204,12 @@ export interface Winner {
   amount: string;
   match: string;
   time: string;
+  userId?: string;
+  kills?: number;
+  type?: string;
+  matchName?: string;
+  date?: string;
+  prize?: string;
 }
 
 export const winners: Winner[] = [

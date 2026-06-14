@@ -590,7 +590,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             amount: `${winner.reward}`,
             match: `${matchGroup} - ${matchName}`,
             time: new Date().toISOString(),
-            type: 'win_prize'
+            type: 'win_prize',
+            userId: winner.userId,
+            matchName: matchName,
+            date: new Date().toISOString(),
+            prize: `${winner.reward}`,
+            kills: 0
           });
         }
         
@@ -668,6 +673,13 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
            }
         }
 
+        let calculatedSlot = 1;
+        if (cardId && card) {
+          calculatedSlot = (card.participantIds || []).length + 1;
+        } else {
+          calculatedSlot = (m.participantIds || []).length + 1;
+        }
+
         await addDoc(collection(db, 'user_joins'), {
           userId,
           matchId,
@@ -680,7 +692,8 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           timestamp: new Date().toISOString(),
           status: 'joined',
           startDate: card?.startDate || '',
-          startTime: card?.startTime || m.time || ''
+          startTime: card?.startTime || m.time || '',
+          slotNumber: calculatedSlot
         });
 
         // Update user's totalMatches count in Firestore immediately
@@ -766,7 +779,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             amount: `${winPrize}`,
             match: `${card.name} - ${matchName}`,
             time: new Date().toISOString(),
-            type: 'win_prize'
+            type: 'win_prize',
+            userId: winnerId,
+            matchName: matchName,
+            date: new Date().toISOString(),
+            prize: `${winPrize}`,
+            kills: 0
           });
 
           await logActivity({
@@ -798,6 +816,21 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
           const userObj = adminUsers.find(u => u.id === kw.userId);
           if (userObj) {
+            await addDoc(collection(db, 'winners'), {
+              id: 'w' + Date.now() + Math.random(),
+              name: userObj.name,
+              avatar: userObj.avatar,
+              amount: `${totalKillReward}`,
+              match: `${card.name} - ${matchName} (Kill Reward)`,
+              time: new Date().toISOString(),
+              type: 'kill_reward',
+              userId: kw.userId,
+              kills: kw.kills,
+              matchName: matchName,
+              date: new Date().toISOString(),
+              prize: `${totalKillReward}`
+            });
+
             await addDoc(collection(db, 'transactions'), {
               userId: kw.userId,
               type: 'Winning',

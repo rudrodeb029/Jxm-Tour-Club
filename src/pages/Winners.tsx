@@ -63,7 +63,14 @@ const Winners = () => {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{winner.name}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '2px', fontWeight: 600 }}>
-                <div style={{ color: '#FBBF24', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{winner.match || winner.matchName}</div>
+                <div style={{ color: '#FBBF24', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{winner.match || winner.matchName}</span>
+                  {winner.kills !== undefined && winner.kills > 0 && (
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(239, 68, 68, 0.15)', color: '#EF4444', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                      💀 {winner.kills} Kills
+                    </span>
+                  )}
+                </div>
                 <div style={{ fontSize: '0.65rem', opacity: 0.7 }}>{winner.time || winner.date}</div>
               </div>
             </div>

@@ -75,9 +75,15 @@ const Participants = () => {
               </div>
             </div>
 
-            <div style={{ textAlign: 'right', background: 'rgba(56, 189, 248, 0.1)', padding: '12px 16px', borderRadius: '16px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', lineHeight: 1 }}>{player.totalMatches}</div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.05em' }}>{t('played')}</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ textAlign: 'center', background: 'rgba(56, 189, 248, 0.1)', padding: '10px 12px', borderRadius: '16px', border: '1px solid rgba(56, 189, 248, 0.2)', minWidth: '60px' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#38BDF8', lineHeight: 1 }}>{player.totalMatches}</div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.05em' }}>{t('played')}</div>
+              </div>
+              <div style={{ textAlign: 'center', background: 'rgba(251, 191, 36, 0.1)', padding: '10px 12px', borderRadius: '16px', border: '1px solid rgba(251, 191, 36, 0.2)', minWidth: '60px' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FBBF24', lineHeight: 1 }}>{player.totalWins || 0}</div>
+                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '4px', letterSpacing: '0.05em' }}>{t('won')}</div>
+              </div>
             </div>
           </div>
         ))}

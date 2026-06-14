@@ -92,7 +92,7 @@ const Profile = () => {
         // We use Math.max or Set to deduplicate if we had unique IDs,
         // but simple sum with careful logic is often enough if we assume user_joins
         // eventually contains everything. For now, Math.max is safest.
-        setTotalJoinsCount(Math.max(fromAdminMatches, snapshot.size));
+        setTotalJoinsCount(Math.max(fromAdminMatches, snapshot.size, user?.totalMatches || 0));
       }, (error) => {
         console.error("Error fetching user joins in Profile:", error);
         setTotalJoinsCount(fromAdminMatches); // Fallback

@@ -72,7 +72,7 @@ const MyBets = () => {
         // If user is no longer in current participants list of a live match,
         // it means the match was reset or they were removed, so mark as finished.
         status: (liveMatch && currentSlot) ? liveMatch.status : 'finished',
-        slotNumber: currentSlot || null,
+        slotNumber: currentSlot || entry.slotNumber || null,
         sortTime: new Date(entry.timestamp).getTime()
       });
     });
@@ -165,7 +165,12 @@ const MyBets = () => {
           return (
             <div 
               key={entry.id}
-              onClick={() => navigate(`/match/${entry.originalMatchId}`)}
+              onClick={() => {
+                const matchExists = adminMatches.some(m => m.id === entry.originalMatchId);
+                if (matchExists) {
+                  navigate(`/match/${entry.originalMatchId}`);
+                }
+              }}
               style={{ 
                 background: 'var(--glass-bg)', 
                 borderRadius: '16px', 
