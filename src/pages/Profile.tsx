@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import ModalPortal from '../components/ModalPortal';
 import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import { db, storage } from '../firebase';
-import { doc, updateDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, onSnapshot, query, collection, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import { 
@@ -85,15 +85,19 @@ const Profile = () => {
 
   const fallbackAvatar = 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4';
 
-  const [user, setUser] = useState(() => ({
-    ...currentUser,
-    id: displayUserId,
-    name: localStorage.getItem('userName') || adminUser?.name || currentUser?.displayName || '',
-    username: localStorage.getItem('userUsername') || adminUser?.username || '',
-    avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser?.photoURL || fallbackAvatar,
-    totalWins: adminUser?.totalWins || 0,
-    totalMatches: adminUser?.totalMatches || 0
-  }));
+  const [user, setUser] = useState(() => {
+    const fallback = { name: 'User', username: '@user', avatar: fallbackAvatar, totalWins: 0, totalMatches: 0 };
+    if (!currentUser) return fallback;
+    return {
+      ...currentUser,
+      id: displayUserId,
+      name: localStorage.getItem('userName') || adminUser?.name || currentUser?.displayName || 'User',
+      username: localStorage.getItem('userUsername') || adminUser?.username || '',
+      avatar: localStorage.getItem('userAvatar') || adminUser?.avatar || currentUser?.photoURL || fallbackAvatar,
+      totalWins: adminUser?.totalWins || 0,
+      totalMatches: adminUser?.totalMatches || 0
+    };
+  });
 
   const [editData, setEditData] = useState({ 
     name: user.name, 
@@ -291,7 +295,7 @@ const Profile = () => {
             background: 'linear-gradient(135deg, #F96F2E 0%, #F53844 100%)',
             boxShadow: '0 10px 25px rgba(249, 111, 46, 0.3)'
           }}>
-            <img src={user.avatar} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--modal-bg)' }} />
+            <img src={user?.avatar || fallbackAvatar} alt="Profile" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--modal-bg)' }} />
           </div>
           <button 
             onClick={() => setShowEditProfile(true)}
@@ -318,7 +322,7 @@ const Profile = () => {
             <Edit2 size={18} />
           </button>
         </div>
-        <h2 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px 0', letterSpacing: '-0.02em' }}>{user.name}</h2>
+        <h2 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px 0', letterSpacing: '-0.02em' }}>{user?.name || 'User'}</h2>
         <div style={{ 
           background: 'var(--glass-bg)', 
           padding: '4px 12px', 
@@ -328,7 +332,7 @@ const Profile = () => {
           alignItems: 'center',
           gap: '6px'
         }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{user.username.startsWith('@') ? user.username : `@${user.username}`}</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>{user?.username ? (user.username.startsWith('@') ? user.username : `@${user.username}`) : '@user'}</span>
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
         </div>
       </div>

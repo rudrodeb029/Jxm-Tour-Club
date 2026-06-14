@@ -47,16 +47,16 @@ const MatchDetails = () => {
     adminUsers.find(u => u.id === pid)
   ).filter(Boolean);
 
-  const entryFee = (match.bids && match.bids.length > 0)
+  const entryFee = (match?.bids && match.bids.length > 0)
     ? (typeof match.bids[0] === 'string' ? parseFloat(match.bids[0].replace(/[^0-9.-]+/g, '')) : Number(match.bids[0])) || 10
     : 10;
-  const count = (match.currentParticipants || 0) > 0 ? match.currentParticipants : 12;
-  const cardPrizeSum = ((match.team1?.winPrize || 0) + (match.team2?.winPrize || 0) + (match.team3?.winPrize || 0));
-  const totalPrizePool = cardPrizeSum > 0 ? cardPrizeSum : (match.prizePool !== undefined && match.prizePool > 0 ? match.prizePool : count * entryFee * 1.8);
+  const count = (match?.currentParticipants || 0) > 0 ? match.currentParticipants : 12;
+  const cardPrizeSum = ((match?.team1?.winPrize || 0) + (match?.team2?.winPrize || 0) + (match?.team3?.winPrize || 0));
+  const totalPrizePool = cardPrizeSum > 0 ? cardPrizeSum : (match?.prizePool !== undefined && match.prizePool > 0 ? match.prizePool : count * entryFee * 1.8);
   
-  const firstPrizeValue = match.firstPrize !== undefined && match.firstPrize > 0 ? match.firstPrize : totalPrizePool * 0.5;
-  const secondPrizeValue = match.secondPrize !== undefined && match.secondPrize > 0 ? match.secondPrize : totalPrizePool * 0.3;
-  const thirdPrizeValue = match.thirdPrize !== undefined && match.thirdPrize > 0 ? match.thirdPrize : totalPrizePool * 0.2;
+  const firstPrizeValue = match?.firstPrize !== undefined && match.firstPrize > 0 ? match.firstPrize : totalPrizePool * 0.5;
+  const secondPrizeValue = match?.secondPrize !== undefined && match.secondPrize > 0 ? match.secondPrize : totalPrizePool * 0.3;
+  const thirdPrizeValue = match?.thirdPrize !== undefined && match.thirdPrize > 0 ? match.thirdPrize : totalPrizePool * 0.2;
 
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const [isBetModalOpen, setIsBetModalOpen] = useState(false);
@@ -152,218 +152,225 @@ const MatchDetails = () => {
 
       {/* Match Overview: Two Team Cards */}
       <div style={{ padding: '0 12px', marginBottom: '32px' }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr',
-          gap: '12px'
-        }}>
-          {cards.map((card) => (
-            <div 
-              key={card.id}
-              onClick={() => {
-                navigate(`/match/${match.id}/card/${card.id}`);
-              }}
-              className="hover-scale"
-              style={{
-                background: 'var(--glass-bg)',
-                border: `1px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-                borderRadius: '20px',
-                padding: '14px 12px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                boxShadow: selectedTeam === card.id 
-                  ? `0 10px 25px ${card.color}22, 0 0 10px ${card.color}15` 
-                  : 'var(--card-shadow)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                textAlign: 'center',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-            >
-              {/* 3D Glow Backlight */}
-              <div style={{
-                position: 'absolute',
-                top: '-10px',
-                width: '80px',
-                height: '80px',
-                background: `radial-gradient(circle, ${card.color}15 0%, transparent 70%)`,
-                filter: 'blur(15px)',
-                pointerEvents: 'none',
-                zIndex: 0
-              }} />
+        {cards.length > 0 ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr',
+            gap: '12px'
+          }}>
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                onClick={() => {
+                  navigate(`/match/${match.id}/card/${card.id}`);
+                }}
+                className="hover-scale"
+                style={{
+                  background: 'var(--glass-bg)',
+                  border: `1px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+                  borderRadius: '20px',
+                  padding: '14px 12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  boxShadow: selectedTeam === card.id
+                    ? `0 10px 25px ${card.color}22, 0 0 10px ${card.color}15`
+                    : 'var(--card-shadow)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  textAlign: 'center',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* 3D Glow Backlight */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  width: '80px',
+                  height: '80px',
+                  background: `radial-gradient(circle, ${card.color}15 0%, transparent 70%)`,
+                  filter: 'blur(15px)',
+                  pointerEvents: 'none',
+                  zIndex: 0
+                }} />
 
-              {/* Glowing Logo Container */}
-              <div style={{ 
-                width: '60px', 
-                height: '60px', 
-                borderRadius: '50%', 
-                background: 'rgba(0,0,0,0.4)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                border: `1.5px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : card.color + 'aa'}`,
-                boxShadow: `0 0 12px ${card.color}44`,
-                position: 'relative',
-                zIndex: 1,
-                overflow: 'hidden',
-                transition: 'all 0.3s ease'
-              }}>
-                <img 
-                  src={card.logo} 
-                  alt={card.name} 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover',
-                    transition: 'transform 0.5s ease'
-                  }} 
-                />
-              </div>
-              
-              <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                <h3 style={{ fontSize: '0.98rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{card.name}</h3>
+                {/* Glowing Logo Container */}
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: `1.5px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : card.color + 'aa'}`,
+                  boxShadow: `0 0 12px ${card.color}44`,
+                  position: 'relative',
+                  zIndex: 1,
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <img
+                    src={card.logo}
+                    alt={card.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.5s ease'
+                    }}
+                  />
+                </div>
                 
-                {/* Dynamic Status Badge (Positioned below the Title) */}
-                {(() => {
-                  let cardStatus = getCardStatusFromUtil(card, match.status);
-                  let cardTimeLeft = match.time;
-                  let liveTimeLeft = '';
+                <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                  <h3 style={{ fontSize: '0.98rem', fontWeight: 900, margin: 0, lineHeight: 1.2, color: 'var(--text-primary)' }}>{card.name}</h3>
                   
-                  if (card.startTime && cardStatus === 'upcoming') {
-                    const nowTime = new Date(now);
-                    const targetTime = getTargetDateTime(card.startTime, nowTime, card.startDate);
-                    let diff = targetTime.getTime() - nowTime.getTime();
-                    if (diff <= 0) {
-                      const tomorrow = new Date(targetTime);
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      diff = tomorrow.getTime() - nowTime.getTime();
-                    }
-                    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const s = Math.floor((diff % (1000 * 60)) / 1000);
-                    cardTimeLeft = `${t('startIn')} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                  } else if (cardStatus === 'live') {
-                    const timeStr = card.startTime || match.time || '';
-                    if (timeStr) {
+                  {/* Dynamic Status Badge (Positioned below the Title) */}
+                  {(() => {
+                    let cardStatus = getCardStatusFromUtil(card, match.status);
+                    let cardTimeLeft = match.time;
+                    let liveTimeLeft = '';
+
+                    if (card.startTime && cardStatus === 'upcoming') {
                       const nowTime = new Date(now);
-                      const targetTime = getTargetDateTime(timeStr, nowTime, card.startDate);
-                      const elapsedMs = nowTime.getTime() - targetTime.getTime();
-                      const liveDurationMins = Number(card.liveDuration) || 60;
-                      const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
-                      if (remainingMs > 0) {
-                        const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-                        const hrs = Math.floor(totalSeconds / 3600);
-                        const mins = Math.floor((totalSeconds % 3600) / 60);
-                        const secs = totalSeconds % 60;
-                        const mm = mins.toString().padStart(2, '0');
-                        const ss = secs.toString().padStart(2, '0');
-                        liveTimeLeft = hrs > 0 ? ` (${hrs}:${mm}:${ss})` : ` (${mm}:${ss})`;
+                      const targetTime = getTargetDateTime(card.startTime, nowTime, card.startDate);
+                      let diff = targetTime.getTime() - nowTime.getTime();
+                      if (diff <= 0) {
+                        const tomorrow = new Date(targetTime);
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        diff = tomorrow.getTime() - nowTime.getTime();
+                      }
+                      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                      const s = Math.floor((diff % (1000 * 60)) / 1000);
+                      cardTimeLeft = `${t('startIn')} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    } else if (cardStatus === 'live') {
+                      const timeStr = card.startTime || match.time || '';
+                      if (timeStr) {
+                        const nowTime = new Date(now);
+                        const targetTime = getTargetDateTime(timeStr, nowTime, card.startDate);
+                        const elapsedMs = nowTime.getTime() - targetTime.getTime();
+                        const liveDurationMins = Number(card.liveDuration) || 60;
+                        const remainingMs = (liveDurationMins * 60 * 1000) - elapsedMs;
+                        if (remainingMs > 0) {
+                          const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+                          const hrs = Math.floor(totalSeconds / 3600);
+                          const mins = Math.floor((totalSeconds % 3600) / 60);
+                          const secs = totalSeconds % 60;
+                          const mm = mins.toString().padStart(2, '0');
+                          const ss = secs.toString().padStart(2, '0');
+                          liveTimeLeft = hrs > 0 ? ` (${hrs}:${mm}:${ss})` : ` (${mm}:${ss})`;
+                        }
                       }
                     }
-                  }
 
-                  const currentUserSlot = currentUser && (card.participantIds || []).indexOf(currentUser.uid) !== -1
-                    ? (card.participantIds || []).indexOf(currentUser.uid) + 1
-                    : null;
+                    const currentUserSlot = currentUser && (card.participantIds || []).indexOf(currentUser.uid) !== -1
+                      ? (card.participantIds || []).indexOf(currentUser.uid) + 1
+                      : null;
 
-                  return (
-                    <>
-                      {currentUserSlot && (
-                        <div style={{
-                          background: 'rgba(249, 111, 46, 0.15)',
-                          color: 'var(--accent-orange)',
-                          border: '1px solid rgba(249, 111, 46, 0.3)',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
-                          fontSize: '0.62rem',
-                          fontWeight: 900,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '3px',
-                          marginTop: '2px'
-                        }}>
-                          #{currentUserSlot}
-                        </div>
-                      )}
-                      {cardStatus === 'live' && (
-                        <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
-                          {t('live')}{liveTimeLeft}
-                        </div>
-                      )}
-                      {cardStatus === 'upcoming' && (
-                        <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>
-                          <span>🕒</span>
-                          {cardTimeLeft}
-                        </div>
-                      )}
-                      {cardStatus === 'finished' && (
-                        <div style={{ background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                          {t('ended')}
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', fontSize: '0.72rem', zIndex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                  <span>{t('entry')} Type</span>
-                  <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{card.entryType || 'Solo'}</span>
+                    return (
+                      <>
+                        {currentUserSlot && (
+                          <div style={{
+                            background: 'rgba(249, 111, 46, 0.15)',
+                            color: 'var(--accent-orange)',
+                            border: '1px solid rgba(249, 111, 46, 0.3)',
+                            padding: '2px 6px',
+                            borderRadius: '8px',
+                            fontSize: '0.62rem',
+                            fontWeight: 900,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            marginTop: '2px'
+                          }}>
+                            #{currentUserSlot}
+                          </div>
+                        )}
+                        {cardStatus === 'live' && (
+                          <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                            {t('live')}{liveTimeLeft}
+                          </div>
+                        )}
+                        {cardStatus === 'upcoming' && (
+                          <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>
+                            <span>🕒</span>
+                            {cardTimeLeft}
+                          </div>
+                        )}
+                        {cardStatus === 'finished' && (
+                          <div style={{ background: 'rgba(107, 114, 128, 0.15)', color: '#9ca3af', border: '1px solid rgba(107, 114, 128, 0.3)', padding: '2px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 900, display: 'inline-flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                            {t('ended')}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                  <span>{t('entryFee')}</span>
-                  <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(card.entryFee || entryFee)}</span>
-                </div>
-                {card.startDate && (
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', borderTop: '1px solid var(--glass-border)', paddingTop: '8px', fontSize: '0.72rem', zIndex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                    <span>Date</span>
-                    <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{new Date(card.startDate).toLocaleDateString()}</span>
+                    <span>{t('entry')} Type</span>
+                    <span style={{ fontWeight: 800, color: 'var(--accent-orange)' }}>{card.entryType || 'Solo'}</span>
                   </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                    <span>{t('entryFee')}</span>
+                    <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(card.entryFee || entryFee)}</span>
+                  </div>
+                  {card.startDate && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                      <span>Date</span>
+                      <span style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{new Date(card.startDate).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+
+                {match.status !== 'finished' && (
+                  (() => {
+                    const cardStatus = getCardStatusFromUtil(card, match.status);
+                    const cardHasJoined = currentUser ? (card.participantIds || []).includes(currentUser.uid) : false;
+
+                    let buttonLabel = t('join').toUpperCase();
+                    if (cardHasJoined) {
+                      buttonLabel = cardStatus === 'finished' ? `✅ ${t('joinedEnd').toUpperCase()}` : `✅ ${t('joined').toUpperCase()}`;
+                    } else if (cardStatus === 'live' || cardStatus === 'finished') {
+                      buttonLabel = t('timeExpired').toUpperCase();
+                    }
+
+                    return (
+                      <button
+                        type="button"
+                        className={`btn ${cardHasJoined ? 'btn-joined' : (cardStatus === 'live' || cardStatus === 'finished') ? 'btn-disabled' : 'btn-primary'}`}
+                        disabled={!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')) return;
+                          navigate(`/match/${match.id}/card/${card.id}`);
+                        }}
+                        style={{
+                          marginTop: '6px',
+                          padding: '6px 12px',
+                          fontSize: '0.78rem',
+                          opacity: (!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')) ? 0.6 : 1
+                        }}
+                      >
+                        {buttonLabel}
+                      </button>
+                    );
+                  })()
                 )}
               </div>
-
-              {match.status !== 'finished' && (
-                (() => {
-                  const cardStatus = getCardStatusFromUtil(card, match.status);
-                  const cardHasJoined = currentUser ? (card.participantIds || []).includes(currentUser.uid) : false;
-
-                  let buttonLabel = t('join').toUpperCase();
-                  if (cardHasJoined) {
-                    buttonLabel = cardStatus === 'finished' ? `✅ ${t('joinedEnd').toUpperCase()}` : `✅ ${t('joined').toUpperCase()}`;
-                  } else if (cardStatus === 'live' || cardStatus === 'finished') {
-                    buttonLabel = t('timeExpired').toUpperCase();
-                  }
-
-                  return (
-                    <button
-                      type="button"
-                      className={`btn ${cardHasJoined ? 'btn-joined' : (cardStatus === 'live' || cardStatus === 'finished') ? 'btn-disabled' : 'btn-primary'}`}
-                      disabled={!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')) return;
-                        navigate(`/match/${match.id}/card/${card.id}`);
-                      }}
-                      style={{
-                        marginTop: '6px',
-                        padding: '6px 12px',
-                        fontSize: '0.78rem',
-                        opacity: (!cardHasJoined && (cardStatus === 'live' || cardStatus === 'finished')) ? 0.6 : 1
-                      }}
-                    >
-                      {buttonLabel}
-                    </button>
-                  );
-                })()
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px', background: 'var(--glass-bg)', borderRadius: '24px', border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🎮</div>
+            <p>{t('noSubMatches') || 'No sub-matches available for this tournament arena.'}</p>
+          </div>
+        )}
       </div>
 
 
@@ -372,7 +379,7 @@ const MatchDetails = () => {
 
 
 
-      {match.status === 'finished' && match.winners && (
+      {match.status === 'finished' && Array.isArray(match.winners) && match.winners.length > 0 && (
         <div style={{ padding: '24px', marginTop: '24px', background: 'rgba(249,111,46,0.1)', border: '1px solid rgba(249,111,46,0.2)', borderRadius: '24px', margin: '12px' }}>
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="w-5 h-5 text-yellow-500" />
