@@ -113,7 +113,7 @@ interface AdminDashboardContextType {
   deleteMatch: (id: string) => void;
   toggleMatchStatus: (id: string, status: 'live' | 'upcoming' | 'finished') => void;
   setMatchWinners: (matchId: string, winners: MatchWinner[]) => void;
-  addParticipantToMatch: (matchId: string, userId: string, cardId?: string, gameId?: string) => void;
+  addParticipantToMatch: (matchId: string, userId: string, cardId?: string, gameId?: string, entryFee?: number) => void;
   setCardWinners: (matchId: string, cardId: string, winnerId: string | null, killWinners: {userId: string, kills: number}[], customPerKill?: number) => void;
   addMatchCard: (matchId: string, card: Omit<Team, 'id'>) => void;
   updateMatchCard: (matchId: string, cardId: string, cardUpdates: Partial<Team>) => void;
@@ -616,7 +616,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
   };
 
   
-  const addParticipantToMatch = async (matchId: string, userId: string, cardId?: string, gameId?: string) => {
+  const addParticipantToMatch = async (matchId: string, userId: string, cardId?: string, gameId?: string, explicitEntryFee?: number) => {
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
@@ -655,12 +655,14 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         // Record Join in a permanent collection so it survives match/card deletion
         const card = cardId ? (m.innerSections || []).find(c => c.id === cardId) : null;
 
-        let joinEntryFee = 0;
-        if (card && card.entryFee !== undefined) {
-          joinEntryFee = Number(card.entryFee);
-        } else if (m.bids && m.bids.length > 0) {
-          const firstBid = m.bids[0];
-          joinEntryFee = typeof firstBid === 'number' ? firstBid : parseFloat(String(firstBid).replace(/[^0-9.-]+/g, '')) || 0;
+        let joinEntryFee = explicitEntryFee !== undefined ? explicitEntryFee : 0;
+        if (joinEntryFee === 0) {
+           if (card && card.entryFee !== undefined) {
+             joinEntryFee = Number(card.entryFee);
+           } else if (m.bids && m.bids.length > 0) {
+             const firstBid = m.bids[0];
+             joinEntryFee = typeof firstBid === 'number' ? firstBid : parseFloat(String(firstBid).replace(/[^0-9.-]+/g, '')) || 0;
+           }
         }
 
         await addDoc(collection(db, 'user_joins'), {
@@ -705,6 +707,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             userId: user.id,
             userName: user.name,
             userAvatar: user.avatar,
+            amount: joinEntryFee,
             matchName: m.name
           });
         }
