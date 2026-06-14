@@ -830,7 +830,13 @@ const AdminDashboard = () => {
                 return (
                   <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--divider)' }}>
                     <img src={realAvatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                    <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{realName}</div><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</div></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{realName}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Deposit {formatCurrency(p.isRaw ? p.amount : p.amount * 126)} via {p.paymentMethod}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--accent-orange)', fontWeight: 600 }}>{formatDateTime(p.timestamp)}</span>
+                      </div>
+                    </div>
                     <StatusBadge status={p.status} />
                   </div>
                 );
@@ -971,6 +977,10 @@ const AdminDashboard = () => {
                     
                       <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Time</span>
+                          <span style={{ color: 'var(--accent-orange)', fontWeight: 700, fontSize: '0.85rem' }}>{formatDateTime(p.timestamp)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                           <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
                           <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.1rem' }}>{formatCurrency(p.isRaw ? p.amount : p.amount * 126)}</span>
                         </div>
@@ -1075,6 +1085,10 @@ const AdminDashboard = () => {
                       </div>
 
                       <div style={{ background: 'var(--input-bg)', padding: '16px', borderRadius: '16px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Time</span>
+                          <span style={{ color: 'var(--accent-orange)', fontWeight: 700, fontSize: '0.85rem' }}>{formatDateTime(w.timestamp)}</span>
+                        </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                           <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600 }}>Amount</span>
                           <span style={{ fontWeight: 800, color: '#EF4444', fontSize: '1.1rem' }}>-{formatCurrency(w.isRaw ? w.amount : w.amount * 126)}</span>
