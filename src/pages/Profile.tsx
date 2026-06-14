@@ -64,7 +64,7 @@ const Profile = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const { adminUsers } = useAdminDashboard();
+  const { adminUsers, adminMatches } = useAdminDashboard();
   const { currentUser, logout } = useAuth();
   const [displayUserId] = useState(() => currentUser?.uid || 'USER123');
 
@@ -79,6 +79,8 @@ const Profile = () => {
     const q = query(collection(db, 'user_joins'), where('userId', '==', currentUser.uid));
     const unsub = onSnapshot(q, (snapshot) => {
       setTotalJoinsCount(snapshot.size);
+    }, (error) => {
+      console.error("Error fetching user joins in Profile:", error);
     });
     return () => unsub();
   }, [currentUser]);
