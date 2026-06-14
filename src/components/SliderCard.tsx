@@ -155,7 +155,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
   // Filter out finished sub-matches from innerSections for counting
   const activeSubMatches = (innerSections || []).filter(c => {
     const s = getCardStatusFromUtil(c, status);
-    return s === 'live' || s === 'upcoming' || s === 'revealed';
+    return s === 'live' || s === 'upcoming' || s === 'revealed' || s === 'idle';
   });
 
   // Count players joined in active sub-matches with safety checks
@@ -172,6 +172,10 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     .reduce((sum, c) => sum + (Array.isArray(c.participantIds) ? c.participantIds.length : (Number(c.currentParticipants) || 0)), 0);
 
   const totalPlayerCount = soloPlayers + duoPlayers + squadPlayers;
+
+  const soloCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'solo').length;
+  const duoCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'duo').length;
+  const squadCount = activeSubMatches.filter(c => (c.entryType || '').toLowerCase() === 'squad').length;
   const totalMatchCount = activeSubMatches.length;
 
   // Compute overall match live status and remaining duration
@@ -345,7 +349,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {soloPlayers} {t('players')}
+                {soloCount} {soloCount === 1 ? t('match') : t('matches')}
               </div>
             </div>
           </div>
@@ -379,7 +383,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {duoPlayers} {t('players')}
+                {duoCount} {duoCount === 1 ? t('match') : t('matches')}
               </div>
             </div>
           </div>
@@ -413,7 +417,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
                 minHeight: '1.2rem',
                 textShadow: 'var(--text-shadow-md)'
               }}>
-                {squadPlayers} {t('players')}
+                {squadCount} {squadCount === 1 ? t('match') : t('matches')}
               </div>
             </div>
           </div>
