@@ -3,7 +3,7 @@ import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
-import { isCardLive, parseTime, getCardStatus } from '../utils/timeUtils';
+import { isCardLive, parseTime, getCardStatus, getTargetDateTime } from '../utils/timeUtils';
 
 
 // ============ TYPES ============
@@ -442,6 +442,44 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     return () => clearInterval(interval);
   }, [adminMatches]);
 
+  // Auto-conclude finished sub-matches to prevent auto-restart
+  useEffect(() => {
+    const checkExpiredCards = async () => {
+      const now = Date.now();
+      for (const match of adminMatches) {
+        if (match.status === 'finished') continue;
+
+        let needsUpdate = false;
+        const updatedSections = (match.innerSections || []).map(card => {
+          if (!card.startTime || card.isConcluded) return card;
+
+          const targetTime = getTargetDateTime(card.startTime);
+          const diff = targetTime.getTime() - now;
+
+          if (diff <= 0) {
+            const durationMs = (Number(card.liveDuration) || 60) * 60 * 1000;
+            if (Math.abs(diff) >= durationMs) {
+              needsUpdate = true;
+              return { ...card, isConcluded: true };
+            }
+          }
+          return card;
+        });
+
+        if (needsUpdate) {
+          try {
+            await updateDoc(doc(db, 'matches', match.id), { innerSections: updatedSections });
+          } catch (e) {
+            console.error("Error auto-concluding card:", e);
+          }
+        }
+      }
+    };
+
+    const timer = setInterval(checkExpiredCards, 60000); // Check every minute
+    return () => clearInterval(timer);
+  }, [adminMatches]);
+
   
   const logActivity = async (activity: Omit<Activity, 'id' | 'timestamp'>) => {
     try {
@@ -699,7 +737,17 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
-        const innerSections = (m.innerSections || []).map(c => c.id === cardId ? { ...c, ...cardUpdates } : c);
+        const innerSections = (m.innerSections || []).map(c => {
+          if (c.id === cardId) {
+            const updated = { ...c, ...cardUpdates };
+            // If start time was changed, reset conclusion state
+            if (cardUpdates.startTime && cardUpdates.startTime !== c.startTime) {
+              updated.isConcluded = false;
+            }
+            return updated;
+          }
+          return c;
+        });
         const cleanInnerSections = JSON.parse(JSON.stringify(innerSections));
         
         await setDoc(doc(db, 'matches', matchId), { 

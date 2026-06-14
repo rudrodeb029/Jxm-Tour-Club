@@ -45,35 +45,31 @@ export const getTargetDateTime = (startTimeStr: string, now = new Date()): Date 
   // Try today
   const todayTarget = new Date(now);
   todayTarget.setHours(hours, minutes, seconds, 0);
-  
-  // Try yesterday
-  const yesterdayTarget = new Date(todayTarget);
-  yesterdayTarget.setDate(yesterdayTarget.getDate() - 1);
-  
-  // Try tomorrow
-  const tomorrowTarget = new Date(todayTarget);
-  tomorrowTarget.setDate(tomorrowTarget.getDate() + 1);
-  
+
   const diffToday = todayTarget.getTime() - now.getTime();
-  
+
+  // To prevent matches from auto-restarting the next day,
+  // we strictly only consider a match "Upcoming" if it's within a reasonable future window (e.g. 14 hours).
+  // If it's further away, we assume it was a past match that hasn't been reset.
+
   if (diffToday <= 0) {
     // Today's target has passed.
-    // We only roll to tomorrow if it's VERY close (e.g. within 2 hours of a new day)
-    // or if the match was explicitly intended for the next day.
-    // For now, let's strictly return todayTarget unless it's been more than 12 hours.
-    // Actually, to prevent auto-restart, we should be more strict.
     if (Math.abs(diffToday) < 14 * 60 * 60 * 1000) {
       return todayTarget;
     } else {
-      // If it's more than 14 hours in the past, it stays in the past (as yesterday's match)
-      // and doesn't roll forward to tomorrow.
+      // More than 14 hours ago? Keep it in the past.
+      const yesterdayTarget = new Date(todayTarget);
+      yesterdayTarget.setDate(yesterdayTarget.getDate() - 1);
       return yesterdayTarget;
     }
   } else {
     // Today's target is in the future.
-    if (diffToday < 20 * 60 * 60 * 1000) {
+    if (diffToday < 14 * 60 * 60 * 1000) {
       return todayTarget;
     } else {
+      // Too far in the future? It's likely a match from yesterday that finished.
+      const yesterdayTarget = new Date(todayTarget);
+      yesterdayTarget.setDate(yesterdayTarget.getDate() - 1);
       return yesterdayTarget;
     }
   }
