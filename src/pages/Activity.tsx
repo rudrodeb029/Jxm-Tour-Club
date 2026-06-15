@@ -115,7 +115,7 @@ const Activity = () => {
                   {language === 'bn' ? 'মোট বিজয়ী' : 'Winners'}
                 </span>
                 <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FBBF24' }}>
-                  {winners.filter(w => w.type === 'win_prize').length}
+                  {winners.length}
                 </span>
               </div>
 
