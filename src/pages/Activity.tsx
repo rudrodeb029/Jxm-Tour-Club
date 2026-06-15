@@ -15,7 +15,7 @@ const Activity = () => {
   const { t, language } = useLanguage();
   const { currentUser } = useAuth();
   const { formatCurrency } = useCurrency();
-  const { winners = [], stats = { totalJoins: 0, totalWinners: 0 } } = useAdminDashboard();
+  const { winners = [], stats = { totalJoins: 0, totalWinners: 0 }, adminUsers = [] } = useAdminDashboard();
   const [activityTab, setActivityTab] = useState<'personal' | 'community'>('community');
   const [personalJoins, setPersonalJoins] = useState<any[]>([]);
 
@@ -94,7 +94,7 @@ const Activity = () => {
                   {language === 'bn' ? 'মোট যোগদান' : 'Total Joined'}
                 </span>
                 <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#38BDF8' }}>
-                  {stats.totalJoins || 0}
+                  {adminUsers.length || 0}
                 </span>
               </div>
 

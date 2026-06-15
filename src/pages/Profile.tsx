@@ -396,7 +396,7 @@ const Profile = () => {
           }, 0)
         );
 
-        const globalCommunity = adminStats.totalJoins || 0;
+        const globalCommunity = (adminUsers || []).length;
 
         const totalLosses = personalMatches >= totalWins ? personalMatches - totalWins : 0;
         const winRate = personalMatches > 0 ? Math.round((totalWins / personalMatches) * 100) : 0;

@@ -135,7 +135,7 @@ const Home = () => {
 
   const displayStats = [
     { id: 'live', value: adminStats.activeMatches.toString(), label: t('liveMatches') },
-    { id: 'participants', value: adminStats.totalJoins.toLocaleString(), label: t('totalJoiningMatch') },
+    { id: 'participants', value: adminUsers.length.toLocaleString(), label: t('totalJoiningMatch') },
     { id: 'winners', value: adminStats.totalWinners.toLocaleString(), label: t('winnersCount') }
   ];
 
