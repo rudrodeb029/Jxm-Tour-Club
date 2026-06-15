@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
-import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction } from 'firebase/firestore';
+import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { isCardLive, parseTime, getCardStatus, getTargetDateTime } from '../utils/timeUtils';
 
@@ -310,7 +310,15 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         }
       });
       
-      setAdminMatches(merged);
+      // Filter out deleted matches and deleted cards from active display
+      const filtered = merged
+        .filter(m => !(m as any).isDeleted)
+        .map(m => ({
+          ...m,
+          innerSections: (m.innerSections || []).filter((c: any) => !c.isDeleted)
+        }));
+      
+      setAdminMatches(filtered);
     });
 
     // Winners Listener
@@ -536,7 +544,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const deleteMatch = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'matches', id));
+      // Archive the match instead of deleting it so history data is preserved
+      await setDoc(doc(db, 'matches', id), { 
+        isDeleted: true, 
+        status: 'finished',
+        deletedAt: new Date().toISOString()
+      }, { merge: true });
     } catch (e) {
       console.error('Error deleting match', e);
     }
@@ -922,7 +935,10 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
-        const innerSections = (m.innerSections || []).filter(c => c.id !== cardId);
+        // Archive the card instead of removing it so history data is preserved
+        const innerSections = (m.innerSections || []).map(c => 
+          c.id === cardId ? { ...c, isDeleted: true } : c
+        );
         const cleanInnerSections = JSON.parse(JSON.stringify(innerSections));
         await setDoc(doc(db, 'matches', matchId), { 
           innerSections: cleanInnerSections,
@@ -1006,15 +1022,52 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       if (!card) return;
 
       const cardParticipants = card.participantIds || [];
+      const entryFee = card.entryFee || 0;
 
-      // Create a NEW unique ID for this card to treat it as a fresh match
-      const newCardId = 'tc' + Date.now() + Math.random().toString(36).substr(2, 5);
+      // Refund all participants and update their user_joins records
+      for (const userId of cardParticipants) {
+        // Refund entry fee
+        if (entryFee > 0) {
+          await runTransaction(db, async (t) => {
+            const userRef = doc(db, 'users', userId);
+            const uDoc = await t.get(userRef);
+            if (uDoc.exists()) {
+              const data = uDoc.data();
+              t.update(userRef, { balance: (data.balance || 0) + entryFee });
+            }
+          });
 
-      // Clear participants and reset card stats while assigning the NEW ID
+          await addDoc(collection(db, 'transactions'), {
+            userId: userId,
+            type: 'Refund',
+            amount: entryFee,
+            date: new Date().toISOString(),
+            status: 'Completed'
+          });
+        }
+
+        // Update user_joins records to mark as refunded (preserves history)
+        try {
+          const joinsQuery = query(
+            collection(db, 'user_joins'),
+            where('userId', '==', userId),
+            where('matchId', '==', matchId),
+            where('cardId', '==', cardId)
+          );
+          const joinsSnap = await getDocs(joinsQuery);
+          for (const joinDoc of joinsSnap.docs) {
+            await updateDoc(doc(db, 'user_joins', joinDoc.id), { status: 'refunded' });
+          }
+        } catch (joinErr) {
+          console.error('Error updating user_joins on reset:', joinErr);
+        }
+      }
+
+      // Keep the same card ID so user_joins records still link correctly
+      // Clear participants and reset card stats but preserve identity
       const innerSections = (m.innerSections || []).map(c => 
         c.id === cardId ? { 
           ...c, 
-          id: newCardId,
           participantIds: [],
           participantGameIds: {},
           kills: 0,
@@ -1036,6 +1089,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         newStatus = 'upcoming';
       }
 
+      // Do NOT set winners: null — preserve winner data
       await setDoc(doc(db, 'matches', matchId), { 
         status: newStatus,
         innerSections,
@@ -1044,8 +1098,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         totalBidsCount: `${Math.max(0, newParticipants.length)} Players joined`,
         team1: innerSections[0] || null,
         team2: innerSections[1] || null,
-        team3: innerSections[2] || null,
-        winners: null
+        team3: innerSections[2] || null
       }, { merge: true });
 
     } catch (e) {

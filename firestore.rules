@@ -56,6 +56,18 @@ service cloud.firestore {
     match /payment_settings/{docId} {
       allow read, write: if true;
     }
+
+    match /user_joins/{joinId} {
+      allow read, write: if true;
+    }
+
+    match /stats/{statId} {
+      allow read, write: if true;
+    }
+
+    match /support_settings/{docId} {
+      allow read, write: if true;
+    }
     
     match /{document=**} {
       allow read, write: if false;

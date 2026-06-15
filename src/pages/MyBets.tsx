@@ -62,6 +62,15 @@ const MyBets = () => {
         }
       }
 
+      // Determine status: use persistent user_joins status first (e.g. 'refunded'),
+      // then live match status if user is still in participants, then 'finished'
+      let derivedStatus = 'finished';
+      if (entry.status === 'refunded') {
+        derivedStatus = 'finished';
+      } else if (liveMatch && currentSlot) {
+        derivedStatus = liveMatch.status;
+      }
+
       entriesMap.set(entry.id, {
         ...entry,
         originalMatchId: entry.matchId,
@@ -69,9 +78,8 @@ const MyBets = () => {
         matchCategory: entry.matchName,
         mode: entry.entryType,
         time: entry.startTime,
-        // If user is no longer in current participants list of a live match,
-        // it means the match was reset or they were removed, so mark as finished.
-        status: (liveMatch && currentSlot) ? liveMatch.status : 'finished',
+        status: derivedStatus,
+        isRefunded: entry.status === 'refunded',
         slotNumber: currentSlot || entry.slotNumber || null,
         sortTime: new Date(entry.timestamp).getTime()
       });
@@ -224,6 +232,11 @@ const MyBets = () => {
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px', fontWeight: 600 }}>
                   {entry.matchCategory}
                 </div>
+                {entry.isRefunded && (
+                  <div style={{ fontSize: '0.6rem', color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '6px', fontWeight: 800, marginTop: '4px', display: 'inline-block', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                    ✓ {language === 'bn' ? 'রিফান্ড হয়েছে' : 'REFUNDED'}
+                  </div>
+                )}
               </div>
 
               <ChevronRight size={20} color="var(--text-secondary)" />
