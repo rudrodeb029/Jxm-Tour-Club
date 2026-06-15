@@ -68,6 +68,14 @@ service cloud.firestore {
     match /support_settings/{docId} {
       allow read, write: if true;
     }
+
+    match /fcm_tokens/{userId} {
+      allow read, write: if true;
+    }
+
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
     
     match /{document=**} {
       allow read, write: if false;

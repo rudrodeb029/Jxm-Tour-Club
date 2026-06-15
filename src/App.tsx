@@ -19,6 +19,7 @@ import BottomNav from './components/BottomNav';
 import LiveMatches from './pages/LiveMatches';
 import Participants from './pages/Participants';
 import Winners from './pages/Winners';
+import NotificationManager from './components/NotificationManager';
 
 import { BalanceProvider } from './context/BalanceContext';
 import { AdminProvider } from './context/AdminContext';
@@ -96,7 +97,8 @@ function App() {
                   <Router>
                     <AnimatedRoutes />
                     <LiveChat />
-                      <WinnerCelebration />
+                    <WinnerCelebration />
+                    <NotificationManager />
                     </Router>
                   </ChatProvider>
                 </AdminProvider>

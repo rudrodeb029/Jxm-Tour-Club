@@ -1,6 +1,12 @@
 {
   "name": "JXM Tour Club",
   "short_name": "JXM",
+  "description": "Gaming Tournament Platform - Join, Compete & Win!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "../icons/icon-48.webp",

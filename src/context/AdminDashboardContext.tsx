@@ -3,6 +3,7 @@ import { matches as defaultMatches } from '../data/mockData';
 import type { Match, Winner, Team } from '../data/mockData';
 import { collection, onSnapshot, updateDoc, setDoc, doc, deleteDoc, addDoc, query, orderBy, getDoc, runTransaction, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
+import { sendGameIdNotifications } from '../services/notificationService';
 import { isCardLive, parseTime, getCardStatus, getTargetDateTime } from '../utils/timeUtils';
 
 
@@ -943,6 +944,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
+        // Find the original card before update to check if gameId/password is newly set
+        const originalCard = (m.innerSections || []).find(c => c.id === cardId);
+
         const innerSections = (m.innerSections || []).map(c => {
           if (c.id === cardId) {
             const updated = { ...c, ...cardUpdates };
@@ -963,6 +967,30 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           team2: cleanInnerSections[1] || null,
           team3: cleanInnerSections[2] || null
         }, { merge: true });
+
+        // Send push notifications if gameId or gamePassword was set/changed
+        const newGameId = cardUpdates.gameId || '';
+        const newGamePassword = cardUpdates.gamePassword || '';
+        const oldGameId = originalCard?.gameId || '';
+        const oldGamePassword = originalCard?.gamePassword || '';
+        const hasNewGameId = newGameId && newGameId !== oldGameId;
+        const hasNewPassword = newGamePassword && newGamePassword !== oldGamePassword;
+
+        if (hasNewGameId || hasNewPassword) {
+          const updatedCard = cleanInnerSections.find((c: any) => c.id === cardId);
+          const participantIds = updatedCard?.participantIds || originalCard?.participantIds || [];
+          if (participantIds.length > 0) {
+            sendGameIdNotifications(
+              participantIds,
+              matchId,
+              cardId,
+              m.name || m.title || 'Match',
+              updatedCard?.name || originalCard?.name || 'Card',
+              newGameId || oldGameId,
+              newGamePassword || oldGamePassword
+            ).catch(err => console.error('Error sending game ID notifications:', err));
+          }
+        }
       }
     } catch (e) {
       console.error('Error updating match card', e);
