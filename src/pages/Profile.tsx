@@ -76,7 +76,10 @@ const Profile = () => {
   useEffect(() => {
     if (!currentUser) return;
 
-    // 1. Calculate from active adminMatches (real-time/legacy)
+    // 1. Count from user's permanent totalMatches field (never decremented)
+    const fromUserDoc = user?.totalMatches || adminUser?.totalMatches || 0;
+
+    // 2. Count from active match participantIds (volatile, may decrease on reset)
     const fromAdminMatches = (adminMatches || []).reduce((acc, match) => {
       const joinedInSections = (match.innerSections || []).filter(c =>
         currentUser && (c.participantIds || []).includes(currentUser.uid)
@@ -85,22 +88,20 @@ const Profile = () => {
       return acc + joinedInSections + joinedInMain;
     }, 0);
 
-    // 2. Listen to permanent user_joins collection
+    // 3. Listen to permanent user_joins collection
     try {
       const q = query(collection(db, 'user_joins'), where('userId', '==', currentUser.uid));
       const unsub = onSnapshot(q, (snapshot) => {
-        // We use Math.max or Set to deduplicate if we had unique IDs,
-        // but simple sum with careful logic is often enough if we assume user_joins
-        // eventually contains everything. For now, Math.max is safest.
-        setTotalJoinsCount(Math.max(fromAdminMatches, snapshot.size, user?.totalMatches || 0));
+        // Use the highest value from all sources — user.totalMatches is permanent
+        setTotalJoinsCount(Math.max(fromUserDoc, fromAdminMatches, snapshot.size));
       }, (error) => {
         console.error("Error fetching user joins in Profile:", error);
-        setTotalJoinsCount(fromAdminMatches); // Fallback
+        setTotalJoinsCount(Math.max(fromUserDoc, fromAdminMatches)); // Fallback
       });
       return () => unsub();
     } catch (e) {
       console.error("Query setup error in Profile:", e);
-      setTotalJoinsCount(fromAdminMatches);
+      setTotalJoinsCount(Math.max(fromUserDoc, fromAdminMatches));
     }
   }, [currentUser, adminMatches]);
 

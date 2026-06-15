@@ -544,6 +544,45 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const deleteMatch = async (id: string) => {
     try {
+      const m = adminMatches.find(x => x.id === id);
+
+      // Backfill: Ensure all participants have permanent user_joins records before archiving
+      if (m) {
+        for (const card of (m.innerSections || [])) {
+          for (const userId of (card.participantIds || [])) {
+            try {
+              const existingQ = query(
+                collection(db, 'user_joins'),
+                where('userId', '==', userId),
+                where('matchId', '==', id),
+                where('cardId', '==', card.id)
+              );
+              const existing = await getDocs(existingQ);
+              if (existing.empty) {
+                const slotIdx = (card.participantIds || []).indexOf(userId);
+                await addDoc(collection(db, 'user_joins'), {
+                  userId,
+                  matchId: id,
+                  cardId: card.id,
+                  matchName: m.name,
+                  cardName: card.name,
+                  entryType: card.entryType || m.group || 'Solo',
+                  entryFee: card.entryFee || 0,
+                  gameId: (card.participantGameIds || {})[userId] || '',
+                  timestamp: new Date().toISOString(),
+                  status: 'finished',
+                  startDate: card.startDate || '',
+                  startTime: card.startTime || m.time || '',
+                  slotNumber: slotIdx !== -1 ? slotIdx + 1 : null
+                });
+              }
+            } catch (backfillErr) {
+              console.error('Error backfilling user_joins on delete:', backfillErr);
+            }
+          }
+        }
+      }
+
       // Archive the match instead of deleting it so history data is preserved
       await setDoc(doc(db, 'matches', id), { 
         isDeleted: true, 
@@ -1024,8 +1063,45 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       const cardParticipants = card.participantIds || [];
       const entryFee = card.entryFee || 0;
 
-      // Refund all participants and update their user_joins records
+      // Refund all participants and ensure permanent user_joins records exist
       for (const userId of cardParticipants) {
+        // Backfill: Create user_joins entry if it doesn't exist yet
+        // (covers joins that happened before Firestore rules were deployed)
+        try {
+          const existingQ = query(
+            collection(db, 'user_joins'),
+            where('userId', '==', userId),
+            where('matchId', '==', matchId),
+            where('cardId', '==', cardId)
+          );
+          const existingSnap = await getDocs(existingQ);
+          if (existingSnap.empty) {
+            const slotIdx = (card.participantIds || []).indexOf(userId);
+            await addDoc(collection(db, 'user_joins'), {
+              userId,
+              matchId,
+              cardId,
+              matchName: m.name,
+              cardName: card.name,
+              entryType: card.entryType || m.group || 'Solo',
+              entryFee: entryFee,
+              gameId: (card.participantGameIds || {})[userId] || '',
+              timestamp: new Date().toISOString(),
+              status: 'refunded',
+              startDate: card.startDate || '',
+              startTime: card.startTime || m.time || '',
+              slotNumber: slotIdx !== -1 ? slotIdx + 1 : null
+            });
+          } else {
+            // Update existing records to refunded status
+            for (const joinDoc of existingSnap.docs) {
+              await updateDoc(doc(db, 'user_joins', joinDoc.id), { status: 'refunded' });
+            }
+          }
+        } catch (joinErr) {
+          console.error('Error handling user_joins on reset:', joinErr);
+        }
+
         // Refund entry fee
         if (entryFee > 0) {
           await runTransaction(db, async (t) => {
@@ -1044,22 +1120,6 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
             date: new Date().toISOString(),
             status: 'Completed'
           });
-        }
-
-        // Update user_joins records to mark as refunded (preserves history)
-        try {
-          const joinsQuery = query(
-            collection(db, 'user_joins'),
-            where('userId', '==', userId),
-            where('matchId', '==', matchId),
-            where('cardId', '==', cardId)
-          );
-          const joinsSnap = await getDocs(joinsQuery);
-          for (const joinDoc of joinsSnap.docs) {
-            await updateDoc(doc(db, 'user_joins', joinDoc.id), { status: 'refunded' });
-          }
-        } catch (joinErr) {
-          console.error('Error updating user_joins on reset:', joinErr);
         }
       }
 
@@ -1324,7 +1384,6 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       persistentCommunityCount,
       globalJoinsCount,
       winners.length,
-      adminMatches.reduce((sum, m) => sum + (m.currentParticipants || 0), 0),
       adminUsers.reduce((sum, u) => sum + (u.totalMatches || 0), 0)
     ),
   };
