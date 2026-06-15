@@ -76,32 +76,47 @@ const Profile = () => {
   useEffect(() => {
     if (!currentUser) return;
 
-    // 1. Count from user's permanent totalMatches field (never decremented)
-    const fromUserDoc = user?.totalMatches || adminUser?.totalMatches || 0;
-
-    // 2. Count from active match participantIds (volatile, may decrease on reset)
-    const fromAdminMatches = (adminMatches || []).reduce((acc, match) => {
-      const joinedInSections = (match.innerSections || []).filter(c =>
-        currentUser && (c.participantIds || []).includes(currentUser.uid)
-      ).length;
-      const joinedInMain = (currentUser && (match.participantIds || []).includes(currentUser.uid)) ? 1 : 0;
-      return acc + joinedInSections + joinedInMain;
-    }, 0);
-
-    // 3. Listen to permanent user_joins collection
+    // Listen to permanent user_joins collection — this is the SAME source as the History page
+    // so Profile "Played" count will always match the History page entry count
     try {
       const q = query(collection(db, 'user_joins'), where('userId', '==', currentUser.uid));
       const unsub = onSnapshot(q, (snapshot) => {
-        // Use the highest value from all sources — user.totalMatches is permanent
-        setTotalJoinsCount(Math.max(fromUserDoc, fromAdminMatches, snapshot.size));
+        // Count entries from user_joins (matches History page exactly)
+        const joinsCount = snapshot.size;
+
+        // Also count any live matches where user is participating but user_joins hasn't been written yet
+        const joinedMatchCardIds = new Set();
+        snapshot.docs.forEach(d => {
+          const data = d.data();
+          joinedMatchCardIds.add(`${data.matchId}-${data.cardId || 'main'}`);
+        });
+
+        // Count active arena entries not yet in user_joins
+        let liveExtras = 0;
+        (adminMatches || []).forEach(match => {
+          (match.innerSections || []).forEach(c => {
+            if (currentUser && (c.participantIds || []).includes(currentUser.uid)) {
+              const key = `${match.id}-${c.id}`;
+              if (!joinedMatchCardIds.has(key)) liveExtras++;
+            }
+          });
+          // Check main match level too
+          if (currentUser && (match.participantIds || []).includes(currentUser.uid)) {
+            const key = `${match.id}-main`;
+            if (!joinedMatchCardIds.has(key)) liveExtras++;
+          }
+        });
+
+        setTotalJoinsCount(joinsCount + liveExtras);
       }, (error) => {
         console.error("Error fetching user joins in Profile:", error);
-        setTotalJoinsCount(Math.max(fromUserDoc, fromAdminMatches)); // Fallback
+        // Fallback: count from user doc
+        setTotalJoinsCount(user?.totalMatches || adminUser?.totalMatches || 0);
       });
       return () => unsub();
     } catch (e) {
       console.error("Query setup error in Profile:", e);
-      setTotalJoinsCount(Math.max(fromUserDoc, fromAdminMatches));
+      setTotalJoinsCount(user?.totalMatches || adminUser?.totalMatches || 0);
     }
   }, [currentUser, adminMatches]);
 
