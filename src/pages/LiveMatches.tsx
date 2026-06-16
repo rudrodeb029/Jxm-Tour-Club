@@ -14,12 +14,13 @@ const getTimeInfo = (startTimeStr: string | undefined, durationMins: number | un
   if (!startTimeStr) {
     return {
       isLive: false,
-      statusText: t ? t('upcoming') : 'UPCOMING',
+      statusText: t ? t('idle') : 'IDLE',
       displayTime: 'N/A',
       elapsedStr: '',
       remainingStr: '',
       endTimeStr: '',
-      isOver: false
+      isOver: false,
+      isIdle: true
     };
   }
 
@@ -124,36 +125,39 @@ const LiveMatches = () => {
       const innerCards = match.innerSections || [];
       if (innerCards.length > 0) {
         innerCards.forEach((card: any) => {
-          teams.push({
-            ...card,
-            ...baseInfo,
-            startTime: card.startTime || match.time,
-            liveDuration: card.liveDuration || 60,
-            participantCount: card.participantIds ? card.participantIds.length : 0,
-            status: match.status
-          });
+          // Only show non-deleted, non-concluded sub-matches that have a start time
+          if (!card.isDeleted && !card.isConcluded && card.startTime) {
+            teams.push({
+              ...card,
+              ...baseInfo,
+              startTime: card.startTime,
+              liveDuration: card.liveDuration || 60,
+              participantCount: card.participantIds ? card.participantIds.length : 0,
+              status: match.status
+            });
+          }
         });
       } else {
-        if (match.team1) teams.push({ 
+        if (match.team1 && match.team1.startTime) teams.push({
           ...match.team1, 
           ...baseInfo,
-          startTime: match.team1.startTime || match.time,
+          startTime: match.team1.startTime,
           liveDuration: match.team1.liveDuration || 60,
           participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
           status: match.status
         });
-        if (match.team2) teams.push({ 
+        if (match.team2 && match.team2.startTime) teams.push({
           ...match.team2, 
           ...baseInfo,
-          startTime: match.team2.startTime || match.time,
+          startTime: match.team2.startTime,
           liveDuration: match.team2.liveDuration || 60,
           participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
           status: match.status
         });
-        if (match.team3) teams.push({ 
+        if (match.team3 && match.team3.startTime) teams.push({
           ...match.team3, 
           ...baseInfo,
-          startTime: match.team3.startTime || match.time,
+          startTime: match.team3.startTime,
           liveDuration: match.team3.liveDuration || 60,
           participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
           status: match.status
@@ -163,7 +167,9 @@ const LiveMatches = () => {
     })
     .filter(team => {
       const timeInfo = getTimeInfo(team.startTime, team.liveDuration, now, team.status, t, language);
-      return timeInfo.statusText !== 'ENDED' && timeInfo.statusText !== t('completed');
+      const isEnded = timeInfo.statusText === 'ENDED' || timeInfo.statusText === t('completed');
+      const isIdle = timeInfo.statusText === 'IDLE' || timeInfo.statusText === t('idle');
+      return !isEnded && !isIdle;
     });
 
   return (

@@ -263,7 +263,8 @@ const translations: Record<Language, Record<string, string>> = {
     'assignedSlot': 'Assigned Slot',
     'slotNumber': 'Slot Number',
     'joinedEnd': 'JOINED END',
-    'timeExpired': 'Time Expired'
+    'timeExpired': 'Time Expired',
+    'idle': 'IDLE'
   },
   bn: {
     'home': 'হোম',
@@ -521,7 +522,8 @@ const translations: Record<Language, Record<string, string>> = {
     'assignedSlot': 'নির্ধারিত স্লট',
     'slotNumber': 'স্লট নম্বর',
     'joinedEnd': 'অংশগ্রহণ শেষ',
-    'timeExpired': 'সময় শেষ'
+    'timeExpired': 'সময় শেষ',
+    'idle': 'অলস'
   },
   hi: {
     'home': 'होम',
