@@ -49,37 +49,11 @@ export const getTargetDateTime = (startTimeStr: string, now = new Date(), startD
     return target;
   }
 
-  // Try today
-  const todayTarget = new Date(now);
-  todayTarget.setHours(hours, minutes, seconds, 0);
-
-  const diffToday = todayTarget.getTime() - now.getTime();
-
-  // To prevent matches from auto-restarting the next day,
-  // we strictly only consider a match "Upcoming" if it's within a reasonable future window (e.g. 14 hours).
-  // If it's further away, we assume it was a past match that hasn't been reset.
-
-  if (diffToday <= 0) {
-    // Today's target has passed.
-    if (Math.abs(diffToday) < 14 * 60 * 60 * 1000) {
-      return todayTarget;
-    } else {
-      // More than 14 hours ago? Keep it in the past.
-      const yesterdayTarget = new Date(todayTarget);
-      yesterdayTarget.setDate(yesterdayTarget.getDate() - 1);
-      return yesterdayTarget;
-    }
-  } else {
-    // Today's target is in the future.
-    if (diffToday < 14 * 60 * 60 * 1000) {
-      return todayTarget;
-    } else {
-      // Too far in the future? It's likely a match from yesterday that finished.
-      const yesterdayTarget = new Date(todayTarget);
-      yesterdayTarget.setDate(yesterdayTarget.getDate() - 1);
-      return yesterdayTarget;
-    }
-  }
+  // If no date provided, strictly use TODAY.
+  // No more automatic day-rolling to prevent yesterday's matches from appearing today.
+  const target = new Date(now);
+  target.setHours(hours, minutes, seconds, 0);
+  return target;
 };
 
 export const getCardStatus = (

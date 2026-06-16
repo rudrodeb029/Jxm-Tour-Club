@@ -924,7 +924,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     try {
       const m = adminMatches.find(x => x.id === matchId);
       if (m) {
-        const newCard = { ...card, id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5), participantIds: [] };
+        const newCard = {
+          ...card,
+          id: 'tc' + Date.now() + Math.random().toString(36).substr(2, 5),
+          participantIds: [],
+          startDate: card.startDate || new Date().toISOString().split('T')[0]
+        };
         const innerSections = [...(m.innerSections || []), newCard];
         const cleanInnerSections = JSON.parse(JSON.stringify(innerSections));
         await setDoc(doc(db, 'matches', matchId), { 
@@ -950,6 +955,12 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
         const innerSections = (m.innerSections || []).map(c => {
           if (c.id === cardId) {
             const updated = { ...c, ...cardUpdates };
+
+            // Auto-set startDate to today if admin provided a time but no date
+            if (cardUpdates.startTime && !updated.startDate) {
+              updated.startDate = new Date().toISOString().split('T')[0];
+            }
+
             // If start time or date was changed, reset conclusion state
             if ((cardUpdates.startTime && cardUpdates.startTime !== c.startTime) ||
                 (cardUpdates.startDate && cardUpdates.startDate !== c.startDate)) {

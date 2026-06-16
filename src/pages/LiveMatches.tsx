@@ -108,6 +108,8 @@ const LiveMatches = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   const liveTeams = adminMatches
     .filter(m => m.status !== 'finished')
     .flatMap((match) => {
@@ -125,8 +127,13 @@ const LiveMatches = () => {
       const innerCards = match.innerSections || [];
       if (innerCards.length > 0) {
         innerCards.forEach((card: any) => {
-          // Only show non-deleted, non-concluded sub-matches that have a start time
-          if (!card.isDeleted && !card.isConcluded && card.startTime) {
+          // Stricter filtering:
+          // 1. Must not be deleted or concluded
+          // 2. Must have a start time
+          // 3. Must be for TODAY or in the FUTURE (filter out yesterday's ghosts)
+          const isTodayOrFuture = !card.startDate || card.startDate >= todayStr;
+
+          if (!card.isDeleted && !card.isConcluded && card.startTime && isTodayOrFuture) {
             teams.push({
               ...card,
               ...baseInfo,
@@ -138,30 +145,24 @@ const LiveMatches = () => {
           }
         });
       } else {
-        if (match.team1 && match.team1.startTime) teams.push({
-          ...match.team1, 
-          ...baseInfo,
-          startTime: match.team1.startTime,
-          liveDuration: match.team1.liveDuration || 60,
-          participantCount: match.team1.participantIds ? match.team1.participantIds.length : 0,
-          status: match.status
-        });
-        if (match.team2 && match.team2.startTime) teams.push({
-          ...match.team2, 
-          ...baseInfo,
-          startTime: match.team2.startTime,
-          liveDuration: match.team2.liveDuration || 60,
-          participantCount: match.team2.participantIds ? match.team2.participantIds.length : 0,
-          status: match.status
-        });
-        if (match.team3 && match.team3.startTime) teams.push({
-          ...match.team3, 
-          ...baseInfo,
-          startTime: match.team3.startTime,
-          liveDuration: match.team3.liveDuration || 60,
-          participantCount: match.team3.participantIds ? match.team3.participantIds.length : 0,
-          status: match.status
-        });
+        // Legacy/Direct match teams
+        const checkLegacyTeam = (team: any) => {
+          if (!team || !team.startTime) return;
+          const isTodayOrFuture = !team.startDate || team.startDate >= todayStr;
+          if (isTodayOrFuture) {
+            teams.push({
+              ...team,
+              ...baseInfo,
+              startTime: team.startTime,
+              liveDuration: team.liveDuration || 60,
+              participantCount: team.participantIds ? team.participantIds.length : 0,
+              status: match.status
+            });
+          }
+        };
+        checkLegacyTeam(match.team1);
+        checkLegacyTeam(match.team2);
+        checkLegacyTeam(match.team3);
       }
       return teams;
     })
