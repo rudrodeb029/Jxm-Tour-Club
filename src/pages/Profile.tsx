@@ -413,12 +413,12 @@ const Profile = () => {
                 trend: `${winRate}% Rate` 
               },
               { 
-                label: t('totalJoiningMatch'),
-                value: globalCommunity.toLocaleString(),
+                label: t('played') || 'Played',
+                value: personalMatches.toString(),
                 bg: 'linear-gradient(135deg, #94a3b8, #475569)', 
                 border: '#f1f5f9', 
                 text: '#f1f5f9',
-                trend: `Played ${personalMatches}`
+                trend: null
               }
             ].map((stat, i) => (
               <div 
@@ -442,7 +442,9 @@ const Profile = () => {
                 }}>
                   <span style={{ fontSize: '1.8rem', fontWeight: 900, color: stat.text, marginBottom: '4px', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))' }}>{stat.value}</span>
                   <span style={{ fontSize: '0.75rem', color: stat.text, opacity: 0.9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</span>
-                  <div style={{ marginTop: '6px', fontSize: '0.65rem', color: stat.text, fontWeight: 800, background: 'rgba(0,0,0,0.3)', border: `1px solid ${stat.border}40`, padding: '2px 6px', borderRadius: '6px' }}>{stat.trend}</div>
+                  {stat.trend && (
+                    <div style={{ marginTop: '6px', fontSize: '0.65rem', color: stat.text, fontWeight: 800, background: 'rgba(0,0,0,0.3)', border: `1px solid ${stat.border}40`, padding: '2px 6px', borderRadius: '6px' }}>{stat.trend}</div>
+                  )}
                 </div>
               </div>
             ))}
