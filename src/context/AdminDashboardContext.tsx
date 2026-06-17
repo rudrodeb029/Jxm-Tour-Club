@@ -141,6 +141,7 @@ interface AdminDashboardContextType {
   incrementUserMatches: (userId: string) => void;
   toggleUserStatus: (userId: string) => void;
   resetAllBalances: () => Promise<void>;
+  resetAllTransactions: () => Promise<void>;
   
   // Winners
   winners: Winner[];
@@ -1386,6 +1387,25 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const resetAllTransactions = async () => {
+    try {
+      const qSnap = await getDocs(collection(db, 'transactions'));
+      const promises = qSnap.docs.map(docSnap => deleteDoc(doc(db, 'transactions', docSnap.id)));
+      await Promise.all(promises);
+
+      const paySnap = await getDocs(collection(db, 'payments'));
+      const payPromises = paySnap.docs.map(docSnap => deleteDoc(doc(db, 'payments', docSnap.id)));
+      await Promise.all(payPromises);
+
+      const drawSnap = await getDocs(collection(db, 'withdrawals'));
+      const drawPromises = drawSnap.docs.map(docSnap => deleteDoc(doc(db, 'withdrawals', docSnap.id)));
+      await Promise.all(drawPromises);
+    } catch (e) {
+      console.error('Error resetting all transactions:', e);
+      throw e;
+    }
+  };
+
   const updatePaymentSettings = async (settings: PaymentSettings) => {
     try {
       await setDoc(doc(db, 'payment_settings', 'accounts'), settings);
@@ -1444,7 +1464,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       adminMatches, createMatch, updateMatch, deleteMatch, toggleMatchStatus, setMatchWinners,
       paymentRequests, approvePayment, rejectPayment, addPaymentRequest,
       withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal, addWithdrawalRequest,
-      adminUsers, updateUserBalance, incrementUserMatches, toggleUserStatus, resetAllBalances,
+      adminUsers, updateUserBalance, incrementUserMatches, toggleUserStatus, resetAllBalances, resetAllTransactions,
       winners,
       stats,
       addParticipantToMatch,

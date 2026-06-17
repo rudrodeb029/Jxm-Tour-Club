@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     adminMatches, createMatch, updateMatch, deleteMatch, toggleMatchStatus,
     paymentRequests, approvePayment, rejectPayment,
     withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal,
-    adminUsers, updateUserBalance, toggleUserStatus, resetAllBalances, stats, setMatchWinners,
+    adminUsers, updateUserBalance, toggleUserStatus, resetAllBalances, resetAllTransactions, stats, setMatchWinners,
     winners,
     paymentSettings, updatePaymentSettings,
     supportSettings, updateSupportSettings
@@ -504,6 +504,7 @@ const AdminDashboard = () => {
     { id: 'inner_sections', icon: '🎴', label: 'Inner Sections' },
     { id: 'chats', icon: '💬', label: 'Support' },
     { id: 'announcements', icon: '📢', label: 'Announcements' },
+    { id: 'reset_data', icon: '🔄', label: 'Reset Data' },
   ];
 
   return (
@@ -2578,6 +2579,84 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* RESET DATA TAB */}
+        {activeTab === 'reset_data' && (
+          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '28px', maxWidth: '600px' }}>
+            <h3 style={{ fontWeight: 900, fontSize: '1.3rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', marginTop: 0 }}>🔄 Reset Application Data</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '24px', lineHeight: 1.5 }}>
+              Perform administrative resets of user balances and transaction history. These actions are permanent, execute directly in Firestore, and cannot be undone.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Reset Balances Card */}
+              <div style={{ background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '16px', padding: '20px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: 800, color: '#EF4444' }}>Reset All Balances</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: '0 0 16px 0', lineHeight: 1.4 }}>
+                  Sets all users' (including admin accounts') balances in the database to ৳0. User profiles and credentials remain intact.
+                </p>
+                <button
+                  onClick={async () => {
+                    if (window.confirm("CRITICAL WARNING: Are you sure you want to reset all user balances to ৳0? This action is permanent and cannot be undone.")) {
+                      try {
+                        await resetAllBalances();
+                        alert("Successfully reset all user balances to ৳0!");
+                      } catch (e) {
+                        alert("Error resetting balances: " + e);
+                      }
+                    }
+                  }}
+                  style={{
+                    background: '#EF4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 18px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    fontFamily: "'Outfit', sans-serif"
+                  }}
+                >
+                  Reset Balances
+                </button>
+              </div>
+
+              {/* Reset Transactions Card */}
+              <div style={{ background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: '16px', padding: '20px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: 800, color: '#EF4444' }}>Reset All Transactions</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: '0 0 16px 0', lineHeight: 1.4 }}>
+                  Deletes all transaction logs, deposit payments, and withdrawal requests from the database. Clean logs will be initialized.
+                </p>
+                <button
+                  onClick={async () => {
+                    if (window.confirm("CRITICAL WARNING: Are you sure you want to delete all transaction history, deposit logs, and withdrawal requests? This will permanently wipe all logs from the database.")) {
+                      try {
+                        await resetAllTransactions();
+                        alert("Successfully cleared all transaction history!");
+                      } catch (e) {
+                        alert("Error clearing transactions: " + e);
+                      }
+                    }
+                  }}
+                  style={{
+                    background: '#EF4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 18px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    fontFamily: "'Outfit', sans-serif"
+                  }}
+                >
+                  Reset Transactions
+                </button>
+              </div>
             </div>
           </div>
         )}
