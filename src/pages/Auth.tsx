@@ -243,20 +243,39 @@ const Auth = () => {
 
         .cyber-logo-wrapper {
           position: relative;
-          margin-bottom: 16px;
-          animation: cyber-float 4s ease-in-out infinite;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 106px;
+          height: 106px;
+          z-index: 2;
         }
 
-        .cyber-logo {
-          width: 96px;
-          height: 96px;
-          object-fit: contain;
-          filter: drop-shadow(0 0 20px rgba(162, 0, 255, 0.6));
+        .cyber-hud-svg {
+          width: 100%;
+          height: 100%;
+          filter: drop-shadow(0 0 12px rgba(0, 210, 255, 0.45)) drop-shadow(0 0 22px rgba(162, 0, 255, 0.35));
         }
 
-        @keyframes cyber-float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
+        .hud-rotate-cw {
+          animation: hud-rotate-cw-anim 25s linear infinite;
+          transform-origin: center;
+        }
+
+        .hud-rotate-ccw {
+          animation: hud-rotate-ccw-anim 16s linear infinite;
+          transform-origin: center;
+        }
+
+        @keyframes hud-rotate-cw-anim {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes hud-rotate-ccw-anim {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(-360deg); }
         }
 
         .cyber-title {
@@ -613,7 +632,33 @@ const Auth = () => {
       {/* Brand & Heading Header */}
       <div className="cyber-header">
         <div className="cyber-logo-wrapper">
-          <img src="/images/jxm_3d_logo.png" alt="JXM Logo" className="cyber-logo" />
+          <svg viewBox="0 0 100 100" className="cyber-hud-svg">
+            {/* Outer rotating dashed circle (Clockwise) */}
+            <circle cx="50" cy="50" r="44" stroke="rgba(0, 210, 255, 0.4)" strokeWidth="1.5" fill="none" strokeDasharray="8 6 4 6" className="hud-rotate-cw" />
+            {/* Inner rotating dashed circle (Counter-Clockwise) */}
+            <circle cx="50" cy="50" r="37" stroke="rgba(162, 0, 255, 0.35)" strokeWidth="1.2" fill="none" strokeDasharray="6 8" className="hud-rotate-ccw" />
+            {/* Middle double-lined octagon */}
+            <polygon points="50,15 78,31 78,69 50,85 22,69 22,31" stroke="url(#hud-grad-purple)" strokeWidth="2" fill="none" />
+            {/* Inner glowing circle */}
+            <circle cx="50" cy="50" r="23" fill="rgba(162, 0, 255, 0.08)" stroke="url(#hud-grad-cyan)" strokeWidth="1.5" />
+            {/* Central Security Shield & Key Icon */}
+            <g transform="translate(38.5, 37.5) scale(0.95)" stroke="#00d2ff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="url(#hud-grad-cyan)" />
+              <circle cx="12" cy="9" r="2.2" fill="#bd52ff" stroke="none" />
+              <path d="M12 11.5v4.5M10.5 14h3" stroke="#ffffff" strokeWidth="1.2" />
+            </g>
+            
+            <defs>
+              <linearGradient id="hud-grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#9d4edd" />
+                <stop offset="100%" stopColor="#e0aaff" />
+              </linearGradient>
+              <linearGradient id="hud-grad-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00d2ff" />
+                <stop offset="100%" stopColor="#bd52ff" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
         <h1 className="cyber-title">
           {getStyledTitle()}
