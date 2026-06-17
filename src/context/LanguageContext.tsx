@@ -190,6 +190,8 @@ const translations: Record<Language, Record<string, string>> = {
     'rule': 'Rule',
     'gameId': 'Game ID',
     'support': 'Support',
+    'liveSupport': 'Live Support',
+    'alwaysOnline': 'Always Online',
     'matchRules': 'Match Rules',
     'gameRules': 'Game Rules',
     'gameRoomId': 'Game Room ID',
@@ -453,6 +455,8 @@ const translations: Record<Language, Record<string, string>> = {
     'rule': 'নিয়ম',
     'gameId': 'গেম আইডি',
     'support': 'সাপোর্ট',
+    'liveSupport': 'লাইভ সাপোর্ট',
+    'alwaysOnline': 'সবসময় অনলাইন',
     'matchRules': 'ম্যাচের নিয়মাবলী',
     'gameRules': 'গেমের নিয়মাবলী',
     'gameRoomId': 'গেম রুম আইডি',
@@ -615,7 +619,10 @@ const translations: Record<Language, Record<string, string>> = {
     'confirmSelection': 'चयन की पुष्टि करें',
     'savePreferences': 'पसंद सहेजें',
     'startTime': 'शुरू होगा',
-    'myWallet': 'मेरा वॉलेट'
+    'myWallet': 'मेरा वॉलेट',
+    'support': 'सपोर्ट',
+    'liveSupport': 'लाइव सपोर्ट',
+    'alwaysOnline': 'हमेशा ऑनलाइन'
   }
 };
 

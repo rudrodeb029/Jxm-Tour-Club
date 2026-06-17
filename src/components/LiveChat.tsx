@@ -36,16 +36,26 @@ const LiveChat = () => {
 
   return (
     <>
+      <style>{`
+        @keyframes chatSlideUp {
+          from { transform: translate(-50%, 100%); }
+          to { transform: translate(-50%, 0); }
+        }
+        .chat-slide-up {
+          animation: chatSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
+
       {/* Global Floating Support Button */}
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
           style={{
             position: 'fixed',
-            bottom: '100px',
-            right: '20px',
-            width: '60px',
-            height: '60px',
+            bottom: '95px',
+            right: '16px',
+            width: '46px',
+            height: '46px',
             borderRadius: '50%',
             background: 'var(--accent-gradient)',
             border: 'none',
@@ -53,7 +63,7 @@ const LiveChat = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 25px rgba(249, 111, 46, 0.4)',
+            boxShadow: '0 6px 20px rgba(249, 111, 46, 0.4)',
             cursor: 'pointer',
             zIndex: 998,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -61,18 +71,18 @@ const LiveChat = () => {
           }}
           className="hover-scale animate-bounce-subtle"
         >
-          <div style={{ position: 'relative' }}>
-            <MessageSquare size={28} strokeWidth={2.5} />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MessageSquare size={20} strokeWidth={2.5} />
             <div style={{
               position: 'absolute',
-              top: '-5px',
-              right: '-5px',
-              width: '14px',
-              height: '14px',
+              top: '-3px',
+              right: '-3px',
+              width: '10px',
+              height: '10px',
               background: '#10B981',
               borderRadius: '50%',
-              border: '2px solid var(--bg-dark)',
-              boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)'
+              border: '1.5px solid var(--bg-dark)',
+              boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)'
             }} />
           </div>
         </button>
@@ -81,21 +91,21 @@ const LiveChat = () => {
       {/* Chat Window */}
       {isChatOpen && (
         <div
-          className="animate-slide-up"
+          className="chat-slide-up"
           style={{
             position: 'fixed',
-            bottom: '90px',
-            right: '24px',
-            width: 'calc(100% - 48px)',
-            maxWidth: '400px',
-            height: '500px',
-            maxHeight: '70vh',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: '480px',
+            height: '100dvh',
             background: 'var(--bg-dark)',
             backdropFilter: 'blur(20px)',
-            borderRadius: '32px',
-            border: '1px solid var(--glass-border)',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
-            zIndex: 999,
+            borderRadius: '0px',
+            border: 'none',
+            boxShadow: '0 0 50px rgba(0,0,0,0.5)',
+            zIndex: 2000,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden'
@@ -103,7 +113,8 @@ const LiveChat = () => {
         >
           {/* Header */}
           <div style={{ 
-            padding: '24px', 
+            padding: '24px 24px 20px 24px', 
+            paddingTop: 'calc(24px + env(safe-area-inset-top, 0px))',
             background: 'var(--glass-bg)', 
             borderBottom: '1px solid var(--glass-border)',
             display: 'flex',
@@ -229,7 +240,7 @@ const LiveChat = () => {
                     }} 
                   />
                   <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-                    {t('supportBot')}
+                    {t('supportBot') || 'Support Bot'}
                   </span>
                 </div>
                 <div style={{ 
@@ -255,6 +266,7 @@ const LiveChat = () => {
             onSubmit={handleSendMessage}
             style={{ 
               padding: '20px', 
+              paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
               background: 'var(--glass-bg)', 
               borderTop: '1px solid var(--glass-border)',
               display: 'flex',
@@ -304,5 +316,4 @@ const LiveChat = () => {
     </>
   );
 };
-
 export default LiveChat;
