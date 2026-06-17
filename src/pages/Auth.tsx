@@ -208,11 +208,7 @@ const Auth = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: radial-gradient(circle at center, rgba(13, 10, 25, 0.85) 0%, rgba(5, 3, 10, 0.98) 100%), url('/images/cyber_gaming_bg.png');
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          background-attachment: fixed;
+          background: transparent;
           color: #ffffff;
           position: relative;
           font-family: 'Rajdhani', sans-serif;

@@ -277,7 +277,7 @@ const onboardingCSS = `
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(165deg, #12141F 0%, #0A0C14 50%, #14101E 100%);
+  background: transparent;
   position: relative;
   overflow: hidden;
   color: #fff;
