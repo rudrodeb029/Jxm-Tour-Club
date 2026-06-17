@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { AnimatedCounter } from './AnimatedCounter';
-import { Users } from 'lucide-react';
+import { Users, Gamepad2 } from 'lucide-react';
 import { parseTime, formatTime, getCardStatus as getCardStatusFromUtil, getEffectiveMatchStatus, getTargetDateTime } from '../utils/timeUtils';
 
 interface TeamInfo {
@@ -468,7 +468,15 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       </div>
 
       {/* Bottom Join & Live/Countdown Area */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
+            <Gamepad2 className="w-4 h-4" />
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4ADE80' }}>
+              {totalMatchCount} {totalMatchCount === 1 ? t('matchFound') : t('matchesFound')}
+            </span>
+          </div>
+        </div>
         
         {/* Giant Physical 3D Button */}
         <button 
