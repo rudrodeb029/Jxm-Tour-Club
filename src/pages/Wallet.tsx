@@ -222,7 +222,7 @@ const Wallet = () => {
     }
   };
 
-  const handleDeposit = async () => {
+  const handleDeposit = () => {
     const amountUSD = getUSDAmount(depositAmount);
     const gateway = localGateways.find(g => g.id === selectedGateway);
     
@@ -237,34 +237,35 @@ const Wallet = () => {
     }
 
     if (amountUSD > 0 && gateway && currentUser) {
-      try {
-        await addDoc(collection(db, 'payments'), {
-          userId: currentUser.uid,
-          displayUserId: profileUsername || displayUserId,
-          amount: amountUSD,
-          transactionId: transactionId,
-          paymentMethod: gateway.name,
-          accountNumber: 'User Account',
-          userName: currentUser.displayName || 'User',
-          userAvatar: currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
-          timestamp: new Date().toISOString(),
-          status: 'pending',
-          isRaw: true
-        });
-        
-        setDepositAmount('');
-        setTransactionId('');
-        setSelectedGateway(null);
-        setIsConfirming(false);
-        setSuccessConfig({
-          isOpen: true,
-          title: "Deposit Requested!",
-          message: "Deposit request submitted! Balance will update after admin approval."
-        });
-      } catch (error) {
-        console.error("Error adding deposit request:", error);
-        alert("Failed to submit deposit request.");
-      }
+      // 1. Instantly update UI states to make it look smooth and fast
+      setDepositAmount('');
+      setTransactionId('');
+      setSelectedGateway(null);
+      setIsConfirming(false);
+      setSuccessConfig({
+        isOpen: true,
+        title: "Deposit Requested!",
+        message: "Deposit request submitted! Balance will update after admin approval."
+      });
+
+      // 2. Perform the Firestore document addition in the background
+      addDoc(collection(db, 'payments'), {
+        userId: currentUser.uid,
+        displayUserId: profileUsername || displayUserId,
+        amount: amountUSD,
+        transactionId: transactionId,
+        paymentMethod: gateway.name,
+        accountNumber: 'User Account',
+        userName: currentUser.displayName || 'User',
+        userAvatar: currentUser.photoURL || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User',
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        isRaw: true
+      })
+      .catch((error) => {
+        console.error("Background deposit request failed:", error);
+        alert("Failed to submit deposit request. Please try again.");
+      });
     }
   };
 
@@ -783,8 +784,8 @@ const Wallet = () => {
               background: 'var(--modal-bg)',
               width: '100%',
               maxWidth: '400px',
-              borderRadius: '40px',
-              padding: '24px 16px',
+              borderRadius: '24px',
+              padding: '20px 16px',
               color: 'var(--text-primary)',
               border: '1px solid var(--glass-border)',
               textAlign: 'center'
@@ -793,25 +794,25 @@ const Wallet = () => {
           >
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
-              <button onClick={() => setIsConfirming(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
-                <X size={18} />
+              <button onClick={() => setIsConfirming(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '6px', borderRadius: '10px', cursor: 'pointer' }}>
+                <X size={16} />
               </button>
             </div>
             <div style={{
-              width: '90px', 
-              height: '90px', 
+              width: '64px', 
+              height: '64px', 
               borderRadius: '50%', 
               background: `${localGateways.find((g: any) => g.id === selectedGateway)?.color || '#f97316'}15`,
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              margin: '0 auto 24px',
+              margin: '0 auto 16px',
               border: `1px solid ${localGateways.find((g: any) => g.id === selectedGateway)?.color || '#f97316'}33`
             }}>
-              <img src={localGateways.find((g: any) => g.id === selectedGateway)?.logo} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
+              <img src={localGateways.find((g: any) => g.id === selectedGateway)?.logo} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmVia')} {localGateways.find((g: any) => g.id === selectedGateway)?.name || 'Gateway'}</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.6 }}>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 900, marginBottom: '8px' }}>{t('confirmVia')} {localGateways.find((g: any) => g.id === selectedGateway)?.name || 'Gateway'}</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '0.9rem', lineHeight: 1.5 }}>
               {t('addingFundsPrefix')} <span style={{ color: '#10B981', fontWeight: 900 }}>{formatCurrency(parseFloat(depositAmount) || 0)}</span> {t('addingFundsSuffix')} <span style={{ color: localGateways.find((g: any) => g.id === selectedGateway)?.color || 'var(--accent-orange)', fontWeight: 800 }}>{localGateways.find((g: any) => g.id === selectedGateway)?.name || 'Gateway'}</span>.
             </p>
 
@@ -842,16 +843,16 @@ const Wallet = () => {
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.03)',
                   border: '1px solid var(--glass-border)',
-                  borderRadius: '20px',
-                  padding: '16px',
-                  marginBottom: '24px',
+                  borderRadius: '16px',
+                  padding: '12px',
+                  marginBottom: '16px',
                   textAlign: 'left'
                 }}>
                   {accountNumber && (
-                    <div style={{ marginBottom: instructions ? '12px' : '0' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
+                    <div style={{ marginBottom: instructions ? '8px' : '0' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{accountNumber}</span>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--accent-orange)' }}>{accountNumber}</span>
                         <button 
                           type="button"
                           onClick={() => {
@@ -862,9 +863,9 @@ const Wallet = () => {
                             background: 'rgba(249, 111, 46, 0.1)',
                             border: '1px solid rgba(249, 111, 46, 0.2)',
                             color: 'var(--accent-orange)',
-                            padding: '6px 12px',
-                            borderRadius: '10px',
-                            fontSize: '0.75rem',
+                            padding: '4px 10px',
+                            borderRadius: '8px',
+                            fontSize: '0.7rem',
                             fontWeight: 800,
                             cursor: 'pointer'
                           }}
@@ -876,16 +877,16 @@ const Wallet = () => {
                   )}
                   {instructions && (
                     <div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>Instructions</div>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{instructions}</p>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '2px' }}>Instructions</div>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{instructions}</p>
                     </div>
                   )}
                 </div>
               );
             })()}
             
-            <div style={{ marginBottom: '24px', textAlign: 'left' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase' }}>{t('txnIdRequired')}</label>
+            <div style={{ marginBottom: '16px', textAlign: 'left' }}>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px', fontWeight: 700, textTransform: 'uppercase' }}>{t('txnIdRequired')}</label>
               <input 
                 type="text"
                 value={transactionId}
@@ -895,10 +896,10 @@ const Wallet = () => {
                   width: '100%',
                   background: 'var(--glass-bg)',
                   border: '2px solid var(--glass-border)',
-                  borderRadius: '16px',
-                  padding: '16px',
+                  borderRadius: '12px',
+                  padding: '12px 14px',
                   color: 'var(--text-primary)',
-                  fontSize: '1rem',
+                  fontSize: '0.95rem',
                   fontWeight: 700,
                   outline: 'none',
                   transition: 'all 0.3s ease'
@@ -908,18 +909,18 @@ const Wallet = () => {
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={handleDeposit}
                 style={{ 
                   width: '100%', 
-                  padding: '15px 20px', 
-                  borderRadius: '14px', 
+                  padding: '12px 20px', 
+                  borderRadius: '12px', 
                   background: localGateways.find((g: any) => g.id === selectedGateway)?.color || 'var(--accent-orange)',
                   border: 'none', 
                   color: 'white', 
                   fontWeight: 800, 
-                  fontSize: '1rem', 
+                  fontSize: '0.95rem', 
                   cursor: 'pointer', 
                   boxShadow: `0 8px 20px ${localGateways.find((g: any) => g.id === selectedGateway)?.color || 'rgba(249,111,46,0.3)'}`
                 }}
@@ -928,7 +929,7 @@ const Wallet = () => {
               </button>
               <button 
                 onClick={() => setIsConfirming(false)}
-                style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                style={{ width: '100%', padding: '10px 18px', borderRadius: '10px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 {t('cancel')}
               </button>
@@ -961,8 +962,8 @@ const Wallet = () => {
               background: 'var(--modal-bg)',
               width: '100%',
               maxWidth: '400px',
-              borderRadius: '40px',
-              padding: '24px 16px',
+              borderRadius: '24px',
+              padding: '20px 16px',
               color: 'var(--text-primary)',
               border: '1px solid var(--glass-border)',
               textAlign: 'center'
@@ -971,40 +972,40 @@ const Wallet = () => {
           >
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
-              <button onClick={() => setIsWithdrawConfirming(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
-                <X size={18} />
+              <button onClick={() => setIsWithdrawConfirming(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '6px', borderRadius: '10px', cursor: 'pointer' }}>
+                <X size={16} />
               </button>
             </div>
             <div style={{
-              width: '90px', 
-              height: '90px', 
+              width: '64px', 
+              height: '64px', 
               borderRadius: '50%', 
               background: `${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || '#f97316'}15`,
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              margin: '0 auto 24px',
+              margin: '0 auto 16px',
               border: `1px solid ${savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || '#f97316'}33`
             }}>
-              <img src={savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.icon || 'https://cdn-icons-png.flaticon.com/512/4021/4021708.png'} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
+              <img src={savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.icon || 'https://cdn-icons-png.flaticon.com/512/4021/4021708.png'} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%' }} alt="" />
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmWithdrawal')}</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 900, marginBottom: '8px' }}>{t('confirmWithdrawal')}</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '0.9rem', lineHeight: 1.5 }}>
               {t('withdrawingFundsPrefix') || 'You are requesting to withdraw'} <span style={{ color: 'var(--accent-orange)', fontWeight: 900 }}>{formatCurrency(parseFloat(withdrawAmount) || 0)}</span> {t('withdrawingFundsSuffix') || 'to your'} <span style={{ color: savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.color || 'var(--accent-orange)', fontWeight: 800 }}>{savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.name || 'Account'}</span> {t('account') || 'account'} ({savedMethods.find((m: any) => m.id === selectedWithdrawMethod)?.number || 'N/A'}).
             </p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={confirmWithdraw}
                 style={{ 
                   width: '100%', 
-                  padding: '15px 20px', 
-                  borderRadius: '14px', 
+                  padding: '12px 20px', 
+                  borderRadius: '12px', 
                   background: 'var(--accent-gradient)', 
                   border: 'none', 
                   color: 'white', 
                   fontWeight: 800, 
-                  fontSize: '1rem', 
+                  fontSize: '0.95rem', 
                   cursor: 'pointer', 
                   boxShadow: '0 8px 20px rgba(249, 111, 46, 0.2)' 
                 }}
@@ -1013,7 +1014,7 @@ const Wallet = () => {
               </button>
               <button 
                 onClick={() => setIsWithdrawConfirming(false)}
-                style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                style={{ width: '100%', padding: '10px 18px', borderRadius: '10px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 {t('cancel')}
               </button>
@@ -1049,8 +1050,8 @@ const Wallet = () => {
               background: 'var(--modal-bg)',
               width: '100%',
               maxWidth: '400px',
-              borderRadius: '40px',
-              padding: '24px 16px',
+              borderRadius: '24px',
+              padding: '20px 16px',
               color: 'var(--text-primary)',
               border: '1px solid var(--glass-border)',
               textAlign: 'center'
@@ -1059,18 +1060,18 @@ const Wallet = () => {
           >
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
-              <button onClick={() => setShowAddMethod(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
-                <X size={18} />
+              <button onClick={() => setShowAddMethod(false)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '6px', borderRadius: '10px', cursor: 'pointer' }}>
+                <X size={16} />
               </button>
             </div>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('linkAccountTitle')}</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>{t('linkAccountSub')}</p>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 900, marginBottom: '8px' }}>{t('linkAccountTitle')}</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '0.9rem' }}>{t('linkAccountSub')}</p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
               <select 
                 value={newMethodData.name}
                 onChange={(e) => setNewMethodData({...newMethodData, name: e.target.value})}
-                style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '16px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '1rem', outline: 'none' }}
+                style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px 14px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem', outline: 'none' }}
               >
                 <option value="" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>{t('selectProvider')}</option>
                 <option value="Bkash" style={{ background: 'var(--modal-bg)', color: 'var(--text-primary)' }}>Bkash</option>
@@ -1083,21 +1084,21 @@ const Wallet = () => {
                 placeholder={t('enterAccountNumber')}
                 value={newMethodData.number}
                 onChange={(e) => setNewMethodData({...newMethodData, number: e.target.value})}
-                style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '20px', padding: '16px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '1rem', outline: 'none' }}
+                style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px 14px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.95rem', outline: 'none' }}
               />
 
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={handleAddMethod}
-                style={{ width: '100%', padding: '15px 20px', borderRadius: '14px', background: 'var(--accent-gradient)', border: 'none', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}
+                style={{ width: '100%', padding: '12px 20px', borderRadius: '12px', background: 'var(--accent-gradient)', border: 'none', color: 'white', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer' }}
               >
                 {t('linkAccountBtn')}
               </button>
               <button 
                 onClick={() => setShowAddMethod(false)}
-                style={{ width: '100%', padding: '12px 18px', borderRadius: '12px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                style={{ width: '100%', padding: '10px 18px', borderRadius: '10px', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 {t('cancel')}
               </button>
@@ -1131,8 +1132,8 @@ const Wallet = () => {
               background: 'var(--modal-bg)',
               width: '100%',
               maxWidth: '400px',
-              borderRadius: '40px',
-              padding: '24px 16px',
+              borderRadius: '24px',
+              padding: '20px 16px',
               color: 'var(--text-primary)',
               border: '1px solid var(--glass-border)',
               textAlign: 'center'
@@ -1140,43 +1141,43 @@ const Wallet = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-10px' }}>
-              <button onClick={() => setDeleteConfirmation(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}>
-                <X size={18} />
+              <button onClick={() => setDeleteConfirmation(null)} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', padding: '6px', borderRadius: '10px', cursor: 'pointer' }}>
+                <X size={16} />
               </button>
             </div>
             <div style={{
-              width: '80px', 
-              height: '80px', 
+              width: '64px', 
+              height: '64px', 
               borderRadius: '50%', 
               background: 'rgba(239, 68, 68, 0.1)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              margin: '0 auto 24px',
+              margin: '0 auto 16px',
               color: '#EF4444'
             }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>
               </svg>
             </div>
             
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '12px' }}>{t('confirmDeletion')}</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', lineHeight: 1.6 }}>
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 900, marginBottom: '8px' }}>{t('confirmDeletion')}</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '0.9rem', lineHeight: 1.5 }}>
               {t('deleteConfirmationMsg')}
             </p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={confirmDelete}
                 style={{ 
                   width: '100%', 
-                  padding: '15px 20px', 
-                  borderRadius: '14px', 
+                  padding: '12px 20px', 
+                  borderRadius: '12px', 
                   background: '#EF4444', 
                   border: 'none', 
                   color: 'white', 
                   fontWeight: 800, 
-                  fontSize: '1rem', 
+                  fontSize: '0.95rem', 
                   cursor: 'pointer',
                   boxShadow: '0 8px 20px rgba(239, 68, 68, 0.3)'
                 }}
@@ -1187,13 +1188,13 @@ const Wallet = () => {
                 onClick={() => setDeleteConfirmation(null)}
                 style={{ 
                   width: '100%', 
-                  padding: '12px 18px', 
-                  borderRadius: '12px', 
+                  padding: '10px 18px', 
+                  borderRadius: '10px', 
                   background: 'var(--glass-bg)', 
                   border: '1px solid var(--glass-border)', 
                   color: 'var(--text-primary)', 
                   fontWeight: 700, 
-                  fontSize: '0.9rem',
+                  fontSize: '0.85rem',
                   cursor: 'pointer' 
                 }}
               >
