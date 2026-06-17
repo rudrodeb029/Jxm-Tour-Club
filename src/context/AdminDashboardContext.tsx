@@ -1389,10 +1389,21 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const resetAllTransactions = async () => {
     try {
-      // 1. Reset all user balances to 0 in Firestore & local state
-      const balancePromises = adminUsers.map(u => updateDoc(doc(db, 'users', u.id), { balance: 0 }));
+      // 1. Reset all user balances, earnings, wins, and matches to 0 in Firestore & local state
+      const balancePromises = adminUsers.map(u => updateDoc(doc(db, 'users', u.id), { 
+        balance: 0,
+        totalEarnings: 0,
+        totalWins: 0,
+        totalMatches: 0
+      }));
       await Promise.all(balancePromises);
-      setAdminUsers(prev => prev.map(u => ({ ...u, balance: 0 })));
+      setAdminUsers(prev => prev.map(u => ({ 
+        ...u, 
+        balance: 0,
+        totalEarnings: 0,
+        totalWins: 0,
+        totalMatches: 0
+      })));
 
       // 2. Delete all documents in the 'winners' collection
       const winnersSnap = await getDocs(collection(db, 'winners'));
