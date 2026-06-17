@@ -140,6 +140,7 @@ interface AdminDashboardContextType {
   updateUserBalance: (userId: string, newBalance: number) => void;
   incrementUserMatches: (userId: string) => void;
   toggleUserStatus: (userId: string) => void;
+  resetAllBalances: () => Promise<void>;
   
   // Winners
   winners: Winner[];
@@ -1374,6 +1375,17 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
+  const resetAllBalances = async () => {
+    try {
+      const promises = adminUsers.map(u => updateDoc(doc(db, 'users', u.id), { balance: 0 }));
+      await Promise.all(promises);
+      setAdminUsers(prev => prev.map(u => ({ ...u, balance: 0 })));
+    } catch (e) {
+      console.error('Error resetting all user balances:', e);
+      throw e;
+    }
+  };
+
   const updatePaymentSettings = async (settings: PaymentSettings) => {
     try {
       await setDoc(doc(db, 'payment_settings', 'accounts'), settings);
@@ -1432,7 +1444,7 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
       adminMatches, createMatch, updateMatch, deleteMatch, toggleMatchStatus, setMatchWinners,
       paymentRequests, approvePayment, rejectPayment, addPaymentRequest,
       withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal, addWithdrawalRequest,
-      adminUsers, updateUserBalance, incrementUserMatches, toggleUserStatus,
+      adminUsers, updateUserBalance, incrementUserMatches, toggleUserStatus, resetAllBalances,
       winners,
       stats,
       addParticipantToMatch,

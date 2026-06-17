@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     adminMatches, createMatch, updateMatch, deleteMatch, toggleMatchStatus,
     paymentRequests, approvePayment, rejectPayment,
     withdrawalRequests, processWithdrawal, completeWithdrawal, rejectWithdrawal,
-    adminUsers, updateUserBalance, toggleUserStatus, stats, setMatchWinners,
+    adminUsers, updateUserBalance, toggleUserStatus, resetAllBalances, stats, setMatchWinners,
     winners,
     paymentSettings, updatePaymentSettings,
     supportSettings, updateSupportSettings
@@ -1169,8 +1169,23 @@ const AdminDashboard = () => {
         {/* USERS TAB */}
         {activeTab === 'users' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ color: 'var(--text-secondary)' }}>{adminUsers.length} total users registered</div>
+              <Btn 
+                variant="danger" 
+                onClick={async () => {
+                  if (window.confirm("⚠️ Are you sure you want to reset all users' balances to 0? This action cannot be undone and will clear everyone's balance (including admins).")) {
+                    try {
+                      await resetAllBalances();
+                      alert("Successfully reset all user balances to 0!");
+                    } catch (e) {
+                      alert("Failed to reset balances. See console for error details.");
+                    }
+                  }
+                }}
+              >
+                Reset All Balances
+              </Btn>
             </div>
             
             {isMobile ? (
