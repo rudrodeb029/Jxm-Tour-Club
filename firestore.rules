@@ -53,6 +53,10 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    match /rules/{ruleId} {
+      allow read, write: if true;
+    }
+
     match /payment_settings/{docId} {
       allow read, write: if true;
     }
