@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft, Eye, EyeOff } from 'lucide-react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { User as UserIcon } from 'lucide-react';
@@ -34,6 +34,53 @@ const Auth = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          setIsLoading(true);
+          const user = result.user;
+
+          // Check if user document already exists in Firestore
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (!userDocSnap.exists()) {
+            // Generate JXM Profile info for first-time Google sign-ins
+            const nameVal = user.displayName || 'Google User';
+            const part1 = Math.floor(1000 + Math.random() * 9000);
+            const part2 = Math.floor(1000 + Math.random() * 9000);
+            const generatedId = `${part1} ${part2}`;
+            const generatedAvatar = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nameVal)}`;
+            const generatedUsername = `@${nameVal.toLowerCase().replace(/[^a-z0-9]/g, '')}${Math.floor(100 + Math.random() * 900)}`;
+
+            await setDoc(userDocRef, {
+              email: user.email,
+              name: nameVal,
+              username: generatedUsername,
+              avatar: generatedAvatar,
+              userId: generatedId,
+              createdAt: new Date(),
+              balance: 0,
+            });
+          }
+
+          setSuccessMsg('Logged in successfully!');
+          setTimeout(() => {
+            navigate('/home');
+          }, 1000);
+        }
+      } catch (error: any) {
+        console.error("Error with redirect result", error);
+        setErrorMsg(error.message || 'Google Auth Redirect failed');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkRedirect();
+  }, [navigate]);
+
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
     setSuccessMsg('');
@@ -52,10 +99,27 @@ const Auth = () => {
         const userCredential = await signInWithCredential(auth, credential);
         user = userCredential.user;
       } else {
-        // Web Google Auth login using Firebase Popup (bypasses deprecated gapi library)
+        // Web Google Auth login using Firebase Popup/Redirect (bypasses deprecated gapi library)
         const provider = new GoogleAuthProvider();
-        const userCredential = await signInWithPopup(auth, provider);
-        user = userCredential.user;
+        const isMobileWeb = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobileWeb) {
+          await signInWithRedirect(auth, provider);
+          return; // Redirect will reload the page
+        } else {
+          try {
+            const userCredential = await signInWithPopup(auth, provider);
+            user = userCredential.user;
+          } catch (popupError: any) {
+            console.warn("Popup blocked, falling back to redirect:", popupError);
+            if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/cancelled-popup-request') {
+              await signInWithRedirect(auth, provider);
+              return; // Redirect will reload the page
+            } else {
+              throw popupError;
+            }
+          }
+        }
       }
 
       // Check if user document already exists in Firestore
