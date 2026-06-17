@@ -22,13 +22,12 @@ const Winners = () => {
           <ArrowLeft size={24} />
         </button>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '8px', borderRadius: '12px', color: '#FBBF24' }}>
-              <Trophy size={24} />
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '6px', borderRadius: '10px', color: '#FBBF24', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={18} />
             </div>
             {t('recentWinners').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('recentWinners').split(' ')[1] || ''}</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>{t('hallOfFame')}</p>
         </div>
       </div>
 

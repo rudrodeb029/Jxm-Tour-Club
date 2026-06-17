@@ -183,11 +183,10 @@ const LiveMatches = () => {
           <ArrowLeft size={24} />
         </button>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981', animation: 'pulse 1.5s infinite' }} />
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981', animation: 'pulse 1.5s infinite' }} />
             {t('liveMatches').split(' ')[0]} <span style={{ color: 'var(--accent-orange)' }}>{t('liveMatches').split(' ')[1] || ''}</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: 600 }}>{t('currentlyActiveArenas')}</p>
         </div>
       </div>
 
