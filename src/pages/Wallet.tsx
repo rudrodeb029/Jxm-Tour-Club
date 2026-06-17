@@ -32,7 +32,7 @@ const Wallet = () => {
   const { t, language } = useLanguage();
   const { formatCurrency, currency } = useCurrency();
   const { isAdminMode } = useAdmin();
-  const { balance, addBalance, deductBalance, transactions: localTransactions = [] } = useBalance();
+  const { balance, setBalance, addBalance, deductBalance, transactions: localTransactions = [] } = useBalance();
   const { paymentRequests = [], withdrawalRequests = [], paymentSettings = {} as any } = useAdminDashboard();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser?.id || 'USER123');
@@ -165,30 +165,41 @@ const Wallet = () => {
     setIsWithdrawConfirming(true);
   };
 
-  const confirmWithdraw = async () => {
+  const confirmWithdraw = () => {
     const amountUSD = getUSDAmount(withdrawAmount);
     const method = savedMethods.find(m => m.id === selectedWithdrawMethod);
     
     if (amountUSD > 0 && method && currentUser) {
-      try {
-        const userRef = doc(db, 'users', currentUser.uid);
-        
-        // 1. Transaction to safely verify and deduct the balance immediately
-        await runTransaction(db, async (transaction) => {
-          const userDoc = await transaction.get(userRef);
-          if (!userDoc.exists()) {
-            throw new Error("User profile does not exist.");
-          }
-          const currentBalance = userDoc.data().balance || 0;
-          if (currentBalance < amountUSD) {
-            throw new Error("Insufficient balance.");
-          }
-          // Deduct from Firestore balance
-          transaction.update(userRef, { balance: currentBalance - amountUSD });
-        });
+      // 1. Instantly update UI states to make it look smooth and fast
+      setWithdrawAmount('');
+      setSelectedWithdrawMethod(null);
+      setIsWithdrawConfirming(false);
+      setSuccessConfig({
+        isOpen: true,
+        title: "Withdrawal Requested!",
+        message: "Your withdrawal request has been submitted. Your balance has been updated and the request will be processed by the admin."
+      });
 
-        // 2. Add withdrawal request document
-        await addDoc(collection(db, 'withdrawals'), {
+      // 2. Optimistically update local balance in the context immediately
+      setBalance(prev => Math.max(0, prev - amountUSD));
+
+      // 3. Perform the Firestore transaction and document addition in the background
+      const userRef = doc(db, 'users', currentUser.uid);
+      runTransaction(db, async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists()) {
+          throw new Error("User profile does not exist.");
+        }
+        const currentBalance = userDoc.data().balance || 0;
+        if (currentBalance < amountUSD) {
+          throw new Error("Insufficient balance.");
+        }
+        // Deduct from Firestore balance
+        transaction.update(userRef, { balance: currentBalance - amountUSD });
+      })
+      .then(() => {
+        // Add withdrawal request document
+        return addDoc(collection(db, 'withdrawals'), {
           userId: currentUser.uid,
           displayUserId: profileUsername || displayUserId,
           amount: amountUSD,
@@ -201,19 +212,13 @@ const Wallet = () => {
           status: 'pending',
           isRaw: true
         });
-        
-        setWithdrawAmount('');
-        setSelectedWithdrawMethod(null);
-        setIsWithdrawConfirming(false);
-        setSuccessConfig({
-          isOpen: true,
-          title: "Withdrawal Requested!",
-          message: "Your withdrawal request has been submitted. Your balance has been updated and the request will be processed by the admin."
-        });
-      } catch (error: any) {
-        console.error("Error adding withdrawal request:", error);
+      })
+      .catch((error: any) => {
+        console.error("Background withdrawal failed:", error);
+        // Rollback optimistic balance update if the transaction failed
+        setBalance(prev => prev + amountUSD);
         alert(error.message || "Failed to submit withdrawal request.");
-      }
+      });
     }
   };
 
@@ -1004,7 +1009,7 @@ const Wallet = () => {
                   boxShadow: '0 8px 20px rgba(249, 111, 46, 0.2)' 
                 }}
               >
-                {t('confirmAndWithdraw').toUpperCase() || 'CONFIRM & WITHDRAW'}
+                {t('withdraw') || 'Withdraw'}
               </button>
               <button 
                 onClick={() => setIsWithdrawConfirming(false)}
