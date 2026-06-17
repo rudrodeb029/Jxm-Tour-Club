@@ -9,8 +9,47 @@ const GlobalActivityFeed: React.FC = () => {
   const { activities = [] } = useAdminDashboard();
   const { formatCurrency, currency } = useCurrency();
   const { currentUser } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const currentUserId = currentUser?.uid || 'USER123';
+
+  const formatActivityTime = (timestamp: any) => {
+    if (!timestamp) return '';
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return String(timestamp);
+
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (language === 'bn') {
+        if (diffMins < 1) return 'এইমাত্র';
+        if (diffMins < 60) return `${diffMins} মিনিট আগে`;
+        if (diffHours < 24) return `${diffHours} ঘণ্টা আগে`;
+        if (diffDays === 1) return 'গতকাল';
+        if (diffDays < 7) return `${diffDays} দিন আগে`;
+        return date.toLocaleDateString('bn-BD', { month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+      } else if (language === 'hi') {
+        if (diffMins < 1) return 'अभी-अभी';
+        if (diffMins < 60) return `${diffMins} मिनट पहले`;
+        if (diffHours < 24) return `${diffHours} घंटे पहले`;
+        if (diffDays === 1) return 'कल';
+        if (diffDays < 7) return `${diffDays} दिन पहले`;
+        return date.toLocaleDateString('hi-IN', { month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+      } else {
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays === 1) return 'yesterday';
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      }
+    } catch (e) {
+      return String(timestamp);
+    }
+  };
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -141,7 +180,7 @@ const GlobalActivityFeed: React.FC = () => {
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                     <span>{getMessage(activity, isPrivate)}</span>
                     <span style={{ fontSize: '8px', color: 'var(--text-muted)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      • {activity.timestamp}
+                      • {formatActivityTime(activity.timestamp)}
                     </span>
                   </div>
                 </div>

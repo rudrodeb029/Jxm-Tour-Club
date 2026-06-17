@@ -38,6 +38,45 @@ const Wallet = () => {
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser?.id || 'USER123');
   const [profileUsername, setProfileUsername] = useState<string>('');
 
+  const formatTxDate = (dateStr: any) => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return String(dateStr);
+
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (language === 'bn') {
+        if (diffMins < 1) return 'এইমাত্র';
+        if (diffMins < 60) return `${diffMins} মিনিট আগে`;
+        if (diffHours < 24) return `${diffHours} ঘণ্টা আগে`;
+        if (diffDays === 1) return 'গতকাল, ' + date.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+        if (diffDays < 7) return `${diffDays} দিন আগে`;
+        return date.toLocaleDateString('bn-BD', { month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+      } else if (language === 'hi') {
+        if (diffMins < 1) return 'अभी-अभी';
+        if (diffMins < 60) return `${diffMins} मिनट पहले`;
+        if (diffHours < 24) return `${diffHours} घंटे पहले`;
+        if (diffDays === 1) return 'कल, ' + date.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+        if (diffDays < 7) return `${diffDays} दिन पहले`;
+        return date.toLocaleDateString('hi-IN', { month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+      } else {
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays === 1) return 'yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      }
+    } catch (e) {
+      return String(dateStr);
+    }
+  };
+
   useEffect(() => {
     if (!currentUser) return;
     const userDocRef = doc(db, 'users', currentUser.uid);
@@ -725,7 +764,7 @@ const Wallet = () => {
                     </div>
                     <div>
                       <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '2px', color: 'var(--text-primary)' }}>{tx.type}</div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>{tx.date}</div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600 }}>{formatTxDate(tx.date)}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
