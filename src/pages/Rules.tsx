@@ -50,7 +50,7 @@ const Rules = () => {
             gap: '8px'
           }}>
             <span style={{ color: 'var(--accent-orange)', fontSize: '1.1rem', lineHeight: '0.9' }}>•</span>
-            <span>{trimmed.substring(1).trim()}</span>
+            <span style={{ wordBreak: 'break-word', overflowWrap: 'anywhere', minWidth: 0 }}>{trimmed.substring(1).trim()}</span>
           </li>
         );
       }
@@ -62,7 +62,9 @@ const Rules = () => {
           marginBottom: '12px', 
           fontSize: '0.95rem', 
           color: 'var(--text-secondary)', 
-          lineHeight: '1.6' 
+          lineHeight: '1.6',
+          wordBreak: 'break-word',
+          overflowWrap: 'anywhere'
         }}>
           {trimmed}
         </p>

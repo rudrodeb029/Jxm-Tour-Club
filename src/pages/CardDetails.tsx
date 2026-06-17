@@ -710,7 +710,7 @@ const CardDetails = () => {
                     }}>
                       {idx + 1}
                     </span>
-                    <span style={{ lineHeight: 1.6 }}>{rule}</span>
+                    <span style={{ lineHeight: 1.6, wordBreak: 'break-word', overflowWrap: 'anywhere', minWidth: 0 }}>{rule}</span>
                   </li>
                 )) : (
                   <>
