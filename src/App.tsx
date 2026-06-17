@@ -56,6 +56,7 @@ const RootNavigator = () => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { currentUser } = useAuth();
   const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
 
   useEffect(() => {
@@ -68,6 +69,8 @@ const AnimatedRoutes = () => {
       document.body.classList.remove('admin-mode');
     };
   }, [location.pathname]);
+
+  const showLiveChat = currentUser && !location.pathname.startsWith('/admin') && location.pathname !== '/auth';
 
   return (
     <>
@@ -93,6 +96,7 @@ const AnimatedRoutes = () => {
         </Routes>
       </div>
       {showNav && <BottomNav />}
+      {showLiveChat && <LiveChat />}
     </>
   );
 };
@@ -109,7 +113,6 @@ function App() {
                 <ChatProvider>
                   <Router>
                     <AnimatedRoutes />
-                    <LiveChat />
                     <WinnerCelebration />
                     <NotificationManager />
                     </Router>
