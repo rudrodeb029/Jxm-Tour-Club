@@ -337,7 +337,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fef08a', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                👤 {team1?.entryType || 'SOLO'}
+                👤 SOLO
               </div>
               <div style={{ 
                 fontSize: '0.75rem', 
@@ -371,7 +371,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                👥 {team2?.entryType || 'DUO'}
+                👥 DUO
               </div>
               <div style={{ 
                 fontSize: '0.75rem', 
@@ -405,7 +405,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
               <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#fcd34d', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-                🛡️ {team3?.entryType || 'SQUAD'}
+                🛡️ SQUAD
               </div>
               <div style={{ 
                 fontSize: '0.75rem', 
@@ -468,13 +468,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       </div>
 
       {/* Bottom Join & Live/Countdown Area */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
-            <Users className="w-4 h-4" />
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4ADE80' }}>{totalPlayerCount} {t('players')}</span>
-          </div>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         
         {/* Giant Physical 3D Button */}
         <button 
