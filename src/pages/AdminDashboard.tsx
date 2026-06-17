@@ -294,6 +294,10 @@ const AdminDashboard = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
 
+  const [gameRulesText, setGameRulesText] = useState('');
+  const [isSavingRules, setIsSavingRules] = useState(false);
+  const [saveRulesSuccess, setSaveRulesSuccess] = useState(false);
+
   useEffect(() => {
     if (activeTab === 'announcements') {
       const loadAnnouncement = async () => {
@@ -310,6 +314,21 @@ const AdminDashboard = () => {
         }
       };
       loadAnnouncement();
+    }
+    if (activeTab === 'game_rules') {
+      const loadGameRules = async () => {
+        try {
+          const docRef = doc(db, 'rules', 'global');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setGameRulesText(data.text || '');
+          }
+        } catch (e) {
+          console.error("Error loading game rules:", e);
+        }
+      };
+      loadGameRules();
     }
   }, [activeTab]);
 
@@ -504,6 +523,7 @@ const AdminDashboard = () => {
     { id: 'inner_sections', icon: '🎴', label: 'Inner Sections' },
     { id: 'chats', icon: '💬', label: 'Support' },
     { id: 'announcements', icon: '📢', label: 'Announcements' },
+    { id: 'game_rules', icon: '📜', label: 'Game Rules' },
     { id: 'reset_data', icon: '🔄', label: 'Reset Data' },
   ];
 
@@ -2579,6 +2599,103 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* GAME RULES TAB */}
+        {activeTab === 'game_rules' && (
+          <div>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '24px', alignItems: 'stretch' }}>
+              {/* Editor Column */}
+              <div style={{ flex: 1.2, background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '24px' }}>
+                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📜 Edit Global Game Rules
+                </h3>
+
+                {saveRulesSuccess && (
+                  <div style={{
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid #10B981',
+                    color: '#10B981',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>✅ Game rules saved successfully!</span>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>
+                      Game Rules (Markdown/Text)
+                    </label>
+                    <textarea 
+                      value={gameRulesText}
+                      onChange={(e) => setGameRulesText(e.target.value)}
+                      placeholder="Type the game rules here..."
+                      rows={15}
+                      style={{
+                        width: '100%',
+                        background: 'var(--input-bg)',
+                        border: '1px solid var(--card-border)',
+                        borderRadius: '14px',
+                        padding: '12px 16px',
+                        color: 'var(--text-primary)',
+                        fontFamily: "'Outfit',sans-serif",
+                        outline: 'none',
+                        fontSize: '0.9rem',
+                        resize: 'vertical',
+                        lineHeight: 1.5
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    disabled={isSavingRules}
+                    onClick={async () => {
+                      setIsSavingRules(true);
+                      try {
+                        const docRef = doc(db, 'rules', 'global');
+                        await setDoc(docRef, {
+                          text: gameRulesText,
+                          updatedAt: new Date().toISOString()
+                        });
+                        setSaveRulesSuccess(true);
+                        setTimeout(() => setSaveRulesSuccess(false), 3000);
+                      } catch (e) {
+                        console.error("Error saving game rules:", e);
+                        alert("Failed to save game rules");
+                      } finally {
+                        setIsSavingRules(false);
+                      }
+                    }}
+                    style={{
+                      background: 'linear-gradient(90deg, #F96F2E, #E34360)',
+                      border: 'none',
+                      borderRadius: '14px',
+                      padding: '14px 20px',
+                      color: 'var(--text-primary)',
+                      fontFamily: "'Outfit',sans-serif",
+                      fontWeight: 800,
+                      fontSize: '0.9rem',
+                      cursor: isSavingRules ? 'not-allowed' : 'pointer',
+                      opacity: isSavingRules ? 0.7 : 1,
+                      boxShadow: '0 4px 12px rgba(227,67,96,0.3)',
+                      transition: 'all 0.2s',
+                      marginTop: '8px'
+                    }}
+                  >
+                    {isSavingRules ? 'Saving...' : '💾 Save Game Rules'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -20,6 +20,7 @@ import LiveMatches from './pages/LiveMatches';
 import Participants from './pages/Participants';
 import Winners from './pages/Winners';
 import NotificationManager from './components/NotificationManager';
+import Rules from './pages/Rules';
 
 import { BalanceProvider } from './context/BalanceContext';
 import { AdminProvider } from './context/AdminContext';
@@ -81,6 +82,7 @@ const AnimatedRoutes = () => {
           <Route path="/match/:id" element={<MatchDetails />} />
           <Route path="/match/:matchId/card/:cardId" element={<CardDetails />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/rules" element={<Rules />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/support" element={<Support />} />
