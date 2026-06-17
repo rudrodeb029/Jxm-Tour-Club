@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft } from 'lucide-react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential, signInWithPopup } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { Capacitor } from '@capacitor/core';
 
 const Auth = () => {
   const { t } = useLanguage();
@@ -25,7 +26,10 @@ const Auth = () => {
 
   useEffect(() => {
     // Initialize GoogleAuth configuration
-    GoogleAuth.initialize();
+    GoogleAuth.initialize({
+      clientId: '194765747449-l22sfgpnv6c9gugdhsuij2nsbpu6trv0.apps.googleusercontent.com',
+      scopes: ['profile', 'email'],
+    });
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -34,14 +38,23 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      // Native Google Auth login
-      const googleUser = await GoogleAuth.signIn();
-      const idToken = googleUser.authentication.idToken;
+      let user;
 
-      // Authenticate with Firebase using native Google credentials
-      const credential = GoogleAuthProvider.credential(idToken);
-      const userCredential = await signInWithCredential(auth, credential);
-      const user = userCredential.user;
+      if (Capacitor.isNativePlatform()) {
+        // Native Google Auth login
+        const googleUser = await GoogleAuth.signIn();
+        const idToken = googleUser.authentication.idToken;
+
+        // Authenticate with Firebase using native Google credentials
+        const credential = GoogleAuthProvider.credential(idToken);
+        const userCredential = await signInWithCredential(auth, credential);
+        user = userCredential.user;
+      } else {
+        // Web Google Auth login using Firebase Popup (bypasses deprecated gapi library)
+        const provider = new GoogleAuthProvider();
+        const userCredential = await signInWithPopup(auth, provider);
+        user = userCredential.user;
+      }
 
       // Check if user document already exists in Firestore
       const userDocRef = doc(db, 'users', user.uid);
@@ -71,7 +84,7 @@ const Auth = () => {
       setTimeout(() => navigate('/home'), 1500);
     } catch (error: any) {
       console.error("Google Auth failed:", error);
-      setErrorMsg('Google Authentication failed.');
+      setErrorMsg('Google Authentication failed: ' + (error.message || error.code || JSON.stringify(error)));
     } finally {
       setIsLoading(false);
     }
