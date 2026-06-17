@@ -1389,14 +1389,27 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const resetAllTransactions = async () => {
     try {
+      // 1. Reset all user balances to 0 in Firestore & local state
+      const balancePromises = adminUsers.map(u => updateDoc(doc(db, 'users', u.id), { balance: 0 }));
+      await Promise.all(balancePromises);
+      setAdminUsers(prev => prev.map(u => ({ ...u, balance: 0 })));
+
+      // 2. Delete all documents in the 'winners' collection
+      const winnersSnap = await getDocs(collection(db, 'winners'));
+      const winnersPromises = winnersSnap.docs.map(docSnap => deleteDoc(doc(db, 'winners', docSnap.id)));
+      await Promise.all(winnersPromises);
+
+      // 3. Delete all documents in the 'transactions' collection
       const qSnap = await getDocs(collection(db, 'transactions'));
       const promises = qSnap.docs.map(docSnap => deleteDoc(doc(db, 'transactions', docSnap.id)));
       await Promise.all(promises);
 
+      // 4. Delete all documents in the 'payments' collection
       const paySnap = await getDocs(collection(db, 'payments'));
       const payPromises = paySnap.docs.map(docSnap => deleteDoc(doc(db, 'payments', docSnap.id)));
       await Promise.all(payPromises);
 
+      // 5. Delete all documents in the 'withdrawals' collection
       const drawSnap = await getDocs(collection(db, 'withdrawals'));
       const drawPromises = drawSnap.docs.map(docSnap => deleteDoc(doc(db, 'withdrawals', docSnap.id)));
       await Promise.all(drawPromises);
