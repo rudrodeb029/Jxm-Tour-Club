@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft } from 'lucide-react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth, db } from '../firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 const Auth = () => {
   const { t } = useLanguage();
@@ -21,6 +22,60 @@ const Auth = () => {
   const [isAgreed, setIsAgreed] = useState(false);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // Initialize GoogleAuth configuration
+    GoogleAuth.initialize();
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsLoading(true);
+
+    try {
+      // Native Google Auth login
+      const googleUser = await GoogleAuth.signIn();
+      const idToken = googleUser.authentication.idToken;
+
+      // Authenticate with Firebase using native Google credentials
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCredential = await signInWithCredential(auth, credential);
+      const user = userCredential.user;
+
+      // Check if user document already exists in Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        // Generate JXM Profile info for first-time Google sign-ins
+        const nameVal = user.displayName || 'Google User';
+        const part1 = Math.floor(1000 + Math.random() * 9000);
+        const part2 = Math.floor(1000 + Math.random() * 9000);
+        const generatedId = `${part1} ${part2}`;
+        const generatedAvatar = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nameVal)}`;
+        const generatedUsername = `@${nameVal.toLowerCase().replace(/[^a-z0-9]/g, '')}${Math.floor(100 + Math.random() * 900)}`;
+
+        await setDoc(userDocRef, {
+          email: user.email,
+          name: nameVal,
+          username: generatedUsername,
+          avatar: generatedAvatar,
+          userId: generatedId,
+          createdAt: new Date(),
+          balance: 0,
+        });
+      }
+
+      setSuccessMsg('Logged in successfully!');
+      setTimeout(() => navigate('/home'), 1500);
+    } catch (error: any) {
+      console.error("Google Auth failed:", error);
+      setErrorMsg('Google Authentication failed.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAuth = async () => {
     setErrorMsg('');
@@ -483,6 +538,45 @@ const Auth = () => {
           >
             {isLoading ? t('processing') : (isLogin ? t('loginNow') : t('registerAccount'))}
             <ArrowRight size={20} />
+          </button>
+
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: '10px' }}>
+            <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>or</span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+          </div>
+
+          {/* Google Sign-in Button */}
+          <button 
+            className="hover-scale w-full" 
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            style={{ 
+              padding: '14px',
+              borderRadius: '12px',
+              fontSize: '1rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid var(--glass-border)',
+              color: 'var(--text-primary)',
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: 'var(--card-shadow)'
+            }}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" style={{ display: 'block' }}>
+              <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.85 2.99c.9-2.7 3.42-4.51 6.76-4.51z" />
+              <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.44h6.44c-.28 1.44-1.09 2.66-2.31 3.48l3.6 2.79c2.1-1.94 3.76-5.8 3.76-8.37z" />
+              <path fill="#FBBC05" d="M5.24 10.55c-.23-.69-.36-1.42-.36-2.18s.13-1.49.36-2.18L1.39 7.2C.5 9 .5 11 1.39 12.8l3.85-2.25z" />
+              <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.6-2.79c-1 .67-2.28 1.07-3.6 1.07-3.34 0-5.86-1.81-6.76-4.51L1.15 17.1C3.13 21.02 7.11 23 12 23z" />
+            </svg>
+            Sign in with Google
           </button>
         </div>
       </div>

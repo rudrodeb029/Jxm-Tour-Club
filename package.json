@@ -30,6 +30,7 @@
     "react-router-dom": "^7.14.2",
     "typescript": "~5.3.3",
     "typescript-eslint": "^8.0.0",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4"
   }
 }
