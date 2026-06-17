@@ -193,18 +193,18 @@ const Onboarding = () => {
   const slides = [
     {
       icon: 'crosshair',
-      titleKey: 'onboardingSlide1Title',
-      descKey: 'onboardingSlide1Desc',
+      titleKey: 'obSlide1Title',
+      descKey: 'obSlide1Desc',
     },
     {
       icon: 'shield',
-      titleKey: 'onboardingSlide2Title',
-      descKey: 'onboardingSlide2Desc',
+      titleKey: 'obSlide2Title',
+      descKey: 'obSlide2Desc',
     },
     {
       icon: 'trophy',
-      titleKey: 'onboardingSlide3Title',
-      descKey: 'onboardingSlide3Desc',
+      titleKey: 'obSlide3Title',
+      descKey: 'obSlide3Desc',
     },
   ];
 
@@ -232,7 +232,7 @@ const Onboarding = () => {
       <button className="ob-skip" onClick={() => {
         localStorage.setItem('hasSeenOnboarding', 'true');
         navigate('/auth');
-      }}>{t('skip')}</button>
+      }}>{t('obSkip')}</button>
 
       <div className="ob-content animate-fade-in" key={animKey}>
         {/* Animation area */}
@@ -257,7 +257,7 @@ const Onboarding = () => {
           <p className="ob-desc">{t(slide.descKey)}</p>
 
           <button className="ob-cta" onClick={handleNext}>
-            {currentSlide === slides.length - 1 ? t('letsStart') : t('next')}
+            {currentSlide === slides.length - 1 ? t('obStart') : t('obNext')}
             <span className="ob-cta-arrow">→</span>
           </button>
         </div>

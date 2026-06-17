@@ -36,11 +36,10 @@ import { useAuth } from './context/AuthContext';
 
 const RootNavigator = () => {
   const { currentUser, loading } = useAuth();
-  const [animationDone, setAnimationDone] = useState(false);
   const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
 
-  if (loading || !animationDone) {
-    return <Splash onComplete={() => setAnimationDone(true)} />;
+  if (loading) {
+    return <Splash />;
   }
 
   if (currentUser) {
