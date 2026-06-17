@@ -590,7 +590,7 @@ const AdminDashboard = () => {
           <div><div style={{ fontWeight: 900, fontSize: '1.1rem' }}>FireAdmin</div></div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+        <div className="sidebar-tabs" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
           {tabs.map(tab => (
             <div key={tab.id} onClick={() => {
               setActiveTab(tab.id);

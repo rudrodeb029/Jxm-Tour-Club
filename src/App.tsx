@@ -29,7 +29,7 @@ import { AdminDashboardProvider } from './context/AdminDashboardContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { AuthProvider } from './context/AuthContext';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
@@ -56,6 +56,17 @@ const RootNavigator = () => {
 const AnimatedRoutes = () => {
   const location = useLocation();
   const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+      document.body.classList.add('admin-mode');
+    } else {
+      document.body.classList.remove('admin-mode');
+    }
+    return () => {
+      document.body.classList.remove('admin-mode');
+    };
+  }, [location.pathname]);
 
   return (
     <>

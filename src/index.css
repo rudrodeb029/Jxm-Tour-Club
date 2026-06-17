@@ -181,15 +181,38 @@ body.no-scroll {
 }
 
 /* Admin dashboard: full-width desktop layout */
-#root:has(.admin-layout) {
-  max-width: 100%;
-  box-shadow: none;
-  background: #0A0C14;
+#root:has(.admin-layout),
+body.admin-mode #root {
+  max-width: 100% !important;
+  box-shadow: none !important;
+  background: #0A0C14 !important;
+  overflow: visible !important;
+}
+
+body.admin-mode .page-wrapper {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
 }
 
 .admin-layout {
   max-width: 100% !important;
   width: 100% !important;
+}
+
+/* Custom scrollbar for sidebar tabs */
+.sidebar-tabs::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-tabs::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.sidebar-tabs::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 
