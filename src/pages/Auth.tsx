@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft } from 'lucide-react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential, signInWithPopup } from 'firebase/auth';
+import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { User as UserIcon } from 'lucide-react';
@@ -21,6 +21,8 @@ const Auth = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isAgreed, setIsAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -163,145 +165,471 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    if (!email) {
+      setErrorMsg('Please enter your email address first to reset your password.');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setSuccessMsg('Password reset email sent! Check your inbox.');
+    } catch (error: any) {
+      console.error(error);
+      setErrorMsg(error.message || 'Failed to send password reset email.');
+    }
+  };
+
+  // Helper to split title so the last word is always highlighted with a neon gradient
+  const getStyledTitle = () => {
+    const titleText = isLogin ? t('welcomeBack') : t('joinTheElite');
+    const words = titleText.split(' ');
+    if (words.length <= 1) {
+      return <span className="cyber-title-accent">{titleText}</span>;
+    }
+    const lastWord = words.pop();
+    const firstPart = words.join(' ');
+    return (
+      <>
+        {firstPart} <span className="cyber-title-accent">{lastWord}</span>
+      </>
+    );
+  };
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      background: 'var(--bg-gradient)',
-      color: 'var(--text-primary)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Background glowing orbs for modern look */}
-      <div style={{
-        position: 'absolute',
-        top: '-10%',
-        left: '-10%',
-        width: '50vw',
-        height: '50vw',
-        background: 'radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%)',
-        filter: 'blur(40px)',
-        zIndex: 0
-      }} />
-      
-      <div style={{ padding: '24px 16px', display: 'flex', alignItems: 'center', zIndex: 1 }}>
+    <div className="cyber-auth-container">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
+
+        .cyber-auth-container {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: radial-gradient(circle at center, rgba(13, 10, 25, 0.85) 0%, rgba(5, 3, 10, 0.98) 100%), url('/images/cyber_gaming_bg.png');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          color: #ffffff;
+          position: relative;
+          font-family: 'Rajdhani', sans-serif;
+          overflow-x: hidden;
+          padding: 40px 16px;
+        }
+
+        .cyber-back-btn {
+          transition: all 0.25s ease;
+        }
+
+        .cyber-back-btn:hover {
+          background: rgba(162, 0, 255, 0.15) !important;
+          border-color: #00d2ff !important;
+          color: #00d2ff !important;
+          box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+          transform: scale(1.05);
+        }
+
+        .cyber-header {
+          margin-bottom: 28px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          z-index: 1;
+        }
+
+        .cyber-logo-wrapper {
+          position: relative;
+          margin-bottom: 16px;
+          animation: cyber-float 4s ease-in-out infinite;
+        }
+
+        .cyber-logo {
+          width: 96px;
+          height: 96px;
+          object-fit: contain;
+          filter: drop-shadow(0 0 20px rgba(162, 0, 255, 0.6));
+        }
+
+        @keyframes cyber-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+
+        .cyber-title {
+          font-family: 'Orbitron', sans-serif;
+          font-weight: 900;
+          font-size: 2.4rem;
+          font-style: italic;
+          margin: 0;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          background: linear-gradient(to bottom, #ffffff 30%, #b3b3b3 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          display: inline-block;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+
+        .cyber-title-accent {
+          background: linear-gradient(to right, #9d4edd 0%, #c77dff 60%, #e0aaff 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .cyber-subtitle-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 10px;
+          width: 100%;
+          max-width: 380px;
+        }
+
+        .cyber-subtitle-line {
+          flex: 1;
+          height: 1.5px;
+          position: relative;
+        }
+
+        .cyber-subtitle-line.left {
+          background: linear-gradient(to right, transparent, #bd52ff);
+        }
+
+        .cyber-subtitle-line.right {
+          background: linear-gradient(to left, transparent, #bd52ff);
+        }
+
+        .cyber-subtitle-line::after {
+          content: '';
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: #bd52ff;
+          transform: rotate(45deg);
+          top: -1.5px;
+          box-shadow: 0 0 8px #bd52ff;
+        }
+
+        .cyber-subtitle-line.left::after {
+          right: 0;
+        }
+
+        .cyber-subtitle-line.right::after {
+          left: 0;
+        }
+
+        .cyber-subtitle {
+          color: #a3a3d1;
+          font-size: 0.85rem;
+          letter-spacing: 2px;
+          margin: 0;
+          text-transform: uppercase;
+          font-weight: 700;
+        }
+
+        /* Card Container with Clipped Corners & Neon Glow */
+        .cyber-card-wrapper {
+          width: 100%;
+          max-width: 380px;
+          position: relative;
+          background: linear-gradient(135deg, rgba(79, 38, 230, 0.4) 0%, rgba(162, 0, 255, 0.4) 50%, rgba(0, 210, 255, 0.4) 100%);
+          padding: 1.5px;
+          clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+          filter: drop-shadow(0 0 25px rgba(162, 0, 255, 0.25));
+          z-index: 1;
+        }
+
+        .cyber-card-inner {
+          background: rgba(10, 8, 22, 0.93);
+          clip-path: polygon(19px 0, 100% 0, 100% calc(100% - 19px), calc(100% - 19px) 100%, 0 100%, 0 19px);
+          padding: 36px 24px;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .cyber-inputs-container {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        /* Input Fields */
+        .cyber-input-group {
+          display: flex;
+          align-items: center;
+          background: rgba(16, 12, 32, 0.65);
+          border: 1px solid rgba(157, 78, 221, 0.25);
+          padding: 10px 14px;
+          transition: all 0.3s ease;
+          position: relative;
+          clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        }
+
+        .cyber-input-group:focus-within {
+          border-color: #00d2ff;
+          box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.15), 0 0 15px rgba(0, 210, 255, 0.1);
+        }
+
+        .cyber-input-icon-box {
+          width: 36px;
+          height: 36px;
+          border: 1px solid rgba(157, 78, 221, 0.5);
+          background: rgba(157, 78, 221, 0.1);
+          clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #bd52ff;
+          margin-right: 14px;
+          flex-shrink: 0;
+          box-shadow: 0 0 8px rgba(189, 82, 255, 0.2);
+        }
+
+        .cyber-input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #ffffff;
+          font-size: 0.95rem;
+          font-family: 'Rajdhani', sans-serif;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+        }
+
+        .cyber-input::placeholder {
+          color: #5c5c8a;
+          font-weight: 500;
+        }
+
+        /* Eye visibility toggle */
+        .cyber-eye-toggle {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #5c5c8a;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          transition: color 0.2s ease;
+        }
+
+        .cyber-eye-toggle:hover {
+          color: #00d2ff;
+        }
+
+        /* Checkbox Row */
+        .cyber-options-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 16px 0 24px 0;
+          font-size: 0.9rem;
+        }
+
+        .cyber-checkbox-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #a3a3d1;
+          cursor: pointer;
+          user-select: none;
+          font-weight: 600;
+        }
+
+        .cyber-checkbox {
+          width: 16px;
+          height: 16px;
+          accent-color: #bd52ff;
+          cursor: pointer;
+          border: 1px solid rgba(157, 78, 221, 0.5);
+          background: rgba(16, 12, 32, 0.65);
+        }
+
+        .cyber-forgot-link {
+          color: #bd52ff;
+          text-decoration: none;
+          font-weight: 700;
+          transition: all 0.2s ease;
+        }
+
+        .cyber-forgot-link:hover {
+          color: #e0aaff;
+          text-shadow: 0 0 8px rgba(224, 170, 255, 0.6);
+        }
+
+        /* Primary Submit Button */
+        .cyber-btn-primary {
+          width: 100%;
+          background: linear-gradient(90deg, #4f26e6 0%, #a200ff 50%, #e0115f 100%);
+          color: #ffffff;
+          font-weight: 900;
+          font-size: 1.15rem;
+          font-family: 'Orbitron', sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          padding: 13px;
+          border: none;
+          cursor: pointer;
+          clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+          transition: all 0.25s ease;
+          box-shadow: 0 0 20px rgba(162, 0, 255, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          position: relative;
+        }
+
+        .cyber-btn-primary:hover:not(:disabled) {
+          filter: brightness(1.2);
+          box-shadow: 0 0 30px rgba(162, 0, 255, 0.75);
+          transform: translateY(-1px);
+        }
+
+        .cyber-btn-primary:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .cyber-btn-slashes {
+          position: absolute;
+          bottom: 2px;
+          right: 20px;
+          width: 18px;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.4);
+          transform: skewX(-30deg);
+        }
+
+        /* OR Divider */
+        .cyber-divider {
+          display: flex;
+          align-items: center;
+          margin: 20px 0;
+          gap: 12px;
+        }
+
+        .cyber-divider-line {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(to right, transparent, rgba(157, 78, 221, 0.4), transparent);
+        }
+
+        .cyber-divider-text {
+          font-size: 0.8rem;
+          color: #8c8cbd;
+          text-transform: uppercase;
+          font-weight: 700;
+          letter-spacing: 2px;
+          font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Google Button */
+        .cyber-btn-google {
+          width: 100%;
+          background: rgba(16, 12, 32, 0.7);
+          border: 1px solid rgba(0, 210, 255, 0.6);
+          color: #ffffff;
+          font-weight: 900;
+          font-size: 0.95rem;
+          font-family: 'Orbitron', sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          padding: 13px;
+          cursor: pointer;
+          clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+          transition: all 0.25s ease;
+          box-shadow: 0 0 10px rgba(0, 210, 255, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+        }
+
+        .cyber-btn-google:hover:not(:disabled) {
+          background: rgba(0, 210, 255, 0.12);
+          box-shadow: 0 0 22px rgba(0, 210, 255, 0.55);
+          transform: translateY(-1px);
+        }
+
+        .cyber-btn-google:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        /* Footer Link */
+        .cyber-footer {
+          margin-top: 24px;
+          text-align: center;
+          color: #8c8cbd;
+          font-size: 0.95rem;
+          font-weight: 700;
+        }
+
+        .cyber-footer-link {
+          color: #bd52ff;
+          text-decoration: none;
+          font-weight: 700;
+          margin-left: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .cyber-footer-link:hover {
+          color: #e0aaff;
+          text-shadow: 0 0 8px rgba(224, 170, 255, 0.6);
+        }
+      `}</style>
+
+      {/* Sleek Floating Back Button */}
+      <div style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 10 }}>
         <button 
           onClick={() => navigate(-1)} 
-          className="hover-scale"
+          className="cyber-back-btn"
           style={{ 
-            background: 'var(--glass-bg)', 
-            border: '1px solid var(--glass-border)', 
-            borderRadius: '12px',
+            background: 'rgba(16, 12, 32, 0.6)', 
+            border: '1px solid rgba(157, 78, 221, 0.4)', 
+            borderRadius: '8px',
             padding: '8px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'var(--text-primary)'
+            color: '#c77dff',
+            boxShadow: '0 0 10px rgba(162, 0, 255, 0.1)'
           }}>
-          <ChevronLeft size={24} />
+          <ChevronLeft size={20} />
         </button>
       </div>
 
-      <div className="animate-slide-up" style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '12px 16px',
-        textAlign: 'center',
-        zIndex: 1
-      }}>
-        {/* Brand Header */}
-        <div style={{ marginBottom: '24px' }} className="animate-fade-in">
-          <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: 0, lineHeight: 0.9, letterSpacing: '-2px', background: 'var(--text-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            JXM
-          </h1>
-          <h1 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, letterSpacing: '4px', color: 'var(--accent-orange)', marginTop: '8px', textTransform: 'uppercase' }}>
-            Tour Club
-          </h1>
+      {/* Brand & Heading Header */}
+      <div className="cyber-header">
+        <div className="cyber-logo-wrapper">
+          <img src="/images/jxm_3d_logo.png" alt="JXM Logo" className="cyber-logo" />
         </div>
-
-        {/* Auth Toggle Tabs */}
-        <div style={{
-          display: 'flex',
-          background: 'var(--glass-bg)',
-          borderRadius: '12px',
-          padding: '4px',
-          marginBottom: '24px',
-          width: '100%',
-          maxWidth: '280px',
-          border: '1px solid var(--glass-border)'
-        }}>
-          <button
-            onClick={() => {
-              setIsLogin(false);
-              setErrorMsg('');
-              setSuccessMsg('');
-            }}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '12px',
-              border: 'none',
-              background: !isLogin ? 'rgba(249, 115, 22, 0.2)' : 'transparent',
-              color: !isLogin ? 'var(--accent-orange)' : 'var(--text-secondary)',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-          >
-            <UserPlus size={18} />
-            {t('register')}
-          </button>
-          <button
-            onClick={() => {
-              setIsLogin(true);
-              setErrorMsg('');
-              setSuccessMsg('');
-            }}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '12px',
-              border: 'none',
-              background: isLogin ? 'rgba(249, 115, 22, 0.2)' : 'transparent',
-              color: isLogin ? 'var(--accent-orange)' : 'var(--text-secondary)',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-          >
-            <LogIn size={18} />
-            {t('login')}
-          </button>
+        <h1 className="cyber-title">
+          {getStyledTitle()}
+        </h1>
+        <div className="cyber-subtitle-container">
+          <div className="cyber-subtitle-line left"></div>
+          <p className="cyber-subtitle">{isLogin ? t('loginSub') : 'Register to continue'}</p>
+          <div className="cyber-subtitle-line right"></div>
         </div>
+      </div>
 
-        {/* Content Section */}
-        <div style={{ width: '100%', maxWidth: '300px', transition: 'all 0.4s ease' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px' }}>
-              {isLogin ? t('welcomeBack') : t('joinTheElite')}
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-              {isLogin 
-                ? t('loginSub') 
-                : t('registerSub')}
-            </p>
-          </div>
-
-          {/* Messages */}
+      {/* Cyber Auth Card Container */}
+      <div className="cyber-card-wrapper">
+        <div className="cyber-card-inner">
+          
+          {/* Status Message Banners */}
           {errorMsg && (
             <div className="animate-fade-in" style={{
               background: 'rgba(239, 68, 68, 0.1)',
@@ -311,11 +639,13 @@ const Auth = () => {
               borderRadius: '8px',
               marginBottom: '20px',
               fontSize: '0.9rem',
-              fontWeight: 500
+              fontWeight: 600,
+              textAlign: 'center'
             }}>
               {errorMsg}
             </div>
           )}
+          
           {successMsg && (
             <div className="animate-fade-in" style={{
               background: 'rgba(16, 185, 129, 0.1)',
@@ -325,272 +655,146 @@ const Auth = () => {
               borderRadius: '8px',
               marginBottom: '20px',
               fontSize: '0.9rem',
-              fontWeight: 500
+              fontWeight: 600,
+              textAlign: 'center'
             }}>
               {successMsg}
             </div>
           )}
 
-          <div style={{ marginBottom: '24px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Form Inputs */}
+          <div className="cyber-inputs-container">
             {!isLogin && (
-              <div style={{
-                position: 'relative',
-                background: isNameFocused ? 'rgba(255, 255, 255, 0.08)' : 'var(--glass-bg)',
-                border: `2px solid ${isNameFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-                borderRadius: '12px',
-                padding: '12px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: isNameFocused ? '0 0 20px rgba(249, 115, 22, 0.15)' : 'none'
-              }}>
-                <UserIcon 
-                  size={20} 
-                  color={isNameFocused ? 'var(--accent-orange)' : 'var(--text-secondary)'} 
-                  style={{ marginRight: '12px', transition: 'color 0.3s ease' }} 
-                />
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <label style={{ 
-                    position: 'absolute', 
-                    top: (isNameFocused || name) ? '-24px' : '0px',
-                    left: (isNameFocused || name) ? '-32px' : '0px',
-                    fontSize: (isNameFocused || name) ? '0.75rem' : '1rem',
-                    color: (isNameFocused || name) ? 'var(--accent-orange)' : 'var(--text-muted)',
-                    fontWeight: (isNameFocused || name) ? 800 : 500,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    pointerEvents: 'none',
-                    background: (isNameFocused || name) ? 'var(--bg-dark)' : 'transparent',
-                    padding: (isNameFocused || name) ? '0 8px' : '0',
-                    borderRadius: '4px'
-                  }}>
-                    {t('fullName')}
-                  </label>
-                  <input 
-                    type="text" 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => setIsNameFocused(true)}
-                    onBlur={() => setIsNameFocused(false)}
-                    placeholder={isNameFocused ? t('fullName') : ""}
-                    style={{
-                      width: '100%',
-                      background: 'transparent',
-                      border: 'none',
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      outline: 'none',
-                      color: 'var(--text-primary)',
-                      letterSpacing: '1px'
-                    }}
-                  />
+              <div className="cyber-input-group">
+                <div className="cyber-input-icon-box">
+                  <UserIcon size={18} />
                 </div>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t('fullName')}
+                  className="cyber-input"
+                />
               </div>
             )}
-            
-            {/* Email Input */}
-            <div style={{
-              position: 'relative',
-              background: isEmailFocused ? 'rgba(255, 255, 255, 0.08)' : 'var(--glass-bg)',
-              border: `2px solid ${isEmailFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-              borderRadius: '12px',
-              padding: '12px 16px',
-              display: 'center',
-              alignItems: 'center',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: isEmailFocused ? '0 0 20px rgba(249, 115, 22, 0.15)' : 'none'
-            }}>
-              <Mail 
-                size={20} 
-                color={isEmailFocused ? 'var(--accent-orange)' : 'var(--text-secondary)'} 
-                style={{ marginRight: '12px', transition: 'color 0.3s ease' }} 
-              />
-              <div style={{ flex: 1, position: 'relative' }}>
-                <label style={{ 
-                  position: 'absolute', 
-                  top: (isEmailFocused || email) ? '-24px' : '0px',
-                  left: (isEmailFocused || email) ? '-32px' : '0px',
-                  fontSize: (isEmailFocused || email) ? '0.75rem' : '1rem',
-                  color: (isEmailFocused || email) ? 'var(--accent-orange)' : 'var(--text-muted)',
-                  fontWeight: (isEmailFocused || email) ? 800 : 500,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  pointerEvents: 'none',
-                  background: (isEmailFocused || email) ? 'var(--bg-dark)' : 'transparent',
-                  padding: (isEmailFocused || email) ? '0 8px' : '0',
-                  borderRadius: '4px'
-                }}>
-                  {t('emailAddress')}
-                </label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setIsEmailFocused(true)}
-                  onBlur={() => setIsEmailFocused(false)}
-                  placeholder={isEmailFocused ? "player@example.com" : ""}
-                  style={{
-                    width: '100%',
-                    background: 'transparent',
-                    border: 'none',
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    outline: 'none',
-                    color: 'var(--text-primary)',
-                    letterSpacing: '1px'
-                  }}
-                />
+
+            <div className="cyber-input-group">
+              <div className="cyber-input-icon-box">
+                <Mail size={18} />
               </div>
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('emailAddress')}
+                className="cyber-input"
+              />
             </div>
 
-            {/* Password Input */}
-            <div style={{
-              position: 'relative',
-              background: isPasswordFocused ? 'rgba(255, 255, 255, 0.08)' : 'var(--glass-bg)',
-              border: `2px solid ${isPasswordFocused ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
-              borderRadius: '12px',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: isPasswordFocused ? '0 0 20px rgba(249, 115, 22, 0.15)' : 'none'
-            }}>
-              <Lock 
-                size={20} 
-                color={isPasswordFocused ? 'var(--accent-orange)' : 'var(--text-secondary)'} 
-                style={{ marginRight: '12px', transition: 'color 0.3s ease' }} 
-              />
-              <div style={{ flex: 1, position: 'relative' }}>
-                <label style={{ 
-                  position: 'absolute', 
-                  top: (isPasswordFocused || password) ? '-24px' : '0px',
-                  left: (isPasswordFocused || password) ? '-32px' : '0px',
-                  fontSize: (isPasswordFocused || password) ? '0.75rem' : '1rem',
-                  color: (isPasswordFocused || password) ? 'var(--accent-orange)' : 'var(--text-muted)',
-                  fontWeight: (isPasswordFocused || password) ? 800 : 500,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  pointerEvents: 'none',
-                  background: (isPasswordFocused || password) ? 'var(--bg-dark)' : 'transparent',
-                  padding: (isPasswordFocused || password) ? '0 8px' : '0',
-                  borderRadius: '4px'
-                }}>
-                  {t('password')}
-                </label>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setIsPasswordFocused(true)}
-                  onBlur={() => setIsPasswordFocused(false)}
-                  placeholder={isPasswordFocused ? "••••••••" : ""}
-                  style={{
-                    width: '100%',
-                    background: 'transparent',
-                    border: 'none',
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    outline: 'none',
-                    color: 'var(--text-primary)',
-                    letterSpacing: '1px'
-                  }}
-                />
+            <div className="cyber-input-group">
+              <div className="cyber-input-icon-box">
+                <Lock size={18} />
               </div>
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t('password')}
+                className="cyber-input"
+              />
+              <button 
+                type="button" 
+                className="cyber-eye-toggle" 
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
-          {!isLogin && (
-            <div className="animate-fade-in" style={{ 
-              marginBottom: '32px', 
-              display: 'flex', 
-              alignItems: 'flex-start', 
-              gap: '12px',
-              background: 'rgba(255, 255, 255, 0.03)',
-              padding: '16px',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              <input 
-                type="checkbox" 
-                id="age"
-                checked={isAgreed}
-                onChange={(e) => setIsAgreed(e.target.checked)}
-                style={{ 
-                  width: '20px', 
-                  height: '20px', 
-                  accentColor: 'var(--accent-orange)',
-                  cursor: 'pointer',
-                  marginTop: '2px'
-                }} 
-              />
-              <label htmlFor="age" style={{ 
-                fontSize: '0.9rem', 
-                color: 'var(--text-secondary)',
-                lineHeight: 1.4,
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}>
-                {t('ageCertification')}
+          {/* Options Row (Remember me, Age cert, Forgot Password) */}
+          <div className="cyber-options-row">
+            {isLogin ? (
+              <>
+                <label className="cyber-checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    className="cyber-checkbox" 
+                    checked={rememberMe} 
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  Remember me
+                </label>
+                <a href="#" className="cyber-forgot-link" onClick={(e) => { e.preventDefault(); handleForgotPassword(); }}>
+                  Forgot Password?
+                </a>
+              </>
+            ) : (
+              <label className="cyber-checkbox-label" style={{ width: '100%' }}>
+                <input 
+                  type="checkbox" 
+                  className="cyber-checkbox" 
+                  checked={isAgreed} 
+                  onChange={(e) => setIsAgreed(e.target.checked)}
+                />
+                <span style={{ fontSize: '0.85rem', lineHeight: 1.3 }}>{t('ageCertification')}</span>
               </label>
-            </div>
-          )}
+            )}
+          </div>
 
+          {/* Primary Action Button */}
           <button 
-            className="btn btn-primary hover-scale w-full" 
+            className="cyber-btn-primary" 
             onClick={handleAuth}
             disabled={isLoading}
-            style={{ 
-              padding: '14px',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 8px 25px rgba(249, 115, 22, 0.4)',
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer'
-            }}
           >
-            {isLoading ? t('processing') : (isLogin ? t('loginNow') : t('registerAccount'))}
-            <ArrowRight size={20} />
+            {isLoading ? t('processing') : (isLogin ? 'SIGN IN' : 'SIGN UP')}
+            <ArrowRight size={18} />
+            <div className="cyber-btn-slashes"></div>
           </button>
 
-          {/* Divider */}
-          <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: '10px' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>or</span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+          {/* OR Divider */}
+          <div className="cyber-divider">
+            <div className="cyber-divider-line"></div>
+            <div className="cyber-divider-text">OR</div>
+            <div className="cyber-divider-line"></div>
           </div>
 
-          {/* Google Sign-in Button */}
+          {/* Google Login Button */}
           <button 
-            className="hover-scale w-full" 
+            className="cyber-btn-google" 
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            style={{ 
-              padding: '14px',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--text-primary)',
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: 'var(--card-shadow)'
-            }}
           >
-            <svg viewBox="0 0 24 24" width="20" height="20" style={{ display: 'block' }}>
+            <svg viewBox="0 0 24 24" width="18" height="18" style={{ display: 'block' }}>
               <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.85 2.99c.9-2.7 3.42-4.51 6.76-4.51z" />
               <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.44h6.44c-.28 1.44-1.09 2.66-2.31 3.48l3.6 2.79c2.1-1.94 3.76-5.8 3.76-8.37z" />
               <path fill="#FBBC05" d="M5.24 10.55c-.23-.69-.36-1.42-.36-2.18s.13-1.49.36-2.18L1.39 7.2C.5 9 .5 11 1.39 12.8l3.85-2.25z" />
               <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.6-2.79c-1 .67-2.28 1.07-3.6 1.07-3.34 0-5.86-1.81-6.76-4.51L1.15 17.1C3.13 21.02 7.11 23 12 23z" />
             </svg>
-            Sign in with Google
+            Sign In with Google
           </button>
+
+          {/* Bottom Footer Switching link */}
+          <div className="cyber-footer">
+            {isLogin ? (
+              <>
+                Don't have an account? 
+                <span className="cyber-footer-link" onClick={() => { setIsLogin(false); setErrorMsg(''); setSuccessMsg(''); }}>
+                  Sign Up
+                </span>
+              </>
+            ) : (
+              <>
+                Already have an account? 
+                <span className="cyber-footer-link" onClick={() => { setIsLogin(true); setErrorMsg(''); setSuccessMsg(''); }}>
+                  Sign In
+                </span>
+              </>
+            )}
+          </div>
+
         </div>
       </div>
     </div>
