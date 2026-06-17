@@ -145,9 +145,8 @@ const LiveMatches = () => {
           }
         });
       } else {
-        // Legacy/Direct match teams
         const checkLegacyTeam = (team: any) => {
-          if (!team || !team.startTime) return;
+          if (!team || !team.startTime || team.isDeleted || team.isConcluded) return;
           const isTodayOrFuture = !team.startDate || team.startDate >= todayStr;
           if (isTodayOrFuture) {
             teams.push({

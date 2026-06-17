@@ -154,6 +154,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
 
   // Filter out finished sub-matches from innerSections for counting
   const activeSubMatches = (innerSections || []).filter(c => {
+    if (c.isDeleted) return false;
     const s = getCardStatusFromUtil(c, status);
     return s === 'live' || s === 'upcoming' || s === 'revealed' || s === 'idle';
   });

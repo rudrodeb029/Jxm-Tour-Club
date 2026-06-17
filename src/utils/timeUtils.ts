@@ -57,10 +57,10 @@ export const getTargetDateTime = (startTimeStr: string, now = new Date(), startD
 };
 
 export const getCardStatus = (
-  card: { startTime?: string; startDate?: string; liveDuration?: number; isConcluded?: boolean } | undefined,
+  card: { startTime?: string; startDate?: string; liveDuration?: number; isConcluded?: boolean; isDeleted?: boolean } | undefined,
   matchStatus: string | undefined
 ): 'live' | 'upcoming' | 'finished' | 'idle' => {
-  if (!card) return 'idle';
+  if (!card || card.isDeleted) return 'finished';
   const mStatus = matchStatus || 'upcoming';
   if (mStatus === 'finished' || card.isConcluded) return 'finished';
   if (!card.startTime) return mStatus === 'live' ? 'live' : 'idle';
