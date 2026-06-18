@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, UserPlus, LogIn, ChevronLeft, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithCredential, signInWithPopup, signInWithRedirect, getRedirectResult, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -25,6 +25,7 @@ const Auth = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   useEffect(() => {
     // Initialize GoogleAuth configuration
@@ -767,110 +768,12 @@ const Auth = () => {
             </div>
           )}
 
-          {/* Form Inputs */}
-          <div className="cyber-inputs-container">
-            {!isLogin && (
-              <div className="cyber-input-group">
-                <div className="cyber-input-icon-box">
-                  <UserIcon size={18} />
-                </div>
-                <input 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t('fullName')}
-                  className="cyber-input"
-                />
-              </div>
-            )}
-
-            <div className="cyber-input-group">
-              <div className="cyber-input-icon-box">
-                <Mail size={18} />
-              </div>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('emailAddress')}
-                className="cyber-input"
-              />
-            </div>
-
-            <div className="cyber-input-group">
-              <div className="cyber-input-icon-box">
-                <Lock size={18} />
-              </div>
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('password')}
-                className="cyber-input"
-              />
-              <button 
-                type="button" 
-                className="cyber-eye-toggle" 
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Options Row (Remember me, Age cert, Forgot Password) */}
-          <div className="cyber-options-row">
-            {isLogin ? (
-              <>
-                <label className="cyber-checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    className="cyber-checkbox" 
-                    checked={rememberMe} 
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                  Remember me
-                </label>
-                <a href="#" className="cyber-forgot-link" onClick={(e) => { e.preventDefault(); handleForgotPassword(); }}>
-                  Forgot Password?
-                </a>
-              </>
-            ) : (
-              <label className="cyber-checkbox-label" style={{ width: '100%' }}>
-                <input 
-                  type="checkbox" 
-                  className="cyber-checkbox" 
-                  checked={isAgreed} 
-                  onChange={(e) => setIsAgreed(e.target.checked)}
-                />
-                <span style={{ fontSize: '0.85rem', lineHeight: 1.3 }}>{t('ageCertification')}</span>
-              </label>
-            )}
-          </div>
-
-          {/* Primary Action Button */}
-          <button 
-            className="cyber-btn-primary" 
-            onClick={handleAuth}
-            disabled={isLoading}
-          >
-            {isLoading ? t('processing') : (isLogin ? 'SIGN IN' : 'SIGN UP')}
-            <ArrowRight size={18} />
-            <div className="cyber-btn-slashes"></div>
-          </button>
-
-          {/* OR Divider */}
-          <div className="cyber-divider">
-            <div className="cyber-divider-line"></div>
-            <div className="cyber-divider-text">OR</div>
-            <div className="cyber-divider-line"></div>
-          </div>
-
-          {/* Google Login Button */}
+          {/* Google Login Button (Always Visible) */}
           <button 
             className="cyber-btn-google" 
             onClick={handleGoogleSignIn}
             disabled={isLoading}
+            style={{ marginBottom: '16px' }}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" style={{ display: 'block' }}>
               <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.85 2.99c.9-2.7 3.42-4.51 6.76-4.51z" />
@@ -881,19 +784,145 @@ const Auth = () => {
             Sign In with Google
           </button>
 
+          {/* Toggle Collapsible Email Section */}
+          <button 
+            type="button" 
+            onClick={() => setShowEmailForm(!showEmailForm)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#00d2ff',
+              fontFamily: 'Orbitron',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              margin: '16px auto 16px auto',
+              outline: 'none',
+              transition: 'all 0.2s',
+              textShadow: '0 0 8px rgba(0, 210, 255, 0.3)'
+            }}
+            className="hover-scale"
+          >
+            <span>{isLogin ? 'Or sign in with email' : 'Or sign up with email'}</span>
+            {showEmailForm ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
+          {/* Collapsible Email Form */}
+          {showEmailForm && (
+            <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Form Inputs */}
+              <div className="cyber-inputs-container">
+                {!isLogin && (
+                  <div className="cyber-input-group">
+                    <div className="cyber-input-icon-box">
+                      <UserIcon size={18} />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={t('fullName')}
+                      className="cyber-input"
+                    />
+                  </div>
+                )}
+
+                <div className="cyber-input-group">
+                  <div className="cyber-input-icon-box">
+                    <Mail size={18} />
+                  </div>
+                  <input 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('emailAddress')}
+                    className="cyber-input"
+                  />
+                </div>
+
+                <div className="cyber-input-group">
+                  <div className="cyber-input-icon-box">
+                    <Lock size={18} />
+                  </div>
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('password')}
+                    className="cyber-input"
+                  />
+                  <button 
+                    type="button" 
+                    className="cyber-eye-toggle" 
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Options Row (Remember me, Age cert, Forgot Password) */}
+              <div className="cyber-options-row">
+                {isLogin ? (
+                  <>
+                    <label className="cyber-checkbox-label">
+                      <input 
+                        type="checkbox" 
+                        className="cyber-checkbox" 
+                        checked={rememberMe} 
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                      />
+                      Remember me
+                    </label>
+                    <a href="#" className="cyber-forgot-link" onClick={(e) => { e.preventDefault(); handleForgotPassword(); }}>
+                      Forgot Password?
+                    </a>
+                  </>
+                ) : (
+                  <label className="cyber-checkbox-label" style={{ width: '100%' }}>
+                    <input 
+                      type="checkbox" 
+                      className="cyber-checkbox" 
+                      checked={isAgreed} 
+                      onChange={(e) => setIsAgreed(e.target.checked)}
+                    />
+                    <span style={{ fontSize: '0.85rem', lineHeight: 1.3 }}>{t('ageCertification')}</span>
+                  </label>
+                )}
+              </div>
+
+              {/* Primary Action Button */}
+              <button 
+                className="cyber-btn-primary" 
+                onClick={handleAuth}
+                disabled={isLoading}
+              >
+                {isLoading ? t('processing') : (isLogin ? 'SIGN IN' : 'SIGN UP')}
+                <ArrowRight size={18} />
+                <div className="cyber-btn-slashes"></div>
+              </button>
+            </div>
+          )}
+
           {/* Bottom Footer Switching link */}
-          <div className="cyber-footer">
+          <div className="cyber-footer" style={{ marginTop: showEmailForm ? '24px' : '8px' }}>
             {isLogin ? (
               <>
                 Don't have an account? 
-                <span className="cyber-footer-link" onClick={() => { setIsLogin(false); setErrorMsg(''); setSuccessMsg(''); }}>
+                <span className="cyber-footer-link" onClick={() => { setIsLogin(false); setErrorMsg(''); setSuccessMsg(''); setShowEmailForm(false); }}>
                   Sign Up
                 </span>
               </>
             ) : (
               <>
                 Already have an account? 
-                <span className="cyber-footer-link" onClick={() => { setIsLogin(true); setErrorMsg(''); setSuccessMsg(''); }}>
+                <span className="cyber-footer-link" onClick={() => { setIsLogin(true); setErrorMsg(''); setSuccessMsg(''); setShowEmailForm(false); }}>
                   Sign In
                 </span>
               </>
