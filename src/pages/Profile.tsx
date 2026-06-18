@@ -497,6 +497,7 @@ const Profile = () => {
         <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px', padding: '0 4px' }}>{t('settings')}</h3>
         
         {[
+          { label: t('gameRules') || 'Game Rules', icon: <BookOpen size={20} />, onClick: () => navigate('/rules') },
           { label: t('editProfile'), icon: <Edit2 size={20} />, onClick: () => setShowEditProfile(true) },
           { label: t('accountSecurity'), icon: <Shield size={20} />, onClick: () => setShowSecurity(true) },
           { label: t('paymentMethods'), icon: <CreditCard size={20} />, onClick: () => setShowPayments(true) },
@@ -504,7 +505,6 @@ const Profile = () => {
           { label: t('language'), icon: <Globe size={20} />, onClick: () => setShowLanguage(true), langToggle: true, toggleState: language },
           { label: t('appearance'), icon: isDarkMode ? <Moon size={20} /> : <Sun size={20} />, onClick: toggleTheme, isToggle: true, toggleState: isDarkMode },
           { label: t('currencyPreference') || 'Currency Preference', icon: <DollarSign size={20} />, onClick: () => setCurrency(currency === 'USD' ? 'BDT' : 'USD'), customToggle: true, toggleState: currency },
-          { label: t('gameRules') || 'Game Rules', icon: <BookOpen size={20} />, onClick: () => navigate('/rules') },
           { label: t('helpCenter'), icon: <HelpCircle size={20} />, onClick: () => setShowHelp(true) },
           { label: t('logout'), icon: <LogOut size={20} />, onClick: async () => { await logout(); navigate('/auth'); }, isLogout: true }
         ].map((item, i) => {
