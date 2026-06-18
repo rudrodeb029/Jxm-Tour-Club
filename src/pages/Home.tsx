@@ -157,7 +157,7 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  const { balance, deductBalance, addBalance } = useBalance();
+  const { balance, deductBalance, addBalance, status: userStatus } = useBalance();
   const { formatCurrency } = useCurrency();
   const [selectedBetAmount, setSelectedBetAmount] = useState<number>(10);
   const [isInsufficientBalanceOpen, setIsInsufficientBalanceOpen] = useState(false);
@@ -238,6 +238,10 @@ const Home = () => {
   };
 
   const handleJoinMatch = () => {
+    if (userStatus === 'suspended') {
+      alert("Your account has been suspended by the administrator. You cannot join any matches.");
+      return;
+    }
     if (deductBalance(selectedBetAmount)) {
       handleJoinSuccess(selectedMatch!.id);
       setSelectedMatch(null);

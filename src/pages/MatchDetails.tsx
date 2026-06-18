@@ -18,7 +18,7 @@ const MatchDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { adminMatches, adminUsers, updateMatch, addParticipantToMatch } = useAdminDashboard();
-  const { balance, deductBalance } = useBalance();
+  const { balance, deductBalance, status: userStatus } = useBalance();
   const { formatCurrency } = useCurrency();
   const { currentUser } = useAuth();
   const { t } = useLanguage();
@@ -110,6 +110,10 @@ const MatchDetails = () => {
   }, [entryFee]);
 
   const handleJoinMatch = () => {
+    if (userStatus === 'suspended') {
+      alert("Your account has been suspended by the administrator. You cannot join any matches.");
+      return;
+    }
     if (!selectedTeam) {
       alert("Please select a team to bet on!");
       return;

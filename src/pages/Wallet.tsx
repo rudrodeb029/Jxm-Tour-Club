@@ -32,7 +32,7 @@ const Wallet = () => {
   const { t, language } = useLanguage();
   const { formatCurrency, currency } = useCurrency();
   const { isAdminMode } = useAdmin();
-  const { balance, setBalance, addBalance, deductBalance, transactions: localTransactions = [] } = useBalance();
+  const { balance, setBalance, addBalance, deductBalance, transactions: localTransactions = [], status: userStatus } = useBalance();
   const { paymentRequests = [], withdrawalRequests = [], paymentSettings = {} as any } = useAdminDashboard();
   const { currentUser } = useAuth();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || mockUser?.id || 'USER123');
@@ -188,6 +188,10 @@ const Wallet = () => {
   };
 
   const handleWithdraw = () => {
+    if (userStatus === 'suspended') {
+      alert("Your account has been suspended by the administrator. You cannot withdraw funds.");
+      return;
+    }
     const amountUSD = getUSDAmount(withdrawAmount);
     if (!selectedWithdrawMethod) {
       alert('Please select a withdrawal method');
@@ -262,6 +266,10 @@ const Wallet = () => {
   };
 
   const handleDeposit = () => {
+    if (userStatus === 'suspended') {
+      alert("Your account has been suspended by the administrator. You cannot deposit funds.");
+      return;
+    }
     const amountUSD = getUSDAmount(depositAmount);
     const gateway = localGateways.find(g => g.id === selectedGateway);
     
@@ -331,6 +339,24 @@ const Wallet = () => {
           {t('myWallet')}
         </h1>
       </div>
+
+      {/* Account Suspended Banner */}
+      {userStatus === 'suspended' && (
+        <div style={{
+          margin: '16px 16px 0',
+          padding: '16px',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          borderRadius: '16px',
+          color: '#ef4444',
+          fontSize: '0.9rem',
+          fontWeight: 700,
+          textAlign: 'center',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)'
+        }}>
+          ⚠️ Your account has been suspended by the administrator. Deposits and withdrawals are disabled.
+        </div>
+      )}
 
       {/* Mastercard Style Balance Card */}
       <div style={{ padding: '20px 16px 32px' }}>

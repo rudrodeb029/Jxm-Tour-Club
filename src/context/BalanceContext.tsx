@@ -17,6 +17,7 @@ interface BalanceContextType {
   setBalance: React.Dispatch<React.SetStateAction<number>>;
   deductBalance: (amount: number, type?: Transaction['type']) => boolean;
   addBalance: (amount: number, type?: Transaction['type']) => void;
+  status: 'active' | 'suspended';
 }
 
 const BalanceContext = createContext<BalanceContextType | undefined>(undefined);
@@ -25,11 +26,13 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   const { currentUser } = useAuth();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [status, setStatus] = useState<'active' | 'suspended'>('active');
 
   useEffect(() => {
     if (!currentUser) {
       setBalance(0);
       setTransactions([]);
+      setStatus('active');
       return;
     }
 
@@ -38,6 +41,7 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setBalance(data.balance || 0);
+        setStatus(data.status || 'active');
       }
     });
 
@@ -98,7 +102,7 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <BalanceContext.Provider value={{ balance, transactions, setBalance, deductBalance, addBalance }}>
+    <BalanceContext.Provider value={{ balance, transactions, setBalance, deductBalance, addBalance, status }}>
       {children}
     </BalanceContext.Provider>
   );

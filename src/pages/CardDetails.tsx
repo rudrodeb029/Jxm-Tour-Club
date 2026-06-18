@@ -17,7 +17,7 @@ const CardDetails = () => {
   const { matchId, cardId } = useParams();
   const navigate = useNavigate();
   const { adminMatches, adminUsers, updateMatch, addParticipantToMatch } = useAdminDashboard();
-  const { balance, deductBalance } = useBalance();
+  const { balance, deductBalance, status: userStatus } = useBalance();
   const { formatCurrency } = useCurrency();
   const { currentUser } = useAuth();
   const { messages, sendMessage } = useChat();
@@ -159,6 +159,10 @@ const CardDetails = () => {
   };
 
   const handleJoinMatch = () => {
+    if (userStatus === 'suspended') {
+      alert("Your account has been suspended by the administrator. You cannot join any matches.");
+      return;
+    }
     if (!userGameId.trim()) {
       setUserGameIdError(true);
       return;

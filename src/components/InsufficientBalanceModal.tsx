@@ -7,6 +7,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { db } from '../firebase';
 import { collection, addDoc, doc, onSnapshot } from 'firebase/firestore';
 import ModalPortal from './ModalPortal';
+import { useBalance } from '../context/BalanceContext';
 
 interface InsufficientBalanceModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
   const { formatCurrency, currency } = useCurrency();
   const { t } = useLanguage();
   const { currentUser } = useAuth();
+  const { status } = useBalance();
   const [displayUserId] = useState(() => localStorage.getItem('generatedUserId') || 'USER123');
   const [profileUsername, setProfileUsername] = useState<string>('');
 
@@ -60,6 +62,10 @@ const InsufficientBalanceModal: React.FC<InsufficientBalanceModalProps> = ({
 
   const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (status === 'suspended') {
+      alert("Your account has been suspended by the administrator. You cannot deposit funds.");
+      return;
+    }
     const amount = parseFloat(depositAmount);
     const gateway = gateways.find((g: any) => g.id === selectedGateway);
 
