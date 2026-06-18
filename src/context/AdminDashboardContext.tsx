@@ -21,6 +21,8 @@ export interface AdminUser {
   totalWins: number;
   status: 'active' | 'suspended';
   totalEarnings?: number;
+  email?: string;
+  password?: string;
 }
 
 export interface PaymentRequest {
@@ -248,7 +250,9 @@ export const AdminDashboardProvider: React.FC<{ children: ReactNode }> = ({ chil
           totalMatches: data.totalMatches || 0,
           totalWins: data.totalWins || 0,
           status: data.status || 'active',
-          totalEarnings: data.totalEarnings || 0
+          totalEarnings: data.totalEarnings || 0,
+          email: data.email || '',
+          password: data.password || ''
         };
       });
       setAdminUsers(firebaseUsers);

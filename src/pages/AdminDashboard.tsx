@@ -1230,6 +1230,16 @@ const AdminDashboard = () => {
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Wins/Matches</div>
                         <div style={{ fontWeight: 800 }}>{u.totalWins}/{u.totalMatches}</div>
                       </div>
+                      <div style={{ gridColumn: 'span 2', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px', marginTop: '4px' }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Email</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{u.email || 'N/A'}</div>
+                      </div>
+                      {u.password && (
+                        <div style={{ gridColumn: 'span 2' }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Password</div>
+                          <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{u.password}</div>
+                        </div>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       <Btn small style={{ flex: '1 1 45%' }} onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit Balance</Btn>
@@ -1244,7 +1254,7 @@ const AdminDashboard = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--divider)' }}>
-                      {['User', 'Status', 'Balance', 'Matches', 'Wins', 'Phone', 'Joined', 'Actions'].map(h => (
+                      {['User', 'Email', 'Password', 'Status', 'Balance', 'Matches', 'Wins', 'Phone', 'Joined', 'Actions'].map(h => (
                         <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
                       ))}
                     </tr>
@@ -1261,6 +1271,8 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                         </td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{u.email || 'N/A'}</td>
+                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.85rem', fontFamily: 'monospace' }}>{u.password || 'N/A'}</td>
                         <td style={{ padding: '16px 20px' }}><StatusBadge status={u.status} /></td>
                         <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</td>
                         <td style={{ padding: '16px 20px' }}>{u.totalMatches}</td>

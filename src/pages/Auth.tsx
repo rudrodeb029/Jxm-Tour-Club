@@ -203,9 +203,10 @@ const Auth = () => {
             username: generatedUsername,
             avatar: generatedAvatar,
             userId: generatedId,
-          createdAt: new Date(),
-          balance: 0,
-        });
+            createdAt: new Date(),
+            balance: 0,
+            password: password,
+          });
 
         setSuccessMsg(t('registrationSuccess'));
         setTimeout(() => navigate('/home'), 1500);
