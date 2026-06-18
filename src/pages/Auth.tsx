@@ -230,21 +230,15 @@ const Auth = () => {
     }
   };
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = () => {
     setErrorMsg('');
     setSuccessMsg('');
-    if (!email) {
-      setErrorMsg('Please enter your email address first to reset your password.');
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setSuccessMsg('Password reset email sent! Check your inbox.');
-    } catch (error: any) {
-      console.error(error);
-      setErrorMsg(error.message || 'Failed to send password reset email.');
-    }
+    const baseMessage = "Hello Support, I forgot my password for JXM Tour Club.";
+    const emailMessage = email ? ` My registered email is: ${email}` : "";
+    const whatsappUrl = `https://wa.me/8801938316888?text=${encodeURIComponent(baseMessage + emailMessage)}`;
+    window.open(whatsappUrl, '_blank');
   };
+
 
   // Helper to split title so the last word is always highlighted with a neon gradient
   const getStyledTitle = () => {
