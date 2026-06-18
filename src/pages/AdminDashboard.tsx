@@ -51,6 +51,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -1188,127 +1189,159 @@ const AdminDashboard = () => {
         )}
 
         {/* USERS TAB */}
-        {activeTab === 'users' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ color: 'var(--text-secondary)' }}>{adminUsers.length} total users registered</div>
-              <Btn 
-                variant="danger" 
-                onClick={async () => {
-                  if (window.confirm("⚠️ Are you sure you want to reset all users' balances to 0? This action cannot be undone and will clear everyone's balance (including admins).")) {
-                    try {
-                      await resetAllBalances();
-                      alert("Successfully reset all user balances to 0!");
-                    } catch (e) {
-                      alert("Failed to reset balances. See console for error details.");
+        {activeTab === 'users' && (() => {
+          const filteredUsers = adminUsers.filter(u => {
+            const query = userSearchQuery.toLowerCase().trim();
+            if (!query) return true;
+            const nameMatch = (u.name || '').toLowerCase().includes(query);
+            const emailMatch = (u.email || '').toLowerCase().includes(query);
+            return nameMatch || emailMatch;
+          });
+          return (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ color: 'var(--text-secondary)' }}>
+                  {userSearchQuery ? `${filteredUsers.length} users found` : `${adminUsers.length} total users registered`}
+                </div>
+                <Btn 
+                  variant="danger" 
+                  onClick={async () => {
+                    if (window.confirm("⚠️ Are you sure you want to reset all users' balances to 0? This action cannot be undone and will clear everyone's balance (including admins).")) {
+                      try {
+                        await resetAllBalances();
+                        alert("Successfully reset all user balances to 0!");
+                      } catch (e) {
+                        alert("Failed to reset balances. See console for error details.");
+                      }
                     }
-                  }
-                }}
-              >
-                Reset All Balances
-              </Btn>
-            </div>
-            
-            {isMobile ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {adminUsers.map(u => (
-                  <div key={u.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                      <img src={u.avatar} style={{ width: '48px', height: '48px', borderRadius: '14px' }} alt="" />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: '1rem' }}>{u.name}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{u.username} • UID: {u.id.slice(-5)}</div>
-                      </div>
-                      <StatusBadge status={u.status} />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', background: 'var(--input-bg)', padding: '12px', borderRadius: '12px' }}>
-                      <div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Balance</div>
-                        <div style={{ fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</div>
-                      </div>
-                      <div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Wins/Matches</div>
-                        <div style={{ fontWeight: 800 }}>{u.totalWins}/{u.totalMatches}</div>
-                      </div>
-                      <div style={{ gridColumn: 'span 2', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px', marginTop: '4px' }}>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Email</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{u.email || 'N/A'}</div>
-                      </div>
-                      {u.password && (
-                        <div style={{ gridColumn: 'span 2' }}>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Password</div>
-                          <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{u.password}</div>
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <Btn small style={{ flex: '1 1 45%' }} onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit Balance</Btn>
-                      <Btn small variant="ghost" onClick={() => { setActiveTab('chats'); setSelectedChatId(u.id); setIsViewingChat(true); }} style={{ flex: '1 1 45%' }}>Chat</Btn>
-                      <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)} style={{ flex: '1 1 100%' }}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
-                    </div>
-                  </div>
-                ))}
+                  }}
+                >
+                  Reset All Balances
+                </Btn>
               </div>
-            ) : (
-              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--divider)' }}>
-                      {['User', 'Email', 'Password', 'Status', 'Balance', 'Matches', 'Wins', 'Phone', 'Joined', 'Actions'].map(h => (
-                        <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {adminUsers.map(u => (
-                      <tr key={u.id} style={{ borderBottom: '1px solid var(--divider)' }}>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src={u.avatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
-                            <div>
-                              <div style={{ fontWeight: 700 }}>{u.name}</div>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{u.username}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{u.email || 'N/A'}</td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.85rem', fontFamily: 'monospace' }}>{u.password || 'N/A'}</td>
-                        <td style={{ padding: '16px 20px' }}><StatusBadge status={u.status} /></td>
-                        <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</td>
-                        <td style={{ padding: '16px 20px' }}>{u.totalMatches}</td>
-                        <td style={{ padding: '16px 20px' }}>{u.totalWins}</td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>{u.phone}</td>
-                        <td style={{ padding: '16px 20px', color: 'var(--text-muted)' }}>{u.joinDate}</td>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <Btn small onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit</Btn>
-                            <Btn small variant="ghost" onClick={() => { setActiveTab('chats'); setSelectedChatId(u.id); setIsViewingChat(true); }}>Chat</Btn>
-                            <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
 
-            {/* Edit Balance Modal */}
-            {editBalanceUser && (
-              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-                <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '32px', width: '90%', maxWidth: '400px' }}>
-                  <h3 style={{ fontWeight: 800, marginBottom: '24px' }}>💰 Edit User Balance</h3>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '8px' }}>New Balance Amount ({currency === 'BDT' ? '৳' : '$'})</label>
-                  <input type="number" value={newBalance} onChange={e => setNewBalance(e.target.value)} style={{ width: '100%', padding: '16px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: 800, outline: 'none', marginBottom: '24px', boxSizing: 'border-box' }} />
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <Btn style={{ flex: 1 }} onClick={() => { updateUserBalance(editBalanceUser, parseFloat(newBalance)); setEditBalanceUser(null); }}>Update Balance</Btn>
-                    <Btn variant="ghost" style={{ flex: 1 }} onClick={() => setEditBalanceUser(null)}>Cancel</Btn>
+              {/* Search Bar */}
+              <div style={{ marginBottom: '20px' }}>
+                <input
+                  type="text"
+                  placeholder="🔍 Search users by name or email..."
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--card-border)',
+                    borderRadius: '14px',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                    fontSize: '0.95rem',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              
+              {isMobile ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {filteredUsers.map(u => (
+                    <div key={u.id} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '20px', padding: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <img src={u.avatar} style={{ width: '48px', height: '48px', borderRadius: '14px' }} alt="" />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, fontSize: '1rem' }}>{u.name}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{u.username} • UID: {u.id.slice(-5)}</div>
+                        </div>
+                        <StatusBadge status={u.status} />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px', background: 'var(--input-bg)', padding: '12px', borderRadius: '12px' }}>
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Balance</div>
+                          <div style={{ fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</div>
+                        </div>
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Wins/Matches</div>
+                          <div style={{ fontWeight: 800 }}>{u.totalWins}/{u.totalMatches}</div>
+                        </div>
+                        <div style={{ gridColumn: 'span 2', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px', marginTop: '4px' }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Email</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{u.email || 'N/A'}</div>
+                        </div>
+                        {u.password && (
+                          <div style={{ gridColumn: 'span 2' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>Password</div>
+                            <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{u.password}</div>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <Btn small style={{ flex: '1 1 45%' }} onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit Balance</Btn>
+                        <Btn small variant="ghost" onClick={() => { setActiveTab('chats'); setSelectedChatId(u.id); setIsViewingChat(true); }} style={{ flex: '1 1 45%' }}>Chat</Btn>
+                        <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)} style={{ flex: '1 1 100%' }}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--divider)' }}>
+                        {['User', 'Email', 'Password', 'Status', 'Balance', 'Matches', 'Wins', 'Phone', 'Joined', 'Actions'].map(h => (
+                          <th key={h} style={{ padding: '20px', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700 }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map(u => (
+                        <tr key={u.id} style={{ borderBottom: '1px solid var(--divider)' }}>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <img src={u.avatar} style={{ width: '36px', height: '36px', borderRadius: '10px' }} alt="" />
+                              <div>
+                                <div style={{ fontWeight: 700 }}>{u.name}</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{u.username}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{u.email || 'N/A'}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)', fontSize: '0.85rem', fontFamily: 'monospace' }}>{u.password || 'N/A'}</td>
+                          <td style={{ padding: '16px 20px' }}><StatusBadge status={u.status} /></td>
+                          <td style={{ padding: '16px 20px', fontWeight: 800, color: '#10B981' }}>{formatCurrency(u.balance)}</td>
+                          <td style={{ padding: '16px 20px' }}>{u.totalMatches}</td>
+                          <td style={{ padding: '16px 20px' }}>{u.totalWins}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-secondary)' }}>{u.phone}</td>
+                          <td style={{ padding: '16px 20px', color: 'var(--text-muted)' }}>{u.joinDate}</td>
+                          <td style={{ padding: '16px 20px' }}>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <Btn small onClick={() => { setEditBalanceUser(u.id); setNewBalance(u.balance.toString()); }}>Edit</Btn>
+                              <Btn small variant="ghost" onClick={() => { setActiveTab('chats'); setSelectedChatId(u.id); setIsViewingChat(true); }}>Chat</Btn>
+                              <Btn small variant={u.status === 'active' ? 'danger' : 'success'} onClick={() => toggleUserStatus(u.id)}>{u.status === 'active' ? 'Suspend' : 'Activate'}</Btn>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Edit Balance Modal */}
+              {editBalanceUser && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+                  <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--card-border)', borderRadius: '24px', padding: '32px', width: '90%', maxWidth: '400px' }}>
+                    <h3 style={{ fontWeight: 800, marginBottom: '24px' }}>💰 Edit User Balance</h3>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '8px' }}>New Balance Amount ({currency === 'BDT' ? '৳' : '$'})</label>
+                    <input type="number" value={newBalance} onChange={e => setNewBalance(e.target.value)} style={{ width: '100%', padding: '16px', background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '14px', color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: 800, outline: 'none', marginBottom: '24px', boxSizing: 'border-box' }} />
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <Btn style={{ flex: 1 }} onClick={() => { updateUserBalance(editBalanceUser, parseFloat(newBalance)); setEditBalanceUser(null); }}>Update Balance</Btn>
+                      <Btn variant="ghost" style={{ flex: 1 }} onClick={() => setEditBalanceUser(null)}>Cancel</Btn>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          );
+        })()}
 
         {/* SELECT WINNERS MODAL */}
         {selectingWinnersMatch && (
