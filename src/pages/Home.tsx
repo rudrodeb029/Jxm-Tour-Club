@@ -497,6 +497,7 @@ const Home = () => {
                   onJoin={() => navigate(`/match/${match.id}`)}
                   isAdminMode={isAdminMode}
                   onEdit={() => setEditingMatch(match)}
+                  cardIndex={index}
                 />
               </div>
             ))}
@@ -525,6 +526,7 @@ const Home = () => {
                   onJoin={() => navigate(`/match/${match.id}`)}
                   isAdminMode={isAdminMode}
                   onEdit={() => setEditingMatch(match)}
+                  cardIndex={localMatches.filter(isMatchLive).length + index}
                 />
               </div>
             ))}

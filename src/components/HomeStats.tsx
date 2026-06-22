@@ -20,6 +20,12 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
     return cs ? { ...ds, ...cs } : ds;
   }) : defaultStats;
 
+  const neonStatThemes = [
+    { bg: 'linear-gradient(160deg, #0a1a12 0%, #050f0a 100%)', border: '#10B981', glow: 'rgba(16, 185, 129, 0.3)', shimmer: 'rgba(16, 185, 129, 0.12)' },
+    { bg: 'linear-gradient(160deg, #0a1428 0%, #050a1a 100%)', border: '#38BDF8', glow: 'rgba(56, 189, 248, 0.3)', shimmer: 'rgba(56, 189, 248, 0.12)' },
+    { bg: 'linear-gradient(160deg, #1a150a 0%, #0f0d05 100%)', border: '#FBBF24', glow: 'rgba(251, 191, 36, 0.3)', shimmer: 'rgba(251, 191, 36, 0.12)' },
+  ];
+
   return (
     <div style={{ 
       display: 'grid', 
@@ -30,8 +36,7 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
       position: 'relative'
     }}>
       <style>{`
-        .stat-card-3d {
-          background: var(--nav-bg);
+        .stat-card-neon {
           border-radius: 20px;
           padding: 24px 8px 20px;
           display: flex;
@@ -39,13 +44,11 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           align-items: center;
           justify-content: center;
           position: relative;
-          box-shadow: var(--nav-shadow);
-          border: 1px solid var(--nav-border);
+          overflow: hidden;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .stat-card-3d:active {
+        .stat-card-neon:active {
           transform: translateY(4px);
-          box-shadow: var(--card-shadow);
         }
         
         .bridge-pipe {
@@ -71,6 +74,8 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           font-weight: 900;
           margin-bottom: 2px;
           text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+          position: relative;
+          z-index: 1;
         }
         .stat-label {
           font-size: 0.65rem;
@@ -80,6 +85,8 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           letter-spacing: 0.05em;
           text-align: center;
           text-shadow: none;
+          position: relative;
+          z-index: 1;
         }
 
         /* 3D Physical Icon Box */
@@ -91,10 +98,11 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           align-items: center;
           justify-content: center;
           margin-bottom: 16px;
-          background: var(--card-bg);
+          background: rgba(255, 255, 255, 0.03);
           border-radius: 12px;
-          border: 1px solid var(--card-border);
+          border: 1px solid rgba(255, 255, 255, 0.06);
           box-shadow: var(--card-shadow);
+          z-index: 1;
         }
         
         @keyframes blink {
@@ -114,14 +122,26 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
           box-shadow: 0 0 10px #10B981;
           animation: blink 1.5s infinite ease-in-out;
         }
+
+        .neon-shimmer-stat {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 50%;
+          height: 100%;
+          animation: neonShimmer 3s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 0;
+        }
       `}</style>
       
       {/* 1. Live Matches */}
       <div 
-        className="stat-card-3d"
+        className="stat-card-neon"
         onClick={() => onStatClick('live')}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', background: neonStatThemes[0].bg, border: `1.5px solid ${neonStatThemes[0].border}`, boxShadow: `0 8px 25px rgba(0,0,0,0.5), 0 0 15px ${neonStatThemes[0].glow}` }}
       >
+        <div className="neon-shimmer-stat" style={{ background: `linear-gradient(90deg, transparent, ${neonStatThemes[0].shimmer}, ${neonStatThemes[0].glow}, ${neonStatThemes[0].shimmer}, transparent)` }} />
         <div className="icon-box-3d">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 12h4l3-9 5 18 3-9h3"/>
@@ -134,10 +154,11 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
 
       {/* 2. Participants */}
       <div 
-        className="stat-card-3d"
+        className="stat-card-neon"
         onClick={() => onStatClick('participants')}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', background: neonStatThemes[1].bg, border: `1.5px solid ${neonStatThemes[1].border}`, boxShadow: `0 8px 25px rgba(0,0,0,0.5), 0 0 15px ${neonStatThemes[1].glow}` }}
       >
+        <div className="neon-shimmer-stat" style={{ background: `linear-gradient(90deg, transparent, ${neonStatThemes[1].shimmer}, ${neonStatThemes[1].glow}, ${neonStatThemes[1].shimmer}, transparent)`, animationDelay: '0.5s' }} />
         <div className="bridge-pipe bridge-left" />
         <div className="bridge-pipe bridge-right" />
         
@@ -152,10 +173,11 @@ const HomeStats: React.FC<HomeStatsProps> = ({ onStatClick, isAdminMode, onEdit,
 
       {/* 3. Winners */}
       <div 
-        className="stat-card-3d"
+        className="stat-card-neon"
         onClick={() => onStatClick('winners')}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', background: neonStatThemes[2].bg, border: `1.5px solid ${neonStatThemes[2].border}`, boxShadow: `0 8px 25px rgba(0,0,0,0.5), 0 0 15px ${neonStatThemes[2].glow}` }}
       >
+        <div className="neon-shimmer-stat" style={{ background: `linear-gradient(90deg, transparent, ${neonStatThemes[2].shimmer}, ${neonStatThemes[2].glow}, ${neonStatThemes[2].shimmer}, transparent)`, animationDelay: '1s' }} />
         <div className="icon-box-3d">
           <div style={{ position: 'relative', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.8))' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#goldGradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -355,6 +355,17 @@ body.admin-mode .page-wrapper {
   box-shadow: 0 8px 30px rgba(249, 111, 46, 0.4), inset 0 2px 4px rgba(255,255,255,0.2);
 }
 
+/* Neon Card Shimmer / Current Effect */
+@keyframes neonShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes neonBorderPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
 /* Animations */
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(30px); }

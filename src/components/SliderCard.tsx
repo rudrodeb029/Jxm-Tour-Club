@@ -55,9 +55,18 @@ interface SliderCardProps {
   image?: string;
   availableModes?: string[];
   innerSections?: InnerSectionCard[];
+  cardIndex?: number;
 }
 
-const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image, availableModes, innerSections }: SliderCardProps) => {
+const neonThemes = [
+  { bg: 'linear-gradient(160deg, #1a0a2e 0%, #0d0519 100%)', border: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.35)', shimmer: 'rgba(139, 92, 246, 0.15)' },
+  { bg: 'linear-gradient(160deg, #0a1628 0%, #050d1a 100%)', border: '#3b82f6', glow: 'rgba(59, 130, 246, 0.35)', shimmer: 'rgba(59, 130, 246, 0.15)' },
+  { bg: 'linear-gradient(160deg, #1a0f0a 0%, #120805 100%)', border: '#f59e0b', glow: 'rgba(245, 158, 11, 0.35)', shimmer: 'rgba(245, 158, 11, 0.15)' },
+  { bg: 'linear-gradient(160deg, #1a0a1e 0%, #10051a 100%)', border: '#d946ef', glow: 'rgba(217, 70, 239, 0.35)', shimmer: 'rgba(217, 70, 239, 0.15)' },
+  { bg: 'linear-gradient(160deg, #0a1a1e 0%, #05121a 100%)', border: '#06b6d4', glow: 'rgba(6, 182, 212, 0.35)', shimmer: 'rgba(6, 182, 212, 0.15)' },
+];
+
+const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, totalBids, currentParticipants, maxParticipants, onClick, onJoin, isAdminMode, onEdit, status, name, liveStartedAt, prizePool, firstPrize, secondPrize, thirdPrize, version, perKillReward, map, image, availableModes, innerSections, cardIndex = 0 }: SliderCardProps) => {
   const { t } = useLanguage();
   const { formatCurrency } = useCurrency();
   const isLive = status === 'live';
@@ -222,23 +231,48 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
     }
   }
 
+  const theme = neonThemes[cardIndex % neonThemes.length];
+
   return (
     <div 
       onClick={!isFull ? onClick : undefined}
       style={{
-        background: 'var(--nav-bg)',
+        background: theme.bg,
         color: 'var(--text-primary)',
         borderRadius: '28px',
         padding: '80px 20px 24px',
         marginTop: '65px',
         width: '100%',
-        border: '1px solid var(--nav-border)',
+        border: `1.5px solid ${theme.border}`,
         cursor: isFull ? 'not-allowed' : 'pointer',
         position: 'relative',
-        boxShadow: '15px 20px 35px rgba(0,0,0,0.8), 0 0 15px rgba(179, 144, 70, 0.1)',
+        overflow: 'hidden',
+        boxShadow: `15px 20px 35px rgba(0,0,0,0.8), 0 0 20px ${theme.glow}, inset 0 1px 0 ${theme.shimmer}`,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
+      {/* Neon shimmer / current effect */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+        borderRadius: '28px',
+        zIndex: 0
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '50%',
+          height: '100%',
+          background: `linear-gradient(90deg, transparent, ${theme.shimmer}, ${theme.glow}, ${theme.shimmer}, transparent)`,
+          animation: 'neonShimmer 3s ease-in-out infinite',
+        }} />
+      </div>
 
 
       {isAdminMode && (
@@ -276,8 +310,8 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         width: '130px',
         height: '130px',
         borderRadius: '50%',
-        border: '3px solid var(--nav-border)',
-        boxShadow: 'var(--card-shadow)',
+        border: `3px solid ${theme.border}`,
+        boxShadow: `var(--card-shadow), 0 0 15px ${theme.glow}`,
         backgroundImage: `url('${image || '/images/gaming_arena_banner.png'}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -294,24 +328,24 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       </div>
 
       {/* Title */}
-      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
         <h3 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-primary)', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.8), 0 -1px 1px rgba(255,255,255,0.1)' }}>{name}</h3>
       </div>
 
 
 
       {/* Skewed Metallic Prize Pool Cards */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '36px', padding: '0 4px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '36px', padding: '0 4px', position: 'relative', zIndex: 1 }}>
         
         {/* Total Prize Pool */}
         <div style={{ 
           flex: 1.2, 
-          background: 'linear-gradient(135deg, #0d5f66, #053338)', 
-          border: '1px solid #fde047',
+          background: 'linear-gradient(135deg, #0a2520, #051815)', 
+          border: `1px solid ${theme.border}`,
           borderRadius: '8px', 
           padding: '12px 6px', 
           transform: 'skewX(-8deg)',
-          boxShadow: 'var(--card-shadow)',
+          boxShadow: `0 4px 15px rgba(0,0,0,0.5), 0 0 8px ${theme.glow}`,
           display: 'flex', justifyContent: 'center'
         }}>
           <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -326,12 +360,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         {(!availableModes || availableModes.includes('Solo')) && (
           <div style={{ 
             flex: 1, 
-            background: 'linear-gradient(135deg, #d4af37, #8b6b17)', 
-            border: '1px solid #fef08a',
+            background: 'linear-gradient(135deg, #1a1505, #0f0d03)', 
+            border: '1px solid #d4af37',
             borderRadius: '8px', 
             padding: '12px 6px', 
             transform: 'skewX(-8deg)',
-            boxShadow: 'var(--card-shadow)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.5), 0 0 8px rgba(212, 175, 55, 0.25)',
             display: 'flex', justifyContent: 'center',
             minWidth: 0
           }}>
@@ -360,23 +394,23 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         {(!availableModes || availableModes.includes('Duo')) && (
           <div style={{ 
             flex: 1, 
-            background: 'linear-gradient(135deg, #94a3b8, #475569)', 
-            border: '1px solid #f1f5f9',
+            background: 'linear-gradient(135deg, #0f1318, #080b10)', 
+            border: '1px solid #64748b',
             borderRadius: '8px', 
             padding: '12px 6px', 
             transform: 'skewX(-8deg)',
-            boxShadow: 'var(--card-shadow)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.5), 0 0 8px rgba(100, 116, 139, 0.25)',
             display: 'flex', justifyContent: 'center',
             minWidth: 0
           }}>
             <div style={{ transform: 'skewX(8deg)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#f1f5f9', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+              <div style={{ fontSize: '0.55rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '6px', color: '#cbd5e1', textShadow: 'var(--text-shadow-sm)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
                 👥 DUO
               </div>
               <div style={{ 
                 fontSize: '0.75rem', 
                 fontWeight: 800, 
-                color: '#f1f5f9',
+                color: '#cbd5e1',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -394,12 +428,12 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         {(!availableModes || availableModes.includes('Squad')) && (
           <div style={{ 
             flex: 1, 
-            background: 'linear-gradient(135deg, #92400e, #5c2705)', 
-            border: '1px solid #fbbf24',
+            background: 'linear-gradient(135deg, #1a0f05, #100903)', 
+            border: '1px solid #b45309',
             borderRadius: '8px', 
             padding: '12px 6px', 
             transform: 'skewX(-8deg)',
-            boxShadow: 'var(--card-shadow)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.5), 0 0 8px rgba(180, 83, 9, 0.25)',
             display: 'flex', justifyContent: 'center',
             minWidth: 0
           }}>
@@ -426,7 +460,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       </div>
 
       {/* Capacity & Physical Speedometer Section */}
-      <div style={{ position: 'relative', marginBottom: '45px', marginTop: '10px' }}>
+      <div style={{ position: 'relative', marginBottom: '45px', marginTop: '10px', zIndex: 1 }}>
         {/* Capacity labels removed */}
         <div style={{ display: 'flex', alignItems: 'flex-end', height: '50px' }}>
           {/* Left Bar (Recessed Track) */}
@@ -468,7 +502,7 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
       </div>
 
       {/* Bottom Join & Live/Countdown Area */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: 'var(--text-secondary)' }}>
             <Gamepad2 className="w-4 h-4" />
