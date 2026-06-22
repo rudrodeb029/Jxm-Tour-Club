@@ -481,7 +481,7 @@ const Home = () => {
               <div 
                 key={match.id} 
                 className="animate-slide-up" 
-                style={{ animationDelay: `${index * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
+                style={{ animationDelay: `${index * 0.1}s`, opacity: 0, animationFillMode: 'forwards', paddingTop: '65px' }}
               >
                 <SliderCard 
                   group={match.group}
@@ -510,7 +510,7 @@ const Home = () => {
               <div 
                 key={match.id} 
                 className="animate-slide-up" 
-                style={{ animationDelay: `${(localMatches.filter(isMatchLive).length + index) * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}
+                style={{ animationDelay: `${(localMatches.filter(isMatchLive).length + index) * 0.1}s`, opacity: 0, animationFillMode: 'forwards', paddingTop: '65px' }}
               >
                 <SliderCard 
                   group={match.group}

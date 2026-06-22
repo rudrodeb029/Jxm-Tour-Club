@@ -162,7 +162,16 @@ const MatchDetails = () => {
             gridTemplateColumns: cards.length > 2 ? 'repeat(auto-fit, minmax(130px, 1fr))' : '1fr 1fr',
             gap: '12px'
           }}>
-            {cards.map((card) => (
+            {cards.map((card, cardIdx) => {
+              const neonThemes = [
+                { bg: 'linear-gradient(160deg, #1a0a2e 0%, #0d0519 100%)', border: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.35)', shimmer: 'rgba(139, 92, 246, 0.15)' },
+                { bg: 'linear-gradient(160deg, #0a1628 0%, #050d1a 100%)', border: '#3b82f6', glow: 'rgba(59, 130, 246, 0.35)', shimmer: 'rgba(59, 130, 246, 0.15)' },
+                { bg: 'linear-gradient(160deg, #1a0f0a 0%, #120805 100%)', border: '#f59e0b', glow: 'rgba(245, 158, 11, 0.35)', shimmer: 'rgba(245, 158, 11, 0.15)' },
+                { bg: 'linear-gradient(160deg, #1a0a1e 0%, #10051a 100%)', border: '#d946ef', glow: 'rgba(217, 70, 239, 0.35)', shimmer: 'rgba(217, 70, 239, 0.15)' },
+                { bg: 'linear-gradient(160deg, #0a1a1e 0%, #05121a 100%)', border: '#06b6d4', glow: 'rgba(6, 182, 212, 0.35)', shimmer: 'rgba(6, 182, 212, 0.15)' },
+              ];
+              const nTheme = neonThemes[cardIdx % neonThemes.length];
+              return (
               <div
                 key={card.id}
                 onClick={() => {
@@ -170,8 +179,8 @@ const MatchDetails = () => {
                 }}
                 className="hover-scale"
                 style={{
-                  background: 'var(--glass-bg)',
-                  border: `1px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : 'var(--glass-border)'}`,
+                  background: nTheme.bg,
+                  border: `1.5px solid ${selectedTeam === card.id ? 'var(--accent-orange)' : nTheme.border}`,
                   borderRadius: '20px',
                   padding: '14px 12px',
                   display: 'flex',
@@ -181,13 +190,24 @@ const MatchDetails = () => {
                   cursor: 'pointer',
                   boxShadow: selectedTeam === card.id
                     ? `0 10px 25px ${card.color}22, 0 0 10px ${card.color}15`
-                    : 'var(--card-shadow)',
+                    : `0 8px 25px rgba(0,0,0,0.5), 0 0 15px ${nTheme.glow}`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   textAlign: 'center',
                   position: 'relative',
                   overflow: 'hidden'
                 }}
               >
+                {/* Neon shimmer effect */}
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  pointerEvents: 'none', overflow: 'hidden', borderRadius: '20px', zIndex: 0
+                }}>
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, width: '50%', height: '100%',
+                    background: `linear-gradient(90deg, transparent, ${nTheme.shimmer}, ${nTheme.glow}, ${nTheme.shimmer}, transparent)`,
+                    animation: `neonShimmer 3s ease-in-out infinite ${cardIdx * 0.4}s`,
+                  }} />
+                </div>
                 {/* 3D Glow Backlight */}
                 <div style={{
                   position: 'absolute',
@@ -367,7 +387,7 @@ const MatchDetails = () => {
                   })()
                 )}
               </div>
-            ))}
+            )})}
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', background: 'var(--glass-bg)', borderRadius: '24px', border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>

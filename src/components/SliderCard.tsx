@@ -241,12 +241,11 @@ const SliderCard = ({ group, players, team1, team2, team3, score, time, bids, to
         color: 'var(--text-primary)',
         borderRadius: '28px',
         padding: '80px 20px 24px',
-        marginTop: '65px',
+        marginTop: '0px',
         width: '100%',
         border: `1.5px solid ${theme.border}`,
         cursor: isFull ? 'not-allowed' : 'pointer',
         position: 'relative',
-        overflow: 'hidden',
         boxShadow: `15px 20px 35px rgba(0,0,0,0.8), 0 0 20px ${theme.glow}, inset 0 1px 0 ${theme.shimmer}`,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
