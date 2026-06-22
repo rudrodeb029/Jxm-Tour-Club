@@ -56,7 +56,7 @@ const RootNavigator = () => {
 const AnimatedRoutes = () => {
   const location = useLocation();
   const { currentUser } = useAuth();
-  const showNav = ['/home', '/wallet', '/my-bets', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
+  const showNav = ['/home', '/wallet', '/my-bets', '/rules', '/profile', '/support'].includes(location.pathname) || location.pathname.startsWith('/match/');
 
   useEffect(() => {
     if (location.pathname.startsWith('/admin')) {

@@ -15,6 +15,7 @@ const BottomNav = () => {
     { path: '/home', iconPath: '/images/3d_house.png', label: t('home') },
     { path: '/wallet', iconPath: '/images/3d_wallet.png', label: t('wallet'), showBalance: true },
     { path: '/my-bets', iconPath: '/images/3d_poker_chips.png', label: t('myBets') },
+    { path: '/rules', iconPath: '/images/3d_rules_book.png', label: t('gameRules') || 'Rules' },
     { path: '/profile', iconPath: '/images/3d_hologram.png', label: t('profile') }
   ];
 
