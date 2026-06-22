@@ -15,7 +15,7 @@ const BottomNav = () => {
     { path: '/home', iconPath: '/images/3d_house.png', label: t('home') },
     { path: '/wallet', iconPath: '/images/3d_wallet.png', label: t('wallet'), showBalance: true },
     { path: '/my-bets', iconPath: '/images/3d_poker_chips.png', label: t('myBets') },
-    { path: '/rules', iconPath: '/images/3d_rules_book.png', label: t('gameRules') || 'Rules' },
+    { path: '/rules', iconPath: '/images/3d_rules_book.png', label: t('rule') || 'Rule' },
     { path: '/profile', iconPath: '/images/3d_hologram.png', label: t('profile') }
   ];
 
@@ -28,7 +28,7 @@ const BottomNav = () => {
       background: 'var(--nav-bg)',
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '4px 4px 6px',
+      padding: '3px 3px 4px',
       borderTopLeftRadius: '24px',
       borderTopRightRadius: '24px',
       zIndex: 100,
@@ -42,9 +42,9 @@ const BottomNav = () => {
       {/* Physical Indented Track Background */}
       <div style={{
         position: 'absolute',
-        top: '6px', left: '6px', right: '6px', bottom: '6px',
+        top: '4px', left: '4px', right: '4px', bottom: '4px',
         background: 'var(--modal-bg)',
-        borderRadius: '22px',
+        borderRadius: '18px',
         boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.1), inset 0 -1px 2px rgba(255,255,255,0.02)',
         zIndex: 0
       }} />
@@ -68,8 +68,8 @@ const BottomNav = () => {
               position: 'relative',
               flex: 1,
               zIndex: 1,
-              padding: '6px 0',
-              borderRadius: '16px',
+              padding: '4px 0',
+              borderRadius: '12px',
               background: isHovered ? 'var(--card-bg-hover)' : 'transparent',
               boxShadow: 'none',
               border: '1px solid transparent',
@@ -83,13 +83,13 @@ const BottomNav = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '28px',
-              height: '28px',
-              marginBottom: '2px',
+              width: '22px',
+              height: '22px',
+              marginBottom: '1px',
               background: isActive ? 'var(--card-bg)' : 'transparent',
               borderRadius: '50%',
               boxShadow: isActive ? 'var(--card-shadow)' : 'none',
-              padding: '4px'
+              padding: '3px'
             }}>
               <img 
                 src={item.iconPath} 
@@ -128,19 +128,19 @@ const BottomNav = () => {
             </div>
             
             <span style={{ 
-              fontSize: '0.6rem', 
+              fontSize: '0.55rem', 
               fontWeight: 800,
-              letterSpacing: '0.05em',
+              letterSpacing: '0.03em',
               textTransform: 'uppercase',
-              textShadow: isActive ? 'none' : 'none'
+              lineHeight: 1
             }}>{item.label}</span>
             
             {isActive && (
               <div style={{ 
                 position: 'absolute',
-                bottom: '-4px',
-                width: '20px', 
-                height: '4px', 
+                bottom: '-3px',
+                width: '16px', 
+                height: '3px', 
                 borderRadius: '2px', 
                 background: 'linear-gradient(90deg, #f97316, #e34360)', 
                 boxShadow: '0 0 10px #f97316'
